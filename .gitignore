@@ -1,2 +1,5 @@
 
-.verysync/ignoreList
+.verysync/
+*.class
+*.xml
+*.iml
