@@ -3,3 +3,17 @@
 *.class
 *.xml
 *.iml
+*.db
+CProject/Test1_230217/.vs/Test1_230217/v16/.suo
+*.exe
+*.pdb
+*.sln
+*.obj
+*.recipe
+*.ilk
+*.log
+*.tlog
+*.idb
+*.vcxproj
+*.filters
+*.user
