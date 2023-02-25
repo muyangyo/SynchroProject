@@ -4,6 +4,8 @@
  »úÆ÷£ºDR
  ±àÒëÆ÷£ºVS2019
 */
+#include <stdio.h>
+#include <string.h>
 void remove_common(char* delpos, int longth, int sub)
 {
 	for (int i = 0; i < longth - sub; i++)
@@ -11,18 +13,7 @@ void remove_common(char* delpos, int longth, int sub)
 		delpos[i] = delpos[i + 1];
 	}
 }
-int getlongth(char* parr)
-{
-	int longth = 0;
-	while (*parr != '\0')
-	{
-		longth++;
-		parr++;
-	}
-	return longth;
-}
 
-#include <stdio.h>
 int main()
 {
 	char arr1[100] = { 0 };
@@ -33,7 +24,7 @@ int main()
 	gets(arr1);
 	gets(arr2);
 
-	int longth = getlongth(arr1);
+	int longth = strlen(arr1);
 
 	while ((*pos2) != '\0')
 	{

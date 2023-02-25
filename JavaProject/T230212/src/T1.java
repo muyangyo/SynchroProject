@@ -8,9 +8,9 @@ import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
  * Time: 16:30
  */
 public class T1 {
+    int age;
+
     public static void main(String[] args) {
-        System.out.println("这是一个测试!");
-        System.out.println("测试2");
     }
 
 }
