@@ -1,5 +1,4 @@
-import javafx.geometry.Pos;
-
+import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -12,11 +11,13 @@ import java.util.Scanner;
 public class TestDemo1 {
     public static void NumB(int x) {
         int mount = 0;
-        for (int i = 0; i < 32; i++) {
-            if (((x >> i) & 1) == 1)
+        int i = 0;
+        while (x != 0) {
+            if ((x & 1) == 1)
                 mount++;
+            x >>>= 1;
         }
-        System.out.println("该数字有" + mount + "个二进制一");
+        System.out.println("该数字有 " + mount + " 个二进制'1'");
     }
 
     public static boolean IsPrimeNumber(int x) {
@@ -118,12 +119,11 @@ public class TestDemo1 {
             if (i % 2 == 0) {
                 OD[posD] = x & 1;
                 posD++;
-                x = x >>> 1;
             } else {
                 ED[posE] = x & 1;
                 posE++;
-                x = x >>> 1;
             }
+            x = x >>> 1;
         }
         System.out.print("奇数位: ");
         for (int i = 15; i >= 0; i--) {
@@ -138,7 +138,104 @@ public class TestDemo1 {
 
     }
 
+    public static int add(int x, int y) {
+        return x + y;
+    }
+
+
+    public static void Sum() {
+        double sum = 0;
+        for (int i = 1; i <= 100; i++) {
+            if (i % 2 == 0) {
+                sum -= 1.0 / i;
+            } else {
+                sum += 1.0 / i;
+            }
+        }
+        System.out.println(sum);
+    }
+
+
+    public static void PrintX(int x) {
+        char[] chars = new char[20];
+        //初始化
+        for (int i = 0; i < 20; i++) {
+            chars[i] = ' ';
+        }
+        //打印
+        for (int i = 0; i < x; i++) {
+            char[] temp = chars.clone();
+            temp[i] = '*';
+            temp[x - i - 1] = '*';
+            for (int j = 0; j < x; j++) {
+                System.out.print(temp[j]);
+            }
+            System.out.println();
+        }
+    }
+
+    public static int Max1(int x, int y) {
+        return x > y ? x : y;
+    }
+
+    public static int Max1(int x, int y, int z) {
+        return Max(Max(x, y), z);
+    }
+
+    public static int NJ(int x) {
+        int sum = 0;
+        if (x == 0)
+            return 0;
+        for (int i = 1; i <= x; i++) {
+            int temp = 1;
+            for (int j = 1; j <= i; j++) {
+                temp *= j;
+            }
+            sum += temp;
+        }
+        return sum;
+    }
+
+    public static long Fib(int x) {
+        //1 1 2 3 5 8
+        //a b
+        long a = 1;
+        long b = 1;
+        long sum = 0;
+        if (x == 0) {
+            return 0;
+        }
+        if (x < 2) {
+            return 1;
+        }
+        for (int i = 2; i < x; i++) {
+            sum = a + b;
+            a = b;
+            b = sum;
+
+        }
+        return sum;
+    }
+
+    public static int Add(int x, int y) {
+        return x + y;
+    }
+
+    public static Double Add(double x, double y, double z) {
+        return x + y + z;
+    }
+
+    public static int Max(int x, int y) {
+        return Math.max(x, y);
+    }
+
+    public static int Max(int x, int y, int z) {
+        return Math.max(Math.max(x, y), z);
+    }
+
+
     public static void main(String[] args) {
-        DtoBAll(5);//默认第一位是0位
+
+
     }
 }
