@@ -1,7 +1,3 @@
-import com.sun.org.apache.bcel.internal.generic.FSUB;
-
-import java.util.Arrays;
-
 /**
  * 创建于 IntelliJ IDEA.
  * 描述：
@@ -11,8 +7,8 @@ import java.util.Arrays;
  */
 public class Main {
     public static void printArray(int[] ints) {
-        for (int i = 0; i < ints.length; i++) {
-            System.out.print(ints[i] + " ");
+        for (int anInt : ints) {
+            System.out.print(anInt + " ");
         }
         System.out.println();
     }
@@ -25,8 +21,8 @@ public class Main {
 
     public static void sum(int[] ints) {
         int sum = 0;
-        for (int i = 0; i < ints.length; i++) {
-            sum += ints[i];
+        for (int anInt : ints) {
+            sum += anInt;
         }
         System.out.println(sum);
     }
@@ -157,10 +153,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        int[] ints = {2, 6, 4, 1};
-        int[] ints2 = {1, 2, 34, 3, 4, 5, 7, 23, 12};
-        System.out.println(ThreeConsecutiveOddNumbers(ints));
-        System.out.println(ThreeConsecutiveOddNumbers(ints2));
+        
     }
 
 
