@@ -13,7 +13,7 @@ public class IntArrStruct {
     int size = 5;//真实空间大小
     int[] arr = new int[5];//初始化
 
-    public  void tail_add(int x) //尾加
+    public void tail_add(int x) //尾加
     {
         if (this.usedsize == this.size) {
             this.isfull_toex();
@@ -28,7 +28,7 @@ public class IntArrStruct {
         this.arr = Arrays.copyOf(this.arr, size);
     }
 
-    public  boolean contains(int k)  // 判定是否包含某个元素
+    public boolean contains(int k)  // 判定是否包含某个元素
     {
         for (int i = 0; i < this.usedsize; i++) {
             if (this.arr[i] == k) {

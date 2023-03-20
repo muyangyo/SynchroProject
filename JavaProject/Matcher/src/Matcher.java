@@ -9,13 +9,10 @@ import java.util.Scanner;
  * Time: 21:09
  */
 public class Matcher {
-    final int number = 12;
-    String[] members = new String[number];  //参与人员:柳俊杰 李绍勇 胡浩 杨振宇 高朝旭 王华浩 李均文 张俊威 张政 韩晴 钟靖 刘庆彬
+    final int number = 12;//人数
+    String[] members = new String[number];
 
-    public Matcher() {
-        System.out.println("请输入一组名字(中间用单空格隔开):");
-        Scanner sc = new Scanner(System.in);
-        String temp = sc.nextLine();
+    public Matcher(String temp) {
         members = temp.split(" ");    //自动分割
         match();
     }
@@ -25,7 +22,7 @@ public class Matcher {
         Random random = new Random();
 
         boolean flag = true;
-        for (int i = 0; i < number/2; i++) {
+        for (int i = 0; i < number / 2; i++) {
             int rand1 = random.nextInt(number);
             int rand2 = random.nextInt(number);
 
@@ -46,14 +43,13 @@ public class Matcher {
                     i--;
                     continue;
                 }
-                System.out.print("第" + (i+1) + "组:");
+                System.out.print("第" + (i + 1) + "组:");
                 System.out.print(members[rand1] + " ");
                 System.out.print(members[rand2] + " ");
                 System.out.println();
                 ints.tail_add(rand1);
                 ints.tail_add(rand2);
-            }
-            else {
+            } else {
                 i--;
             }
         }
