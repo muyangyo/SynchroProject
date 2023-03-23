@@ -139,7 +139,7 @@ void print_heart() {
 	printf("    ♥♥  ♥♥\n");
 	printf("      ♥♥\n");
 }
-int main() 
+int main()
 {
 	print_heart();
 	return 0;
