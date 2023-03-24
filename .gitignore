@@ -1,5 +1,6 @@
 
 .verysync/
+.idea/
 *.class
 *.xml
 *.iml
