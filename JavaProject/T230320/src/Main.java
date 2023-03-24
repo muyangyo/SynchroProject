@@ -5,6 +5,13 @@
  * Date: 2023/3/21
  * Time: 19:42
  */
-public class Main {
+abstract class A {
+    public A() {
+    }
+}
 
+public class Main {
+    public static void main(String[] args) {
+        
+    }
 }
