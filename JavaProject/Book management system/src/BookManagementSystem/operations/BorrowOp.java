@@ -19,7 +19,7 @@ public class BorrowOp implements OPeration {
         System.out.print("请输入需要借出的书名: ");
         String BookName = scanner.nextLine();
         for (int i = 0; i < bookList.Books.length; i++) {
-            if (bookList.Books[i].getBookName().equals(BookName)) {
+            if (bookList.Books[i].getBookName().equals(BookName) && bookList.Books[i].getBorrowed()) {
                 System.out.println("成功借阅:" + bookList.Books[i]);
                 bookList.Books[i].setBorrowed(true);
                 return;
