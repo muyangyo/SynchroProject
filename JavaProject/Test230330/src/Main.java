@@ -1,5 +1,3 @@
-import com.sun.org.apache.bcel.internal.generic.NEW;
-
 import java.util.Arrays;
 
 /**
@@ -44,6 +42,18 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        System.out.println(100 % 3.5);
+
+    }
+
+    public static void main1(String[] args) {
+        int a = 10;
+        Integer i = a; //自动装箱
+        Integer ii = new Integer(a);  //显示装箱
+
+        Integer b = 20;
+        int out1 = b; //自动拆箱
+        int out2 = b.intValue(); //显示拆箱
+        float out3 = b.floatValue(); //显示拆箱(转不同类型)
+
     }
 }

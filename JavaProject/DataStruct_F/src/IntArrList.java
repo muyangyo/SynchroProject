@@ -8,7 +8,7 @@ import java.util.Scanner;
  * Date: 2023/3/29
  * Time: 21:17
  */
-public class IntArrList {
+public class IntArrList extends NullPointerException {
     int UsedSize = 0;//使用了的大小
     int size = 5;//真实空间大小
     int[] arr = {0, 0, 0, 0, 0};//初始化
@@ -66,6 +66,9 @@ public class IntArrList {
 
     public static void contains(IntArrList e1, int k)  // 判定是否包含某个元素
     {
+        if (e1 == null) {
+            throw new NullPointerException();
+        }
         for (int i = 0; i < e1.UsedSize; i++) {
             if (e1.arr[i] == k) {
                 System.out.println("找到了,下标为:" + i);
@@ -116,7 +119,7 @@ public class IntArrList {
         }
         System.out.println("请输入值:");
         val = exp1.nextInt();
-            e1.arr[pos] = val;
+        e1.arr[pos] = val;
     }
 
     public static void remove(IntArrList e1)  //删除第一个对应的元素
