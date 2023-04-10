@@ -1,6 +1,7 @@
 package TestDemo;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -11,6 +12,7 @@ import java.util.List;
  * Time: 19:41
  */
 public class Main {
+
     public List<List<Integer>> generate(int numRows) {
         List<List<Integer>> ret = new ArrayList<>();
 
@@ -44,7 +46,10 @@ public class Main {
 
         List<String> arrayList2 = arrayList1.subList(0, 2);
         System.out.println("截取部分: " + arrayList2);
-
+        Iterator<String> it = arrayList1.listIterator();
+        while (it.hasNext())
+        System.out.println("==========================");
+        System.out.println("截取部分添加 def");
         arrayList2.add("def");
         System.out.println("原本的数组: " + arrayList1);
         System.out.println("截取部分: " + arrayList2);

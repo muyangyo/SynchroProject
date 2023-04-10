@@ -17,6 +17,6 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Matcher matcher = new Matcher("柳俊杰 李绍勇 胡浩 杨振宇 高朝旭 王华浩 李均文 张俊威 张政 韩晴 钟靖 刘庆彬");
+        Matcher matcher = new Matcher("李绍勇 杨振宇 高朝旭 王华浩 李均文 张俊威 张政 韩晴 钟靖 刘庆彬"); //柳俊杰 胡浩
     }
 }

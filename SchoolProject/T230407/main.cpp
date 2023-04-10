@@ -1,93 +1,88 @@
 #include <stdio.h>
-#define N 50
-struct PCB
-{
-    int pn;   //process nameè¿›ç¨‹åå­—
-    int at;   //arrival timeåˆ°è¾¾æ—¶é—´
-    int st;   //service timeæœåŠ¡æ—¶é—´
-    int ct;   //completion timeå®Œæˆæ—¶åˆ»
-    int sc;  //sign completionæ ‡å¿—æ˜¯å¦å®Œæˆ
-    int st1;  //å‰©ä½™æœåŠ¡æ—¶é—´
-}process[N];
 
-void sjp(int n)
-{
-    int i,j,T;
-    printf("\nè¯·è¾“å…¥æ—¶é—´ç‰‡ï¼š\n");
-    scanf("%d",&T);
-    for(i=1;i<=n;i++)      //æ”¶é›†è¿›ç¨‹ä¿¡æ¯
-    {
-        process[i].sc=0;
-        printf("\n%d:\nè¯·ä¾æ¬¡è¾“å…¥è¿›ç¨‹çš„ä¿¡æ¯\nè¯·è¾“å…¥pn:",i);
-        scanf("%d",&process[i].pn);
-        printf("è¯·è¾“å…¥at:");
-        scanf("%d",&process[i].at);
-        printf("è¯·è¾“å…¥st:");
-        scanf("%d",&process[i].st);
-        process[i].st1=process[i].st;
+#define N 50   // ¶¨Òå×î´ó½ø³ÌÊı
+
+struct PCB {
+    int pn;   // ½ø³ÌÃû×Ö
+    int at;   // µ½´ïÊ±¼ä
+    int st;   // ·şÎñÊ±¼ä
+    int ct;   // Íê³ÉÊ±¿Ì
+    int sc;   // ±êÖ¾ÊÇ·ñÍê³É
+    int st1;  // Ê£Óà·şÎñÊ±¼ä
+} process[N];  // ´´½¨ PCB ½á¹¹ÌåÀàĞÍÊı×é process
+
+void sjp(int n) {
+
+    int i, j, T;
+    printf("\nÇëÊäÈëÊ±¼äÆ¬£º\n");
+    scanf("%d", &T);
+    for (i = 1; i <= n; i++) {
+        process[i].sc = 0;  // ³õÊ¼»¯ËùÓĞ½ø³ÌµÄ×´Ì¬ÎªÎ´Íê³É
+        printf("\n%d:\nÇëÒÀ´ÎÊäÈë½ø³ÌµÄĞÅÏ¢\nÇëÊäÈë½ø³ÌÃû×Ö:", i);
+        scanf("%d", &process[i].pn);    // ÊäÈë½ø³ÌÃû×Ö
+        printf("ÇëÊäÈëµ½´ïÊ±¼ä:");
+        scanf("%d", &process[i].at);    // ÊäÈëµ½´ïÊ±¼ä
+        printf("ÇëÊäÈë·şÎñÊ±¼ä:");
+        scanf("%d", &process[i].st);    // ÊäÈë·şÎñÊ±¼ä
+        process[i].st1 = process[i].st; // ³õÊ¼»¯Ê£Óà·şÎñÊ±¼äÎª·şÎñÊ±¼ä
     }
-    for(i=1;i<=n;i++)
-    for(j=i+1;j<=n;j++)   //æŒ‰ç…§å„è¿›ç¨‹åˆ°è¾¾æ—¶é—´å‡åºï¼Œå¯¹è¿›ç¨‹æ’åº æ³¨æ„ï¼šç¨³å®šçš„æ’åº
-    {
-        if(process[j].at<process[i].at)
-        {
-            process[0]=process[j];
-            process[j]=process[i];
-            process[i]=process[0];
-        }
-    }
-    //for(i=1;i<=n;i++)    //æ£€æŸ¥æ’åºæ˜¯å¦æ­£ç¡®
-    //printf("%d\t",process[i].pn);
 
-    int time=process[1].at;      //å½“å‰æ—¶é—´çš„åˆå€¼
-    int flag=1;
-    int sum=0;                  //è®°å½•å®Œæˆçš„è¿›ç¨‹æ•°
-    printf("\nç¬¬å‡ æ¬¡è°ƒåº¦è¿›ç¨‹ è¿è¡Œçš„è¿›ç¨‹pn å¼€å§‹è¿è¡Œæ—¶é—´ è¿è¡Œæ—¶é—´ å‰©ä½™æœåŠ¡æ—¶é—´ ç»“æŸæ—¶é—´\n");
-    int z=1;   //è®°å½•ç¬¬å‡ æ¬¡è°ƒåº¦è¿›ç¨‹
+    // °´ÕÕ¸÷½ø³Ìµ½´ïÊ±¼äÉıĞò£¬¶Ô½ø³ÌÅÅĞò
+    for (i = 1; i <= n; i++)
+        for (j = i + 1; j <= n; j++)
+            if (process[j].at < process[i].at) {
+                // ½»»»½ø³Ì i ºÍ½ø³Ì j µÄÎ»ÖÃ
+                process[0] = process[j];
+                process[j] = process[i];
+                process[i] = process[0];
+            }
 
-    while(sum<n)
-    {
-        flag=0;         //æ ‡å¿—å°±ç»ªé˜Ÿåˆ—ä¸­æ˜¯å¦è¿˜æœ‰è¿›ç¨‹
-        for(i=1to n;i++)    //æ—¶é—´ç‰‡è½®è½¬æ³•æ‰§è¡Œå„è¿›ç¨‹
-        {
-            if(process[i].sc==1) continue;  //å·²å®Œæˆçš„è¿›ç¨‹
-            else
-             {
-                if(process[i].st1<=T&&time>=process[i].at)//æœªå®Œæˆçš„è¿›ç¨‹ä½†æ˜¯è¿˜éœ€æœåŠ¡çš„æ—¶é—´å°‘äºç­‰äºä¸€ä¸ªæ—¶é—´ç‰‡
-                {
-                flag=1;
-                time=time+process[i].st1;
-                process[i].sc=1;
-                process[i].ct=time;
-                printf("%-10d%-10d%-10d%-10d%-10d%-10d\n",z++,process[i].pn,time-process[i].st1,process[i].st1,0,time);
-                process[i].st1=0;
+    int time = process[1].at;   // ³õÊ¼»¯Ê±¼äÎªµÚÒ»¸ö½ø³Ìµ½´ïµÄÊ±¼ä
+    int flag = 1;
+    int sum = 0;
+    printf("\n   µ÷¶È½ø³Ì´ÎÊı ÔËĞĞµÄ½ø³Ì ¿ªÊ¼ÔËĞĞÊ±¼ä ÔËĞĞÊ±¼ä Ê£Óà·şÎñÊ±¼ä ½áÊøÊ±¼ä\n");
+    int z = 1;
+
+    while (sum < n) {
+        flag = 0;
+        for (i = 1; i <= n; i++) {
+            if (process[i].sc == 1) continue;   // Èç¹û½ø³ÌÒÑ¾­Íê³É£¬ÔòÌø¹ı
+            else {
+                if (process[i].st1 <= T && time >= process[i].at) {   // ÅĞ¶ÏÊÇ·ñÄÜ¹»Ò»´ÎĞÔÔËĞĞÍê¸Ã½ø³Ì
+                    flag = 1;
+                    time = time + process[i].st1;   // ¸üĞÂÊ±¼ä
+                    process[i].sc = 1;   // ±êÖ¾¸Ã½ø³ÌÒÑÍê³É
+                    process[i].ct = time;   // ¼ÇÂ¼¸Ã½ø³ÌÍê³ÉÊ±¿Ì
+                    printf("Time:%-10d%-10d%-10d%-10d%-10d%-10d\n", z++, process[i].pn, time - process[i].st1,
+                           process[i].st1, 0, time);    // Êä³ö½ø³Ìµ÷¶ÈĞÅÏ¢
+                    process[i].st1 = 0;   // ¸üĞÂÊ£Óà·şÎñÊ±¼äÎª 0
+                } else if (process[i].st1 > T && time >= process[i].at) {   // ÅĞ¶ÏÊÇ·ñĞèÒª·Ö¶à´ÎÔËĞĞ
+                    flag = 1;
+                    time = time + T;    // ¸üĞÂÊ±¼ä
+                    process[i].st1 -= T;   // ¸üĞÂÊ£Óà·şÎñÊ±¼ä
+                    printf("Time:%-10d%-10d%-10d%-10d%-10d%-10d\n", z++, process[i].pn, time - T, T, process[i].st1,
+                           time);   // Êä³ö½ø³Ìµ÷¶ÈĞÅÏ¢
                 }
-
-                else if(process[i].st1>T&&time>=process[i].at)//æœªå®Œæˆçš„è¿›ç¨‹ä½†å…¶è¿˜éœ€æœåŠ¡æ—¶é—´è‡³å°‘å¤§äºä¸€ä¸ªæ—¶é—´ç‰‡
-                {
-                    flag=1;
-                    time=time+T;
-                    process[i].st1-=T;
-                    printf("%-10d%-10d%-10d%-10d%-10d%-10d\n",z++,process[i].pn,time-T,T,process[i].st1,time);
-                }
-                if(process[i].sc==1) sum++;     //ä¸€ä¸ªè¿›ç¨‹æ‰§è¡Œå®Œå°±+1
+                if (process[i].sc == 1) sum++;   // Èç¹û¸Ã½ø³ÌÒÑÍê³É£¬ÔòÀÛ¼ÓÒÑÍê³ÉµÄ½ø³ÌÊıÁ¿
             }
         }
 
-        if(flag==0&&sum<n)   // è¿˜æœ‰æ²¡æ‰§è¡Œçš„è¿›ç¨‹ï¼Œä¸”æ²¡è¿›å…¥å°±å°±ç»ªé˜Ÿåˆ—
-        {
-        for(i=1;i<=n;i++)
-        if(process[i].sc==0) {time=process[i].at;break;}
+        if (flag == 0 && sum < n) {
+            for (i = 1; i <= n; i++)
+                if (process[i].sc == 0) {
+                    time = process[i].at;   // Èç¹ûµ±Ç°Ã»ÓĞ½ø³Ì¿ÉÒÔµ÷¶È£¬ÇĞ»»µ½ÏÂÒ»¸öÎ´Íê³ÉµÄ½ø³Ì
+                    break;
+                }
         }
+
     }
 }
 
-int main()
-{
+int main() {
     int n;
-    printf("\t\tæ—¶é—´ç‰‡è½®è½¬è°ƒåº¦ç®—æ³•\n");
-    printf("è¯·è¾“å…¥æ€»è¿›ç¨‹æ•°ï¼š\n");
-    scanf("%d",&n);
+    printf("\t\tÊ±¼äÆ¬ÂÖ×ªµ÷¶ÈËã·¨\n");
+    printf("ÇëÊäÈë×Ü½ø³ÌÊı£º\n");
+    scanf("%d", &n);
     sjp(n);
     return 0;
 }

@@ -23,9 +23,8 @@ public class SingleLinkList {
 
     public void addFirst(int data) //头插法
     {
-        SingleNode pos = phead;
         SingleNode temp = new SingleNode(data);
-        temp.next = pos;
+        temp.next = phead;
         phead = temp;
     }
 
@@ -191,7 +190,7 @@ public class SingleLinkList {
         phead = null;
     }
 
-    public void reverseList() //翻转链表
+    public void Reverse() //翻转链表
     {
         if (phead == null) {
             System.out.println("错误:空链表");
@@ -296,9 +295,9 @@ public class SingleLinkList {
         if (pos == null) {
             return null;
         }
-        SingleNode newheadS = new SingleNode(-1);
+        SingleNode newheadS = new SingleNode(-1);//小于x的
         SingleNode S_pos = newheadS;
-        SingleNode newheadB = new SingleNode(-1);
+        SingleNode newheadB = new SingleNode(-1);//大于x的
         SingleNode B_pos = newheadB;
         while (pos != null) {
             if (pos.data > x) {
@@ -319,12 +318,12 @@ public class SingleLinkList {
     public static void main(String[] args) {
         SingleLinkList ls1 = new SingleLinkList();
         ls1.addFirst(30);
+        ls1.addFirst(30);
         ls1.addLast(20);
         ls1.addLast(30);
         ls1.addLast(40);
         ls1.addLast(5);
         ls1.display();
-        ls1.display(ls1.partition(10));
 
         ls1.clear();
     }
