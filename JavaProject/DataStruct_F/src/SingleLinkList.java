@@ -300,7 +300,7 @@ public class SingleLinkList {
         SingleNode newheadB = new SingleNode(-1);//大于x的
         SingleNode B_pos = newheadB;
         while (pos != null) {
-            if (pos.data > x) {
+            if (pos.data >= x) {
                 B_pos.next = pos;
                 B_pos = B_pos.next;
             } else {

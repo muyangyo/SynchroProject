@@ -74,12 +74,10 @@ public class DLinkList {
     //查找是否包含关键字key是否在单链表当中
     public boolean contains(int key) {
         DListNode temp = head;
-        if (temp == null)
-            return false;
+        if (temp == null) return false;
 
         while (temp != null) {
-            if (temp.val.compareTo(key) == 0)
-                return true;
+            if (temp.val.compareTo(key) == 0) return true;
             temp = temp.next;
         }
         return false;
@@ -87,22 +85,75 @@ public class DLinkList {
 
     //删除第一次出现关键字为key的节点
     public void remove(int key) {
-
+        if (head == null) {
+            System.out.println("空指针!");
+            return;
+        }
+        DListNode cur = head;
+        while (cur != null) {
+            if (cur.val.compareTo(key) == 0) {
+                if (cur == head && head == tail) {
+                    clear();
+                    return;
+                } else if (cur == head) {
+                    removeFirst();
+                    return;
+                } else if (cur == tail) {
+                    removeLast();
+                    return;
+                } else {
+                    cur.next.prev = cur.prev;
+                    cur.prev.next = cur.next;
+                    return;
+                }
+            }
+            cur = cur.next;
+        }
     }
 
     //头删
-    public void removeFirst() {
-
+    private void removeFirst() {
+        if (head == null) {
+            System.out.println("空指针!");
+            return;
+        }
+        head = head.next;
+        head.prev = null;
     }
 
     //尾删
-    public void removeLast() {
-
+    private void removeLast() {
+        if (tail == null) {
+            System.out.println("空指针");
+            return;
+        }
+        tail.prev.next = null;
+        tail = tail.prev;
     }
-    
+
 
     //删除所有值为key的节点
     public void removeAllKey(int key) {
+        if (head == null) {
+            System.out.println("空指针!");
+            return;
+        }
+        DListNode cur = head;
+        while (cur != null) {
+            if (cur.val.compareTo(key) == 0) {
+                if (cur == head && head == tail) {
+                    clear();
+                } else if (cur == head) {
+                    removeFirst();
+                } else if (cur == tail) {
+                    removeLast();
+                } else {
+                    cur.next.prev = cur.prev;
+                    cur.prev.next = cur.next;
+                }
+            }
+            cur = cur.next;
+        }
     }
 
     //得到单链表的长度
@@ -128,6 +179,7 @@ public class DLinkList {
             System.out.print(temp.val + " | ");
             temp = temp.next;
         }
+        System.out.println();
     }
 
     public void clear() {
@@ -141,9 +193,23 @@ public class DLinkList {
         list.addLast(2);
         list.addLast(3);
         list.addLast(4);
+        list.addLast(2);
+        list.addLast(2);
         list.addLast(5);
-        list.addIndex(2, 23);
         list.display();
+
+        list.remove(1);
+        list.display();
+
+        list.remove(3);
+        list.display();
+
+        list.remove(5);
+        list.display();
+
+        list.removeAllKey(2);
+        list.display();
+
         list.clear();
     }
 }
