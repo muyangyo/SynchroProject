@@ -92,6 +92,19 @@ public class MyStack {
         return true;
     }
 
+    public boolean IsPopOrder(int[] pushA, int[] popA) {
+        Stack<Integer> stack = new Stack<>();
+        int flag = 1;
+        int i = 0;
+        int j = 0;
+        while(flag != 0){
+            if(i < pushA.length){
+                stack.push(pushA[i]);
+                i++;
+            }
+            //if ()
+        }
+    }
 
     public static void main(String[] args) {
         MyStack stack = new MyStack();
