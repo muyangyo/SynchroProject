@@ -20,3 +20,4 @@ cmake-build-debug/
 *.user
 *.ipch
 CProject/TestForSchool/CMakeLists.txt
+SchoolProject/T230414_1/CMakeLists.txt
