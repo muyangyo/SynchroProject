@@ -289,6 +289,22 @@ public class SingleLinkList {
         return newhead;
     }
 
+    public static boolean hasCycle(SingleNode head) {
+        if (head == null) {
+            return false;
+        }
+        SingleNode fast = head;
+        SingleNode slow = head;
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+            if (fast == slow) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public SingleNode partition(int x) //链表分割
     {
         SingleNode pos = phead;
