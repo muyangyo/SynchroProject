@@ -92,19 +92,22 @@ public class MyStack {
         return true;
     }
 
-   /* public boolean IsPopOrder(int[] pushA, int[] popA) {
+    public boolean IsPopOrder(int[] pushA, int[] popA) {
         Stack<Integer> stack = new Stack<>();
-        int flag = 1;
-        int i = 0;
-        int j = 0;
-        while(flag != 0){
-            if(i < pushA.length){
-                stack.push(pushA[i]);
-                i++;
+
+        int exit = 0;
+        for (int Index = 0; Index < pushA.length; Index++) {
+            int temp = stack.push(pushA[Index]);
+            while (exit < popA.length && temp == popA[exit]) {
+                //对上后的更新
+                exit++;
+                stack.pop();//丢去对上的元素
+                if (!stack.isEmpty())
+                    temp = stack.peek();
             }
-            //if ()
         }
-    }*/
+        return stack.isEmpty();
+    }
 
     public static void main(String[] args) {
         MyStack stack = new MyStack();
