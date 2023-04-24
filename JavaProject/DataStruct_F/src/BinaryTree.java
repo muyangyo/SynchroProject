@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 创建于 IntelliJ IDEA.
  * 描述：
@@ -7,7 +10,7 @@
  */
 public class BinaryTree {
     static class BinaryNode {
-        public char val;
+        public int val;
         public BinaryNode left;
         public BinaryNode right;
 
@@ -16,20 +19,43 @@ public class BinaryTree {
         }
     }
 
-    /*//根 -> 左 -> 右
-    public static void 前序打印() {
-
+    //前序打印:根 -> 左 -> 右
+    public static void preOrder(BinaryNode root) {
+        if (root == null)
+            return;
+        System.out.println(root.val);
+        preOrder(root.left);
+        preOrder(root.right);
     }
 
-    //左 -> 根 -> 右
-    public static void 中序打印() {
-
+    public static List<Integer> ret = new ArrayList<>();
+    public static List<Integer> preOrder1(BinaryNode root) {
+        if (root == null)
+            return null;
+        ret.add(root.val);
+        preOrder1(root.left);
+        preOrder1(root.right);
+        return ret;
     }
 
-    //左 -> 右 -> 根
-    public static void 后续打印() {
 
-    }*/
+    //中序打印:左 -> 根 -> 右
+    public static void inOrder(BinaryNode root) {
+        if (root == null)
+            return;
+        inOrder(root.left);
+        System.out.println(root.val);
+        inOrder(root.right);
+    }
+
+    //后序打印:左 -> 右 -> 根
+    public static void postOrder(BinaryNode root) {
+        if (root == null)
+            return;
+        postOrder(root.left);
+        postOrder(root.right);
+        System.out.println(root.val);
+    }
 
     public static BinaryNode CreateTree() {
         BinaryNode A = new BinaryNode('A');
@@ -50,6 +76,8 @@ public class BinaryTree {
         return A;
     } //创建了8个结点
 
+
+    //算结点数
     public static int SizeNull(BinaryNode root) {
         int ret = 0;
         if (root == null) {
@@ -69,7 +97,6 @@ public class BinaryTree {
 
     //求叶子结点数
     public static int CountForLeaf = 0;
-
     public static int LeafNodeCount(BinaryNode root) {
         if (root == null) {
             return 0;
@@ -92,14 +119,4 @@ public class BinaryTree {
         count += LeafNodeCountRet(root.left);
         return count;
     }
-
-    public static void main(String[] args) {
-        BinaryNode root = BinaryTree.CreateTree();
-        System.out.println(SizeNull(root));
-        System.out.println(Size(root));
-        System.out.println(LeafNodeCount(root));
-        System.out.println(LeafNodeCountRet(root));
-    }
-
-
 }
