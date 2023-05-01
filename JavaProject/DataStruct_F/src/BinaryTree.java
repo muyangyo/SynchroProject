@@ -293,6 +293,41 @@ public class BinaryTree {
         return true;
     }
 
+    //通过 前序遍历 与 中序遍历 构造二叉树
+    public BinaryNode buildTree1(int[] preorder, int[] inorder) {
+        return null;
+    }
+
+    //通过 后序遍历 与 中序遍历 构造二叉树
+    public BinaryNode buildTree2(int[] inorder, int[] postorder) {
+        return null;
+    }
+
+    //二叉树的最近公共祖先
+    public BinaryNode lowestCommonAncestor(BinaryNode root, BinaryNode p, BinaryNode q) {
+        return null;
+    }
+
+    //二叉树前序非递归遍历实现
+    public static void preOrderNor(BinaryNode root) {
+
+    }
+
+    //二叉树中序非递归遍历实现
+    public static void inOrderNor(BinaryNode root) {
+
+    }
+
+    //二叉树后序非递归遍历实现
+    public static void postOrderNor(BinaryNode root) {
+
+    }
+
+    //根据二叉树创建字符串
+    public String tree2str(BinaryNode root) {
+
+    }
+
     //这是一个 ,使用特殊情况帮我测试一下,看看是否会出错
     public static void main(String[] args) {
         BinaryNode root = CreateTree();
