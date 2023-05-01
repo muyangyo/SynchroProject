@@ -1,6 +1,3 @@
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * 创建于 IntelliJ IDEA.
  * 描述：
@@ -156,6 +153,7 @@ public class BinaryTree {
         return retL == null ? retR : retL;
     }
 
+    //相同的树
     public boolean isSameTree(BinaryNode p, BinaryNode q) {
         //先对根判断避免为空的情况
         if (p == null && q == null) {
@@ -184,19 +182,120 @@ public class BinaryTree {
         return true;
     }
 
+    //是否为子树
     public boolean isSubtree(BinaryNode root, BinaryNode subRoot) {
         if (root == null)//空树是不可能为任何树的父树的
             return false;
         if (subRoot == null)//空树是任何树的子树
             return true;
-        if (isSameTree(root, subRoot))
+        if (isSameTree(root, subRoot))//判断当前这棵树是否可能是子树
             return true;
-        return isSubtree(root.left, subRoot) || isSubtree(root.right, subRoot);
+
+        //判断子树是否可能为子树
+        if (isSubtree(root.left, subRoot))
+            return true;
+        if (isSubtree(root.right, subRoot))
+            return true;
+        return false;
+    }
+
+    //翻转树
+    public static BinaryNode invertTree(BinaryNode root) {
+        if (root == null)
+            return null;
+        BinaryNode TempR = root.right;
+        BinaryNode TempL = root.left;
+
+        root.right = TempL;
+        root.left = TempR;
+
+        invertTree(TempR);
+        invertTree(TempL);
+
+        return root;
+    }
+
+    //判断是否是平衡树
+    public boolean isBalanced(BinaryNode root) {
+        //递归结束条件
+        if (root == null)
+            return true;
+        //普通结点的判断
+        int LHeight = getHeight(root.left);
+        int RHeight = getHeight(root.right);
+
+        return Math.abs(LHeight - RHeight) < 2 &&
+                isBalanced(root.left) && isBalanced(root.right);
+    }
+
+    //判断是否是平衡树
+    public boolean isBalanced2(BinaryNode root) {
+        //递归结束条件
+        if (root == null)
+            return true;
+        //普通结点的判断
+        int LHeight = getHeight(root.left);
+        int RHeight = getHeight(root.right);
+
+        if (Math.abs(LHeight - RHeight) > 1) //否定的逻辑则可提前判断
+            return false;
+        return isBalanced2(root.left) && isBalanced2(root.right);
+    }
+
+    //判断是否是平衡树的高效解法 O(n)
+    public boolean isBalanced3(BinaryNode root) {
+        //递归结束条件
+        if (root == null)
+            return true;
+        //普通结点的判断
+        int LHeight = getHForisBalanced(root.left);
+        int RHeight = getHForisBalanced(root.right);
+
+        return getHForisBalanced(root) >= 0;
+    }
+
+    public static int getHForisBalanced(BinaryNode root) {
+        if (root == null) return 0;
+        int L = getHForisBalanced(root.left);
+        int R = getHForisBalanced(root.right);
+
+        if (L >= 0 && R >= 0 && Math.abs(L - R) < 2)
+            return 1 + Math.max(L, R);
+        else
+            return -1;
+    }
+
+    //对称二叉树
+    public boolean isSymmetric(BinaryNode root) {
+        if (root == null) return true;
+        return isSymmetricChild(root.left, root.right);
+    }
+
+    public static boolean isSymmetricChild(BinaryNode root1, BinaryNode root2) {
+        if (root1 == null && root2 != null || root1 != null && root2 == null) return false;
+        if (root1 == null && root2 == null) return true; //由于对于任何结点来说,为空一定是相同的,而且也是为排除空指针异常问题
+        if (root1.val != root2.val) return false;
+        return isSymmetricChild(root1.left, root2.right) && isSymmetricChild(root1.right, root2.left);
+    }
+
+    //先序遍历字符串创建二叉树
+    public static void CreateTreeByPre(BinaryNode root) {
+
+    }
+
+    //层序遍历
+    public static void levelOrder(BinaryNode root) {
+
+    }
+
+    // 判断一棵树是不是完全二叉树
+    public static boolean isCompleteTree(BinaryNode root) {
+        return true;
     }
 
     //这是一个 ,使用特殊情况帮我测试一下,看看是否会出错
     public static void main(String[] args) {
         BinaryNode root = CreateTree();
-        System.out.println(FindValue_pro(root, 'H').val);
+
     }
 }
