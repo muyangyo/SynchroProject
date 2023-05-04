@@ -1,3 +1,8 @@
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+
 /**
  * 创建于 IntelliJ IDEA.
  * 描述：
@@ -19,7 +24,7 @@ public class BinaryTree {
     //前序打印:根 -> 左 -> 右
     public static void preOrder(BinaryNode root) {
         if (root == null) return;
-        System.out.println(root.val);
+        System.out.print(root.val + " ");
         preOrder(root.left);
         preOrder(root.right);
     }
@@ -171,13 +176,11 @@ public class BinaryTree {
         //再对左右树进行判断
         boolean flagL = false;
         flagL = isSameTree(p.left, q.left);
-        if (flagL == false)
-            return false;
+        if (flagL == false) return false;
 
         boolean flagR = false;
         flagR = isSameTree(p.right, q.right);
-        if (flagR == false)
-            return false;
+        if (flagR == false) return false;
 
         return true;
     }
@@ -192,17 +195,14 @@ public class BinaryTree {
             return true;
 
         //判断子树是否可能为子树
-        if (isSubtree(root.left, subRoot))
-            return true;
-        if (isSubtree(root.right, subRoot))
-            return true;
+        if (isSubtree(root.left, subRoot)) return true;
+        if (isSubtree(root.right, subRoot)) return true;
         return false;
     }
 
     //翻转树
     public static BinaryNode invertTree(BinaryNode root) {
-        if (root == null)
-            return null;
+        if (root == null) return null;
         BinaryNode TempR = root.right;
         BinaryNode TempL = root.left;
 
@@ -218,21 +218,18 @@ public class BinaryTree {
     //判断是否是平衡树
     public boolean isBalanced(BinaryNode root) {
         //递归结束条件
-        if (root == null)
-            return true;
+        if (root == null) return true;
         //普通结点的判断
         int LHeight = getHeight(root.left);
         int RHeight = getHeight(root.right);
 
-        return Math.abs(LHeight - RHeight) < 2 &&
-                isBalanced(root.left) && isBalanced(root.right);
+        return Math.abs(LHeight - RHeight) < 2 && isBalanced(root.left) && isBalanced(root.right);
     }
 
     //判断是否是平衡树
     public boolean isBalanced2(BinaryNode root) {
         //递归结束条件
-        if (root == null)
-            return true;
+        if (root == null) return true;
         //普通结点的判断
         int LHeight = getHeight(root.left);
         int RHeight = getHeight(root.right);
@@ -245,8 +242,7 @@ public class BinaryTree {
     //判断是否是平衡树的高效解法 O(n)
     public boolean isBalanced3(BinaryNode root) {
         //递归结束条件
-        if (root == null)
-            return true;
+        if (root == null) return true;
         //普通结点的判断
         int LHeight = getHForisBalanced(root.left);
         int RHeight = getHForisBalanced(root.right);
@@ -259,10 +255,8 @@ public class BinaryTree {
         int L = getHForisBalanced(root.left);
         int R = getHForisBalanced(root.right);
 
-        if (L >= 0 && R >= 0 && Math.abs(L - R) < 2)
-            return 1 + Math.max(L, R);
-        else
-            return -1;
+        if (L >= 0 && R >= 0 && Math.abs(L - R) < 2) return 1 + Math.max(L, R);
+        else return -1;
     }
 
     //对称二叉树
@@ -278,14 +272,50 @@ public class BinaryTree {
         return isSymmetricChild(root1.left, root2.right) && isSymmetricChild(root1.right, root2.left);
     }
 
-    //先序遍历字符串创建二叉树
-    public static void CreateTreeByPre(BinaryNode root) {
+    //先序遍历字符串创建二叉树 https://www.nowcoder.com/practice/4b91205483694f449f94c179883c1fef?tpId=60&&tqId=29483&rp=1&ru=/activity/oj&qru=/ta/tsing-kaoyan/question-ranking
+    static int sub = 0;
 
+    public static BinaryNode CreateTreeByPre(BinaryNode root, String exp) {
+        if (sub >= exp.length()) return null; //可以不要,因为二叉树的结构会自动结束(sub最好还是定义在外面,因为使用值传递会比较麻烦,返回到某个结点时,值并不会变)
+        char temp = exp.charAt(sub);
+        sub++;
+        if (temp == '#') {
+            return null;
+        }
+        BinaryNode node = new BinaryNode(temp);
+        node.left = CreateTreeByPre(node, exp);
+        node.right = CreateTreeByPre(node, exp);
+        return node;
     }
 
     //层序遍历
-    public static void levelOrder(BinaryNode root) {
+    public static List<List<Character>> levelOrder(BinaryNode root) {
+        Queue<BinaryNode> queue1 = new LinkedList<>();
+        Queue<BinaryNode> queue2 = new LinkedList<>();
+        Queue[] queues = {queue1, queue2};//用于存储元素
 
+        List<List<Character>> Ret = new ArrayList<>();//返回用
+        //为什么不能使用 2 的 N 次方 去判断在哪层呢?--因为有空结点的情况
+        int change = 0; //变换队列
+        if (root != null) queue1.offer(root);
+        else return null; //可以不要,因为Ret默认为空
+        while (!queue1.isEmpty() || !queue2.isEmpty()) {
+            List<Character> list = new ArrayList<>();
+            while (!queues[change].isEmpty()) {
+                BinaryNode temp = (BinaryNode) queues[change].poll();
+                //System.out.print(temp.val + " ");
+                //处理返回值
+                list.add(temp.val);
+                //处理子树
+                if (temp.left != null) //避免null指针进入
+                    queues[(change + 1) % 2].offer(temp.left);
+                if (temp.right != null) //避免null指针进入
+                    queues[(change + 1) % 2].offer(temp.right);
+            }
+            change = (change + 1) % 2; //一次使用一个队列,如果在0循环的位置就改为1了,那就继续判断为同一层了,会造成数据丢失(还没出完一个队列就换了)
+            Ret.add(list);
+        }
+        return Ret;
     }
 
     // 判断一棵树是不是完全二叉树
@@ -325,12 +355,12 @@ public class BinaryTree {
 
     //根据二叉树创建字符串
     public String tree2str(BinaryNode root) {
-
+        return null;
     }
 
     //这是一个 ,使用特殊情况帮我测试一下,看看是否会出错
     public static void main(String[] args) {
         BinaryNode root = CreateTree();
-
+        levelOrder(root);
     }
 }
