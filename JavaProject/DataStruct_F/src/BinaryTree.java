@@ -44,7 +44,7 @@ public class BinaryTree {
     public static void inOrder(BinaryNode root) {
         if (root == null) return;
         inOrder(root.left);
-        System.out.println(root.val);
+        System.out.print(root.val + " ");
         inOrder(root.right);
     }
 
@@ -53,7 +53,7 @@ public class BinaryTree {
         if (root == null) return;
         postOrder(root.left);
         postOrder(root.right);
-        System.out.println(root.val);
+        System.out.print(root.val + " ");
     }
 
     public static BinaryNode CreateTree() {
@@ -304,7 +304,7 @@ public class BinaryTree {
             while (!queues[change].isEmpty()) {
                 BinaryNode temp = (BinaryNode) queues[change].poll();
                 //System.out.print(temp.val + " ");
-                //处理返回值
+                //处理行值
                 list.add(temp.val);
                 //处理子树
                 if (temp.left != null) //避免null指针进入
@@ -320,12 +320,40 @@ public class BinaryTree {
 
     // 判断一棵树是不是完全二叉树
     public static boolean isCompleteTree(BinaryNode root) {
-        return true;
-    }
+        Queue<BinaryNode> queue1 = new LinkedList<>();
+        Queue<BinaryNode> queue2 = new LinkedList<>();
+        Queue[] queues = {queue1, queue2};//用于存储元素
 
-    //通过 前序遍历 与 中序遍历 构造二叉树
-    public BinaryNode buildTree1(int[] preorder, int[] inorder) {
-        return null;
+        int change = 0; //变换队列
+        if (root != null) queue1.offer(root);
+        else return true; //空树就是一个完全二叉树
+
+        boolean flag = true;
+        while (!queue1.isEmpty() || !queue2.isEmpty()) {
+            while (!queues[change].isEmpty()) {
+                BinaryNode temp = (BinaryNode) queues[change].peek();
+                if (temp == null) {
+                    flag = false;
+                    break;
+                }
+                //空结点照样会进队列,只要有null就丢进去,不能放在 poll 后,因为会多弹出一个 null 结点
+                temp = (BinaryNode) queues[change].poll();
+                //System.out.print(temp.val + " ");
+                //处理子树
+                queues[(change + 1) % 2].offer(temp.left);
+                queues[(change + 1) % 2].offer(temp.right);
+            }
+            if (!flag) break;
+            change = (change + 1) % 2; //一次使用一个队列,如果在0循环的位置就改为1了,那就继续判断为同一层了,会造成数据丢失(还没出完一个队列就换了)
+        }
+        //出现 null 结点,直接去判还有没有不为 null 的结点(要排除第一个有值的情况),但是会出现一种特殊情况,所以必须把两个队列都出完
+        change = 0;
+        while (!queue1.isEmpty() || !queue2.isEmpty()) {
+            if (queue1.isEmpty()) change = 1;//为空了,就直接换另一个出队,直到两个都出队完成
+            BinaryNode temp = (BinaryNode) queues[change].poll();
+            if (temp != null) return false;
+        }
+        return true;
     }
 
     //通过 后序遍历 与 中序遍历 构造二叉树
@@ -360,7 +388,5 @@ public class BinaryTree {
 
     //这是一个 ,使用特殊情况帮我测试一下,看看是否会出错
     public static void main(String[] args) {
-        BinaryNode root = CreateTree();
-        levelOrder(root);
     }
 }
