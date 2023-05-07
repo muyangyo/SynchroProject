@@ -8,9 +8,12 @@ package ForOJ;
  * Time: 22:15
  */
 public class SolutionMethod {
+
     //通过 前序遍历 与 中序遍历 构造二叉树
     public static TreeNode buildTree1(int[] preorder, int[] inorder) {
-        return Helper_Pre_In(inorder, 0, inorder.length - 1, preorder);
+        TreeNode Ret = Helper_Pre_In(inorder, 0, inorder.length - 1, preorder);
+        PrePos = 0;//重置为0,便于下次调用
+        return Ret;
     }
 
     /**
@@ -28,9 +31,9 @@ public class SolutionMethod {
     static int PrePos = 0; //由于二叉树的递归的变量有 停留性 ,我们要保持一个变量一直在变,那就要在外面定义
 
     public static TreeNode Helper_Pre_In(int[] inorder, int InStart, int InEnd, int[] preorder) {
-        if (inorder == null || preorder == null) return null; //排除空数组造成的空指针异常
+        if (inorder == null || preorder == null || inorder.length != preorder.length) return null; //排除空数组造成的空指针异常
         //终止条件(回返条件)
-        if (InStart > InEnd || InStart > inorder.length || InEnd < 0) return null;//正好置空
+        if (InStart > InEnd || InStart >= inorder.length || InEnd < 0) return null;//正好置空
         TreeNode root = new TreeNode(preorder[PrePos]);//处理当前结点本身
         PrePos++;
 
@@ -48,9 +51,32 @@ public class SolutionMethod {
         return -1;//没找到
     }
 
-    public static void main(String[] args) {
-        int[] ints1 = {-1};
-        int[] ints2 = {-1};
-        buildTree1(ints1, ints2);
+
+    //通过 后序遍历 与 中序遍历 构造二叉树
+    public static TreeNode buildTree2(int[] inorder, int[] postorder) {
+        PostPos = postorder.length - 1;//初始化和重置效果
+        TreeNode Ret = Helper_Post_In(inorder, 0, inorder.length - 1, postorder);
+        return Ret;
     }
+
+    static int PostPos = 0;
+
+    public static TreeNode Helper_Post_In(int[] inorder, int InStart, int InEnd, int[] postorder) {
+        if (inorder == null || postorder == null || inorder.length != postorder.length) return null; //排除空数组造成的空指针异常
+        //终止条件(回返条件)
+        if (InStart > InEnd || InStart >= inorder.length || InEnd < 0) return null;//正好置空
+        TreeNode root = new TreeNode(postorder[PostPos]);//处理当前结点本身
+        PostPos--;
+
+        int InRootPos = Search(inorder, root.val);
+
+        //注意: 要先构建右树再构建左树
+        root.right = Helper_Post_In(inorder, InRootPos + 1, InEnd, postorder);//将右边的所有结点看成一个结点,即为右树
+        root.left = Helper_Post_In(inorder, InStart, InRootPos - 1, postorder);//将左边的所有结点看成一个结点,即为左树
+
+
+        return root;
+    }
+
+
 }

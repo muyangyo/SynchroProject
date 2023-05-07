@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 /**
  * 创建于 IntelliJ IDEA.
@@ -18,6 +15,11 @@ public class BinaryTree {
 
         public BinaryNode(char data) {
             val = data;
+        }
+
+        @Override
+        public String toString() {
+            return "BinaryNode{" + val + '}';
         }
     }
 
@@ -356,37 +358,196 @@ public class BinaryTree {
         return true;
     }
 
-    //通过 后序遍历 与 中序遍历 构造二叉树
-    public BinaryNode buildTree2(int[] inorder, int[] postorder) {
-        return null;
+    public static void InitStack(Stack<BinaryNode> stack) {
+        while (!stack.empty()) {
+            stack.pop();
+        }
     }
 
     //二叉树的最近公共祖先
-    public BinaryNode lowestCommonAncestor(BinaryNode root, BinaryNode p, BinaryNode q) {
+    static Stack<BinaryNode> stackp = new Stack<>();
+    static Stack<BinaryNode> stackq = new Stack<>();
+
+    public static BinaryNode lowestCommonAncestor(BinaryNode root, BinaryNode p, BinaryNode q) {
+        if (root == null) return null;
+        InitStack(stackp);//初始化和重置stack
+        InitStack(stackq);//初始化和重置stack
+
+        //寻找路径
+        SearchNodePre(root, p, stackp);
+        SearchNodePre(root, q, stackq);
+
+        //选出多出来的路径
+        int sizep = stackp.size();
+        int sizeq = stackq.size();
+        Stack<BinaryNode> Big = sizep > sizeq ? stackp : stackq;
+        int DifferenceValue = Math.abs(sizep - sizeq);
+        while (DifferenceValue != 0) {
+            Big.pop();
+            DifferenceValue--;
+        }
+
+        while (!stackp.isEmpty() && !stackq.isEmpty()) {
+            BinaryNode TP = stackp.pop();
+            BinaryNode TQ = stackq.pop();
+            if (TP == TQ) return TP;
+        }
         return null;
     }
 
-    //二叉树前序非递归遍历实现
-    public static void preOrderNor(BinaryNode root) {
+    public static boolean SearchNodePre(BinaryNode root, BinaryNode key, Stack<BinaryNode> stack) {
+        stack.push(root);//先入栈,看看是不是冗余结点,冗余就弹出
+        if (root == null) return false;
+        if (root == key) return true;
 
+        boolean ret1 = SearchNodePre(root.left, key, stack);//搜索左树
+        if (ret1) return true;
+        else stack.pop();//弹出多余结点
+
+        boolean ret2 = SearchNodePre(root.right, key, stack);//搜索右树
+        if (ret2) return true;
+        else stack.pop();//弹出多余结点
+
+        return false;
+    }
+
+
+    //二叉树前序非递归遍历实现
+    //三个的核心思想都是走到左边的底
+    public static void preOrderNor(BinaryNode root) {
+        if (root == null) return;//空树直接返回
+        BinaryNode cur = root;
+
+        Stack<BinaryNode> stack = new Stack<>();
+        stack.push(cur);
+        boolean first = true;
+        while (!stack.isEmpty() || cur != null) {
+            while (cur != null) {
+                System.out.print(cur.val + " ");
+                if (!first) {
+                    stack.push(cur);
+                }
+                first = false;
+                cur = cur.left;
+            }
+            //cur == null 时
+            cur = stack.pop().right;
+        }
+        System.out.println();
     }
 
     //二叉树中序非递归遍历实现
     public static void inOrderNor(BinaryNode root) {
+        if (root == null) return;//空树直接返回
+        BinaryNode cur = root;
 
+        Stack<BinaryNode> stack = new Stack<>();
+        stack.push(cur);
+        boolean first = true;
+        while (!stack.isEmpty() || cur != null) {
+            while (cur != null) {
+
+                if (!first) {
+                    stack.push(cur);
+                }
+                first = false;
+                cur = cur.left;
+            }
+            //cur == null 时
+            System.out.print(stack.peek().val + " ");
+            cur = stack.pop().right;
+        }
+        System.out.println();
     }
 
     //二叉树后序非递归遍历实现
     public static void postOrderNor(BinaryNode root) {
+        if (root == null) return;//空树直接返回
+        BinaryNode cur = root;
 
+        Stack<BinaryNode> stack = new Stack<>();
+        stack.push(cur);
+        BinaryNode PreNode = null;
+        boolean first = true;
+        while (!stack.isEmpty() || cur != null) {
+            while (cur != null) {
+                if (!first) {
+                    stack.push(cur);
+                }
+                first = false;
+                cur = cur.left;
+            }
+            //cur == null 时
+            BinaryNode temp = stack.peek();
+            //右树也为 null 时,代表没有右树/已经打印过的右树
+            if (temp.right == null || temp.right == PreNode) {
+                temp = stack.pop();
+                System.out.print(temp.val + " ");
+                PreNode = temp;
+            } else {
+                cur = temp.right;
+            }
+        }
+        System.out.println();
     }
 
     //根据二叉树创建字符串
     public String tree2str(BinaryNode root) {
-        return null;
+        StringBuilder sb = new StringBuilder();
+        tree2strHelper(root, sb);
+        return sb.toString();
     }
+
+    public static void tree2strHelper(BinaryNode root, StringBuilder sb) {
+        //回返条件
+        if (root == null) return;
+        sb.append(root.val + "(");
+
+        if (root.left == null || root.right == null) //判断子节点是否缺失
+        {
+            //处理缺失情况下的根节点
+            if (root.left == null && root.right == null) //两个子树都是空的情况,就直接删前一个括号,不需要处理
+            {
+                sb.deleteCharAt(sb.length() - 1);
+                sb.append(")");
+            } else if (root.left == null) //左树为空时
+            {
+                sb.append(")(");//不用处理左树了,直接加一对括号即可
+                //处理右树
+                tree2strHelper(root.right, sb);
+                sb.append(")");
+
+            } else //右树为空时
+            {
+                //处理左树
+                tree2strHelper(root.left, sb);
+                sb.append(")");
+
+                //右树直接不用管了
+            }
+        } else //左右树都存在的情况,直接处理
+        {   //处理左树
+            tree2strHelper(root.left, sb);
+
+            //处理右树
+            sb.append("(");
+            tree2strHelper(root.right, sb);
+        }
+    }
+
 
     //这是一个 ,使用特殊情况帮我测试一下,看看是否会出错
     public static void main(String[] args) {
+        BinaryNode root = CreateTree();
+        preOrderNor(root);
+        preOrder(root);
+        System.out.println();
+        System.out.println("---------------中序打印--------------");
+        inOrderNor(root);
+        inOrder(root);
+        System.out.println();
+        System.out.println("---------------后序打印--------------");
+        postOrderNor(root);
+        postOrder(root);
     }
 }
