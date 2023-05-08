@@ -501,37 +501,45 @@ public class BinaryTree {
     public static void tree2strHelper(BinaryNode root, StringBuilder sb) {
         //回返条件
         if (root == null) return;
-        sb.append(root.val + "(");
+        sb.append(root.val);  //为什么不加 "(",因为可能出现左右子树都为空的情况,这时候是不需要括号的
 
         if (root.left == null || root.right == null) //判断子节点是否缺失
         {
             //处理缺失情况下的根节点
-            if (root.left == null && root.right == null) //两个子树都是空的情况,就直接删前一个括号,不需要处理
+            if (root.left == null && root.right == null) //两个子树都是空的情况
             {
-                sb.deleteCharAt(sb.length() - 1);
-                sb.append(")");
-            } else if (root.left == null) //左树为空时
+                //不需要执行任何东西
+            }
+            else if (root.left == null) //左树为空时
             {
-                sb.append(")(");//不用处理左树了,直接加一对括号即可
+                sb.append("()(");//不用处理左树了,直接加一对括号即可
                 //处理右树
                 tree2strHelper(root.right, sb);
                 sb.append(")");
 
-            } else //右树为空时
+            }
+            else //右树为空时
             {
                 //处理左树
+                sb.append("(");
                 tree2strHelper(root.left, sb);
                 sb.append(")");
 
                 //右树直接不用管了
             }
-        } else //左右树都存在的情况,直接处理
-        {   //处理左树
+        }
+        else //左右树都存在的情况,直接处理
+        {
+            //处理左树
+            sb.append("(");
             tree2strHelper(root.left, sb);
+            sb.append(")");
 
             //处理右树
             sb.append("(");
             tree2strHelper(root.right, sb);
+            sb.append(")");
+
         }
     }
 
