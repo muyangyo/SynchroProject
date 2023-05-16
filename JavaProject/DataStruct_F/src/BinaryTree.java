@@ -276,7 +276,6 @@ public class BinaryTree {
 
     //先序遍历字符串创建二叉树 https://www.nowcoder.com/practice/4b91205483694f449f94c179883c1fef?tpId=60&&tqId=29483&rp=1&ru=/activity/oj&qru=/ta/tsing-kaoyan/question-ranking
     static int sub = 0;
-
     public static BinaryNode CreateTreeByPre(BinaryNode root, String exp) {
         if (sub >= exp.length()) return null; //可以不要,因为二叉树的结构会自动结束(sub最好还是定义在外面,因为使用值传递会比较麻烦,返回到某个结点时,值并不会变)
         char temp = exp.charAt(sub);
