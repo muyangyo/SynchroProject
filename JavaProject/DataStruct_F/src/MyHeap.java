@@ -1,5 +1,4 @@
 import java.util.Arrays;
-import java.util.PriorityQueue;
 
 /**
  * 创建于 IntelliJ IDEA.
@@ -58,8 +57,7 @@ public class MyHeap {
                  */
                 parent = child;
                 child = parent * 2 + 1;
-            }
-
+            } else break;
             //如果没有比根大的子树,那这棵树就不需要动了
         }
 
@@ -120,9 +118,14 @@ public class MyHeap {
         return Elem[0];
     }
 
-    public static void main(String[] args) {
-        int[] ints = {27, 15, 19, 18, 28, 34, 65, 49, 25, 37};
-        MyHeap myHeap = CreateBigHeap(ints);
-         
+    public static int[] HeapSort(int[] ints) {
+        MyHeap Heap = CreateBigHeap(ints);//时间复杂度 n
+
+        for (int i = 0; i < ints.length; i++) {
+            Heap.poll();//每次向下调整是 logn
+        }
+
+        //所以总时间复杂度是 O( n + n*logn )
+        return Heap.Elem;
     }
 }
