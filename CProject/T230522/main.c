@@ -32,6 +32,7 @@ int main() {
     memory = (Page *) malloc(sizeof(Page) * memoryNum);
 
     for (i = 0; i < pageNum; i++) {
+        getchar();
         printf("第%d个页面号为: ", i);
         scanf("%d", &pages[i].num);
         pages[i].time = 0;      // 等待时间开始默认为0
@@ -104,10 +105,10 @@ int main() {
                     memory[replaceIndex].num = pages[i].num;
                     print(memory);
                 }
-            }   //end for
+            }
             missRate = (float) missNum / pageNum;
             printf("缺页次数：%d   缺页率:  %f\n", missNum, missRate);
-        }// end if
+        }
 
         if (c == 'l') {         // LRU页面置换
             missNum = 0;
@@ -158,10 +159,10 @@ int main() {
                         }
                     }
                 }
-            }   //end for
+            }
             missRate = (float) missNum / pageNum;
             printf("缺页次数：%d   缺页率:  %f\n", missNum, missRate);
-        }   // end if
+        }
 
     } while (c == 'f' || c == 'l' || c == 'o');
 
