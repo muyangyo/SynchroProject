@@ -58,16 +58,18 @@ public class Sort {
         int[] arr1 = {1, 2, 3, 4, 5}; // 预期输出: [1, 2, 3, 4, 5]
         int[] arr2 = {5, 4, 3, 2, 1}; // 预期输出: [1, 2, 3, 4, 5]
         int[] arr3 = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5}; // 预期输出: [1, 1, 2, 3, 3, 4, 5, 5, 5, 6, 9]
+        int[] arr4 = {2, 5, 6, 3, 3}; // 预期输出:[2, 3, 3, 5, 6]
 
         //排序测试
-        shellSort(arr1);
-        shellSort(arr2);
-        shellSort(arr3);
-
+        insertSort(arr1);
+        insertSort(arr2);
+        insertSort(arr3);
+        insertSort(arr4);
 
         System.out.println(Arrays.toString(arr1));
         System.out.println(Arrays.toString(arr2));
         System.out.println(Arrays.toString(arr3));
+        System.out.println(Arrays.toString(arr4));
     }
 
 }
