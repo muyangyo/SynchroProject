@@ -1,0 +1,152 @@
+<!-- HTML -->
+<div class="slider">
+  <ul class="slides">
+    <li><img src="01.jpg"></li>
+    <li><img src="02.gif"></li>
+    <li><img src="03.jpg"></li>
+  </ul>
+  <div class="nav">
+    <span class="dot"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+  </div>
+  <a class="prev" href="#">&#10094;</a>
+  <a class="next" href="#">&#10095;</a>
+</div>
+
+<!-- CSS -->
+<style>
+.slider {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.slides {
+  overflow: hidden;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.slides li {
+  float: left;
+}
+
+.nav {
+  position: absolute;
+  bottom: 0;
+  text-align: center;
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin: 0 5px;
+  background-color: #bbb;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.dot.active {
+  background-color: #04e6ff; 
+}
+
+.prev,
+.next {
+  position: absolute;
+  top: 50%;
+  display: inline-block;
+  padding: 10px;
+  color: #fff;
+  font-size: 30px;
+  font-weight: bold;
+  transition: 0.6s ease;
+  cursor: pointer;
+}
+
+.prev:hover,
+.next:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.prev {
+  left: 0;
+}
+
+.next {
+  right: 0;
+}
+
+</style>
+
+<!-- JavaScript -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+  var slideIndex = 1;
+  showSlides(slideIndex);
+
+  // 控制自动播放
+  var autoPlay = setInterval(function() {
+    plusSlides(1);
+  }, 3000);
+
+  // 监听箭头点击事件
+  $('.prev').click(function() {
+    clearInterval(autoPlay);
+    plusSlides(-1);
+    autoPlay = setInterval(function() {
+      plusSlides(1);
+    }, 3000);
+  });
+
+  $('.next').click(function() {
+    clearInterval(autoPlay);
+    plusSlides(1);
+    autoPlay = setInterval(function() {
+      plusSlides(1);
+    }, 3000);
+  });
+
+  // 监听轮播点点击事件
+  $('.dot').click(function() {
+    clearInterval(autoPlay);
+    var dotIndex = $(this).index() + 1;
+    showSlides(slideIndex = dotIndex);
+    autoPlay = setInterval(function() {
+      plusSlides(1);
+    }, 3000);
+  });
+
+  // 控制上下一张图片的切换
+  function plusSlides(n) {
+    showSlides(slideIndex += n);
+  }
+
+  // 控制当前显示图片的下标和轮播点导航状态
+  function showSlides(n) {
+    var slides = $('.slides li');
+    var dots = $('.dot');
+    if (n > slides.length) {
+      slideIndex = 1;
+    }
+    if (n < 1) {
+      slideIndex = slides.length;
+    }
+    for (var i = 0; i < slides.length; i++) {
+      slides.eq(i).hide();
+    }
+    for (var i = 0; i < dots.length; i++) {
+      dots.eq(i).removeClass('active');
+    }
+    slides.eq(slideIndex - 1).show();
+    dots.eq(slideIndex - 1).addClass('active');
+  }
+});
+</script>

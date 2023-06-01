@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>菜单</title>
+	<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<style>
+		body {
+  font-family: Arial, sans-serif;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 10px;
+}
+
+.menu_head {
+  background-color: #f2f2f2;
+  border-radius: 5px;
+  color: #333;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.menu_head.current {
+  background-color: #ccc;
+}
+
+.menu_body a {
+  color: #666;
+  display: block;
+  padding: 5px 20px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.menu_body a:hover {
+  background-color: #f2f2f2;
+}
+
+.cursor {
+  cursor: pointer;
+}
+
+	</style>
+</head>
+<body>
+	<ul>
+		<li>
+			<p class="menu_head">主菜单一</p>
+			<div class="menu_body">
+				<a href="#">子菜单1</a>
+				<a href="#">子菜单2</a>
+				<a href="#">子菜单3</a>
+			</div>
+		</li>
+		<li>
+			<p class="menu_head">主菜单二</p>
+			<div class="menu_body">
+				<a href="#">子菜单1</a>
+				<a href="#">子菜单2</a>
+				<a href="#">子菜单3</a>
+			</div>
+		</li>
+	</ul>
+
+	<script>
+		$(document).ready(function() {
+    $('.menu_head').click(function() {
+        $(this).toggleClass("current");
+        $(this).next(".menu_body").slideToggle(500);
+        var li_siblings = $(this).parent('li').siblings('li');
+        li_siblings.children('p').removeClass("current");
+        li_siblings.children('div').slideUp(500);
+    });
+    
+    $('a').hover(
+        function() {
+            $(this).addClass("cursor");
+        },
+        function() {
+            $(this).removeClass("cursor");
+        }
+    );
+
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.menu_head').length) {
+            $('.menu_head').removeClass('current');
+            $('.menu_body').slideUp(500);
+        }
+    });
+});
+	</script>
+</body>
+</html>

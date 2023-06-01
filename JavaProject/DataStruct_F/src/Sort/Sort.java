@@ -1,6 +1,7 @@
 package Sort;
 
 import java.util.Arrays;
+import java.util.Stack;
 
 /**
  * 创建于IntelliJ IDEA.
@@ -77,10 +78,12 @@ public class Sort {
 
     public static void quickSort(int[] arr) {
         //递归版
-        intervalReduction(arr, 0, arr.length - 1);
+        //intervalReduction(arr, 0, arr.length - 1);
+        //非递归版
+        intervalReductionNonRec(arr, 0, arr.length - 1);
     }
 
-    //区间缩进--递归版
+    //区间缩小--递归版
     public static void intervalReduction(int[] arr, int start, int end) {
         //回返条件
         if (start >= end) return;
@@ -94,9 +97,50 @@ public class Sort {
         //调整当前阶段(使得在 基准的左边的 比基准小,在 基准的右边的 比基准大或者相等
         int AdjustedBaselineSubscript = IntervalAdjustment(arr, start, end);
 
-        //区间缩进
+        //区间缩小
         intervalReduction(arr, start, AdjustedBaselineSubscript - 1);//调整左边
         intervalReduction(arr, AdjustedBaselineSubscript + 1, end);//调整右边
+    }
+
+    //区间缩小--非递归版
+    public static void intervalReductionNonRec(int[] arr, int start, int end) {
+        if (arr == null) return;//先排除为 null 的情况
+        Stack<Integer> stack = new Stack<>();
+        //先压入要 处理的完整范围
+        stack.push(start);
+        stack.push(end);
+
+        while (!stack.isEmpty()) {
+            //取要调整的区间
+            end = stack.pop();//由于我们先压入的是 头 ,后压入 尾 ,那么取数据就要先取 尾 ,再取 头 .
+            start = stack.pop();
+
+            //三数取中
+            int mid = midOfThree(arr, start, end);
+
+            //取中后,将基准设在 start下标处
+            swap(arr, start, mid);
+
+            //调整当前阶段(使得在 基准的左边的 比基准小,在 基准的右边的 比基准大或者相等
+            int AdjustedBaselineSubscript = IntervalAdjustment(arr, start, end);
+
+            //区间缩小
+            //先压入右边的 (因为我们要模仿递归的思路,将 左边 处理完再回来处理 右边)
+            //一个区间至少要有 两个元素 (一个元素调整自己没有意义)
+            if (end - (AdjustedBaselineSubscript + 1) > 0) {
+                stack.push(AdjustedBaselineSubscript + 1);
+                stack.push(end);
+            }
+
+            //再压入左边的,使得其下次优先处理 左边的
+            //一个区间至少要有 两个元素 (一个元素调整自己没有意义)
+            if ((AdjustedBaselineSubscript - 1) - start > 0) {
+                stack.push(start);
+                stack.push(AdjustedBaselineSubscript - 1);
+            }
+
+        }
+
     }
 
     //三数取中(区间划分)---取 中间数 使得区间更加平均,使得排序整体更加高效
@@ -112,7 +156,7 @@ public class Sort {
         else if ((arr[mid] > arr[start] && arr[mid] < arr[end]) || (arr[mid] < arr[start] && arr[mid] > arr[end])) {
             return mid;
         }
-        //end下标 为中间值 或 三个相等
+        //end下标 为中间值 或 三个相等 或 其他情况
         else return end;
     }
 
@@ -141,6 +185,8 @@ public class Sort {
         arr[Old] = arr[New];
         arr[New] = temp;
     }
+
+
 
     public static void main(String[] args) {
         int[] arr1 = {1, 2, 3, 4, 5}; // 预期输出: [1, 2, 3, 4, 5]
