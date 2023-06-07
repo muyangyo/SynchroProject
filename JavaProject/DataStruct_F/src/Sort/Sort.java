@@ -1,7 +1,6 @@
 package Sort;
 
-import java.util.Arrays;
-import java.util.Stack;
+import java.util.*;
 
 /**
  * 创建于IntelliJ IDEA.
@@ -278,6 +277,98 @@ public class Sort {
 
     public static void countArray(int[] arr) {
 
+        //先遍历一遍找范围区间
+        int minVal = arr[0];//不能使用 0 初始化,会导致最小值出问题
+        int maxVal = arr[0];
+        for (int i = 1; i < arr.length; i++) {
+            if (arr[i] < minVal) minVal = arr[i];
+            if (arr[i] > maxVal) maxVal = arr[i];
+        }
+
+        int[] ints = new int[maxVal - minVal + 1];//创建一个数组,统计元素
+
+        //统计元素,遍历原数组
+        for (int i = 0; i < arr.length; i++) {
+            int index = arr[i] - minVal; //以 val - minVal 为下标统计元素
+            ints[index]++;
+        }
+
+        //重新排序原数组
+        int index = 0;
+        for (int i = 0; i < ints.length; i++) {
+            while (ints[i] > 0) {
+                arr[index] = i + minVal;
+                index++;//原数组向后
+                ints[i]--;//弹出元素
+            }
+        }
+    }
+
+    public static void RadixSort(int[] arr) {
+        //获取数组中最大数字的位数，并将其作为排序的次数
+        int times = getMaxDigit(arr);
+
+        Queue<Integer>[] queues = new Queue[10];//十进制都是 0 - 9 构成的,所以只需要10个队列即可
+        //实例化对象,由于类数组不像普通的整形数组,它未初始化时为 null,不是为 0
+        for (int i = 0; i < queues.length; i++) {
+            queues[i] = new LinkedList<Integer>();
+        }
+
+        for (int Time = 1; Time <= times; Time++) {
+
+            //遍历,入队
+            for (int i = 0; i < arr.length; i++) {
+                int index = getNum(arr[i], Time);
+                queues[index].offer(arr[i]);
+            }
+
+            //出队,重排
+            int index = 0;
+            int i = 0;
+            while (index < queues.length) {
+                //不能用 if ,因为可能有多个元素
+                while (!queues[index].isEmpty()) {
+                    arr[i] = queues[index].poll();
+                    i++;
+                }
+                index++;
+            }
+
+        }
+
+    }
+
+    /**
+     * 从整数 x 中获取从右往左数第 digit 位数字
+     *
+     * @param x     要获取数字的整数
+     * @param digit 要获取的数字位数，从右往左数，最右边是第 1 位
+     * @return 整数 x 中从右往左数第 digit 位的数字
+     */
+    private static int getNum(int x, int digit) {
+        int digitNum = 0;
+        while (digit > 0) {
+            digitNum = x % 10;
+            x /= 10;
+            digit--;
+        }
+        return digitNum;
+    }
+
+    private static int getMaxDigit(int[] arr) {
+        arr = Arrays.copyOf(arr, arr.length);
+        int maxDigit = 0;//最长的数字
+        for (int i = 0; i < arr.length; i++) {
+            int count = 0;
+            //算位数
+            while (arr[i] != 0) {
+                arr[i] /= 10;
+                count++;
+            }
+            if (count > maxDigit) maxDigit = count;
+        }
+
+        return maxDigit;
     }
 
 
@@ -294,21 +385,25 @@ public class Sort {
         int[] arr2 = {5, 4, 3, 2, 1}; // 预期输出: [1, 2, 3, 4, 5]
         int[] arr3 = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5}; // 预期输出: [1, 1, 2, 3, 3, 4, 5, 5, 5, 6, 9]
         int[] arr4 = {2, 5, 6, 3, 3}; // 预期输出:[2, 3, 3, 5, 6]
+        int[] arr5 = {123, 222, 111, 298, 988, 277}; // 预期输出:[111, 123, 222, 277, 298, 988]
 
         //排序测试
         mergeSort(arr1);
         mergeSort(arr2);
         mergeSort(arr3);
         mergeSort(arr4);
+        mergeSort(arr5);
 
-        Test(arr1, arr2, arr3, arr4);
+        Test(arr1, arr2, arr3, arr4, arr5);
     }
 
-    public static void Test(int[] arr1, int[] arr2, int[] arr3, int[] arr4) {
+    public static void Test(int[] arr1, int[] arr2, int[] arr3, int[] arr4, int[] arr5) {
         System.out.println("第一个测试案例: " + ((Arrays.toString(arr1).equals("[1, 2, 3, 4, 5]")) ? "通过" : "不通过"));
         System.out.println("第二个测试案例: " + ((Arrays.toString(arr2).equals("[1, 2, 3, 4, 5]")) ? "通过" : "不通过"));
         System.out.println("第三个测试案例: " + ((Arrays.toString(arr3).equals("[1, 1, 2, 3, 3, 4, 5, 5, 5, 6, 9]")) ? "通过" : "不通过"));
         System.out.println("第四个测试案例: " + ((Arrays.toString(arr4).equals("[2, 3, 3, 5, 6]")) ? "通过" : "不通过"));
+        System.out.println("第五个测试案例: " + ((Arrays.toString(arr5).equals("[111, 123, 222, 277, 298, 988]")) ? "通过" : "不通过"));
+
     }
 
 }
