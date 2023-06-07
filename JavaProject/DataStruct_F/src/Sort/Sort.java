@@ -178,6 +178,108 @@ public class Sort {
         return end;
     }
 
+    public static void heapSort(int[] arr) {
+        createBigHeap(arr);//先建立好大根堆
+        //八个元素,调整 7 次 就够了,所以是 7 6 5 4 3 2 1
+        for (int times = arr.length - 1; times > 0; times--) {
+            swap(arr, 0, times);//将最大的元素放到最后面(和堆的删除类似)
+            shiftDown(arr, 0, times);//再次恢复大根堆状态,由于我们只动了 根 这棵树,所以只要调整这棵树即可
+        }
+    }
+
+    public static void createBigHeap(int[] arr) {
+        for (int parent = ((arr.length - 1) - 1) / 2; parent >= 0; parent--) {
+            shiftDown(arr, parent, arr.length);
+        }
+    }
+
+
+    private static void shiftDown(int[] arr, int parent, int len) { //注意这里 len 取代了 usedSize
+        //这里为了实现功能提高效率,所以使用 范围(len) 进行缩范,因为我们每次都对UsedSize的长度进行调整,因为我们没有写poll操作
+        int child = parent * 2 + 1;
+        while (child < len) {
+            if ((child + 1 < len) && (arr[child + 1] > arr[child])) {
+                child = child + 1;
+            }
+            if (arr[child] > arr[parent])
+                swap(arr, child, parent);
+            else break;
+            parent = child;
+            child = parent * 2 + 1;
+        }
+    }
+
+    public static void mergeSort(int[] arr) {
+        mergeSortHelper(arr, 0, arr.length - 1);
+    }
+
+    /*
+     * 使用归并排序算法对数组arr的从left到right（左闭右闭区间）进行排序
+     * @param left 子数组的左边界
+     * @param right 子数组的右边界
+     */
+    private static void mergeSortHelper(int[] arr, int left, int right) {
+        //回返条件
+        if (left >= right) return;//当左边界遇见或者超过右边界时,回返.(子数组中只有一个或零个元素)
+
+        //拆分
+        int mid = (left + right) / 2;
+
+        mergeSortHelper(arr, left, mid); //不能使用mid-1,后面会报错,会遇见"下标-1"的问题
+        mergeSortHelper(arr, mid + 1, right);
+        merge(arr, left, mid, right);//合并
+    }
+
+    private static void merge(int[] arr, int left, int mid, int right) {
+        //左数组范围
+        int leftStart = left;
+        int leftEnd = mid;
+        //右数组范围
+        int rightStart = mid + 1;
+        int rightEnd = right;
+
+
+        int[] Temp = new int[right - left + 1];//暂时数组
+        int index = 0;//暂时数组的下标
+        //双数组合并
+
+        while ((leftStart <= leftEnd) && (rightStart <= rightEnd)) {
+
+            if (arr[leftStart] < arr[rightStart]) {
+                Temp[index] = arr[leftStart];
+                leftStart++;
+            } else {
+                Temp[index] = arr[rightStart];
+                rightStart++;
+            }
+
+            index++;
+        }
+        //处理剩下的数据
+        //如果剩下左数组
+        while (leftStart <= leftEnd) {
+            Temp[index] = arr[leftStart];
+            index++;
+            leftStart++;
+        }
+        //如果剩下有数组
+        while (rightStart <= rightEnd) {
+            Temp[index] = arr[rightStart];
+            index++;
+            rightStart++;
+        }
+
+
+        //将排序好的元素从临时数组复制回原始数组
+        for (int i = 0; i < Temp.length; i++) {
+            arr[i + left] = Temp[i];//arr不能直接用i,因为在右边的时候,是从 "left" 下标开始的,并不是 "0" 下标开始的
+        }
+    }
+
+    public static void countArray(int[] arr) {
+
+    }
+
 
     //数组元素交换
     public static void swap(int[] arr, int Old, int New) {
@@ -187,7 +289,6 @@ public class Sort {
     }
 
 
-
     public static void main(String[] args) {
         int[] arr1 = {1, 2, 3, 4, 5}; // 预期输出: [1, 2, 3, 4, 5]
         int[] arr2 = {5, 4, 3, 2, 1}; // 预期输出: [1, 2, 3, 4, 5]
@@ -195,10 +296,10 @@ public class Sort {
         int[] arr4 = {2, 5, 6, 3, 3}; // 预期输出:[2, 3, 3, 5, 6]
 
         //排序测试
-        quickSort(arr1);
-        quickSort(arr2);
-        quickSort(arr3);
-        quickSort(arr4);
+        mergeSort(arr1);
+        mergeSort(arr2);
+        mergeSort(arr3);
+        mergeSort(arr4);
 
         Test(arr1, arr2, arr3, arr4);
     }
