@@ -279,6 +279,7 @@ public class Sort {
         }
     }
 
+    //计数排序
     public static void countArray(int[] arr) {
 
         //先遍历一遍找范围区间
@@ -310,6 +311,7 @@ public class Sort {
 
 
 
+    //基数排序
     public static void RadixSort(int[] arr) {
         //获取数组中最大数字的位数，并将其作为排序的次数
         int times = getMaxDigit(arr);
