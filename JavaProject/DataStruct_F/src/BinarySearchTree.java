@@ -5,20 +5,8 @@
  * Date 2023/6/8
  * Time:9:40
  */
-public class BinarySearchTree {
-    static class BinarySearchNode {
-        int val;
-        BinarySearchNode left;
-        BinarySearchNode right;
 
-        public BinarySearchNode(int x) {
-            val = x;
-        }
-    }
-
-    BinarySearchNode root;
-
-    /*
+/*
      public BinarySearchNode search(int x, BinarySearchNode cur) {
         //回返条件
         if (cur == null) return null;
@@ -35,94 +23,108 @@ public class BinarySearchTree {
         return rRet == null ? lRet : rRet;
     } //递归实现
      */
+public class BinarySearchTree {
+    static class BinarySearchNode {
+        int val; //结点中存储的值
+        BinarySearchNode left; //结点的左子树
+        BinarySearchNode right; //结点的右子树
 
+        public BinarySearchNode(int x) {
+            val = x;
+        }
+    }
 
+    BinarySearchNode root; //根结点
+
+    //搜索二叉搜索树中是否存在值为x的结点，如果存在则返回该结点，否则返回null
     public BinarySearchNode search(int x) {
         BinarySearchNode cur = root;
 
         while (cur != null) {
             if (cur.val == x) {
                 return cur;
-            } else if (cur.val < x) {
-                cur = cur.right;//左边数据都比根大
-            } else {
-                cur = cur.left;//右边数据都比根小
+            } else if (cur.val < x) { //如果当前结点的值小于x，则去右子树中查找
+                cur = cur.right;
+            } else { //如果当前结点的值大于x，则去左子树中查找
+                cur = cur.left;
             }
         }
 
-        //cur 为 null 时,则说明找不到该结点
+        //cur 为 null 时，则说明找不到该结点
         return null;
     }
 
+    //在二叉搜索树中插入一个值为x的结点
     public void insert(int x) {
-        if (root == null) //第一次插入元素
-        {
+        if (root == null) { //如果根结点为空，表明是第一次插入元素
             root = new BinarySearchNode(x);
         }
         BinarySearchNode prev = null;
         BinarySearchNode cur = root;
 
-        //由于这是一棵二叉搜索树,所以不存在相同的元素插入,只能插入不同的元素
+        //由于这是一棵二叉搜索树，所以不存在相同的元素插入，只能插入不同的元素
         while (cur != null) {
-            if (cur.val < x) {
+            if (cur.val < x) { //如果当前结点的值小于x，则插入到当前结点的右边
                 prev = cur;
                 cur = cur.right;
-            } else if (cur.val == x) {
-                return;//如果相同,直接返回结束即可
-            } else {
+            } else if (cur.val == x) { //如果当前结点的值等于x，则不插入
+                return;
+            } else { //如果当前结点的值大于x，则插入到当前结点的左边
                 prev = cur;
                 cur = cur.left;
             }
         }
 
-        //cur 为 null 时,则说明 prev 已经处于 叶子结点 的位置
-        if (prev.val < x) prev.right = new BinarySearchNode(x);
-        else prev.left = new BinarySearchNode(x);
+        //cur 为 null 时，则说明prev已经处于叶子结点的位置
+        if (prev.val < x) {
+            prev.right = new BinarySearchNode(x);
+        } else {
+            prev.left = new BinarySearchNode(x);
+        }
     }
 
+    //从二叉搜索树中删除一个值为x的结点
     public void remove(int x) {
-        BinarySearchNode cur = root;
-        BinarySearchNode parent = null;
+        BinarySearchNode cur = root; //当前结点从根结点开始
+        BinarySearchNode parent = null; //父节点初始化为空
 
-        //寻找结点
-        boolean flag = false;
+        //寻找要删除的结点
+        boolean found = false;
         while (cur != null) {
-            if (cur.val < x) {
+            if (cur.val < x) { //如果当前结点的值小于x，则去右子树中查找
                 parent = cur;
                 cur = cur.right;
-            } else if (cur.val == x) {
-                flag = true;
-                break;//相同了,跳出
-            } else {
+            } else if (cur.val == x) { //如果当前结点的值等于x，则找到了要删除的结点
+                found = true;
+                break;
+            } else { //如果当前结点的值大于x，则去左子树中查找
                 parent = cur;
                 cur = cur.left;
             }
 
         }
 
-        //跳出循环后,要不是为 null 要不是为 找到了
-        if (flag) {
+        //跳出循环后，如果found为true，则说明找到了要删除的结点，否则没有找到
+        if (found) {
 
-            //左边为 null 时(全为 null 时,也可以通过这个去解决)
+            //当左子树为空时
             if (cur.left == null) {
-                if (cur == root) {
+                if (cur == root) { //如果要删除的结点为根结点
                     root = cur.right;
-                } else if (cur == parent.left) {
+                } else if (cur == parent.left) { //如果要删除的结点为父节点的左子树
                     parent.left = cur.right;
-                } else //cur == parent.right
-                {
+                } else { //如果要删除的结点为父节点的右子树
                     parent.right = cur.right;
                 }
             }
 
-            //右边为 null 时
+            //当右子树为空时
             else if (cur.right == null) {
-                if (cur == root) {
+                if (cur == root) { //如果要删除的结点为根结点
                     root = cur.left;
-                } else if (cur == parent.left) {
+                } else if (cur == parent.left) { //如果要删除的结点为父节点的左子树
                     parent.left = cur.left;
-                } else //cur == parent.right
-                {
+                } else { //如果要删除的结点为父节点的右子树
                     parent.right = cur.left;
                 }
             }
@@ -155,18 +157,6 @@ public class BinarySearchTree {
             System.out.println("没有该元素");
         }
 
-    }
-
-
-    public static void main(String[] args) {
-        BinarySearchTree tree = new BinarySearchTree();
-        int[] arr = {5, 12, 3, 0, 8, 6, 10};
-        for (int temp : arr) {
-            tree.insert(temp);
-        }
-
-        tree.remove(12);
-        System.out.println();
     }
 
 
