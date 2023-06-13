@@ -20,7 +20,7 @@ public class HashBucket {
         }
     }
 
-    public int usedSize; //元素个数(不是链表头的个数,是全部元素)
+    public int usedSize; //元素个数(不是链表的个数,是全部元素)
     private static final float DEFAULT_LOAD_FACTOR = 0.75f; //默认的负载因子为0.75
 
     public HashBucket() {
@@ -61,7 +61,20 @@ public class HashBucket {
     }
 
     private void resize() {
-        //todo
+        Node[] oldArr = array;
+        array = new Node[oldArr.length * 2];//两倍扩容
+        usedSize = 0;//重置,后面 put 时会增加
+
+        //遍历旧数据,重新哈希
+        for (int i = 0; i < oldArr.length; i++) {
+            Node cur = oldArr[i];
+            while (cur != null) {
+                put(cur.key + 0, cur.value + 0);//重新 放入
+                cur = cur.next;
+            }
+        }
+
+
     }
 
     private float loadFactor() {
