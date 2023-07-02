@@ -1,5 +1,6 @@
 package BookManagementSystem.operations;
 
+import BookManagementSystem.Books.Book;
 import BookManagementSystem.Books.BookList;
 
 import java.util.Scanner;
@@ -12,7 +13,6 @@ import java.util.Scanner;
  * Time: 23:47
  */
 public class BorrowOp implements OPeration {
-
     @Override
     public void work(BookList bookList) {
         Scanner scanner = new Scanner(System.in);
