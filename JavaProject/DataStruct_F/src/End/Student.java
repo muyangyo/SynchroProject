@@ -8,19 +8,18 @@ package End;
  * Time:17:27
  */
 class Student {
-    //私有属性name
-    private String name = "bit";//公有属性age
-    public int age = 18;
+
+    private String name = "MuYang";//私有属性name
+    public int age = 18;//公有属性age
 
     //不带参数的构造方法
     public Student() {
-        System.out.println("Student()");
     }
 
     private Student(String name, int age) {
         this.name = name;
         this.age = age;
-        System.out.println("Student(String,name)");
+        System.out.println("new Student(String,name)");
     }
 
     private void eat() {
@@ -37,7 +36,7 @@ class Student {
 
     @Override
     public String toString() {
-        return "Student{" +
+        return "Student {" +
                 "name='" + name + '\'' +
                 ", age=" + age +
                 '}';
