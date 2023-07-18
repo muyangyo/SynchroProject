@@ -24,3 +24,4 @@ SchoolProject/T230414_1/CMakeLists.txt
 CProject/T230522/CMakeLists.txt
 *.txt
 JavaProject/untitled/lib/mysql-connector-java-5.1.49.jar
+JavaProject/JDBC/lib/mysql-connector-java-5.1.49.jar

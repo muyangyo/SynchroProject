@@ -41,7 +41,7 @@ public class Demo1 {
         //int n = statement.executeQuery();//适用于 查
         System.out.println("n = " + n);
 
-        //5.释放资源
+        //5.释放资源(先创建的 后关闭,后创建的 先关闭)
         statement.close();
         connection.close();
 
