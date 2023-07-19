@@ -12,8 +12,7 @@ public class Demo3 {
         Scanner scanner = new Scanner(System.in);
         //查 的写法
         DataSource dataSource = new MysqlDataSource();
-        ((MysqlDataSource) dataSource).setURL("jdbc:mysql://127.0.0.1:3306/Test230718?characterEncoding=utf8" +
-                "&useSSL=false");
+        ((MysqlDataSource) dataSource).setURL("jdbc:mysql://127.0.0.1:3306/Test230718?characterEncoding=utf8");
         ((MysqlDataSource) dataSource).setUser("root");
         System.out.print("请输入输入密码:");
         String password = scanner.next();
