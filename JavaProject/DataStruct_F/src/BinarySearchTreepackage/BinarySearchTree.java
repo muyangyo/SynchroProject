@@ -1,3 +1,5 @@
+package BinarySearchTreepackage;
+
 /**
  * 创建于IntelliJ IDEA.
  * 描述:
@@ -24,17 +26,17 @@
     } //递归实现
      */
 public class BinarySearchTree {
-    static class BinarySearchNode {
-        int val; //结点中存储的值
-        BinarySearchNode left; //结点的左子树
-        BinarySearchNode right; //结点的右子树
+    static public class BinarySearchNode {
+        public int val; //结点中存储的值
+        public BinarySearchNode left; //结点的左子树
+        public BinarySearchNode right; //结点的右子树
 
         public BinarySearchNode(int x) {
             val = x;
         }
     }
 
-    BinarySearchNode root; //根结点
+    public BinarySearchNode root; //根结点
 
     //搜索二叉搜索树中是否存在值为x的结点，如果存在则返回该结点，否则返回null
     public BinarySearchNode search(int x) {
