@@ -1,3 +1,5 @@
+package Mode;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +10,7 @@ import java.util.List;
  * Date 2023/7/29
  * Time:17:55
  */
+
 public class myBlockingQueue<T> {
     private T[] queue = (T[]) new Object[100];//循环队列
     private volatile int head = 0;//头
