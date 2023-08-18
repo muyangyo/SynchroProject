@@ -5,7 +5,7 @@
  * Date: 2023/4/2
  * Time: 9:53
  */
-public class Main2 {
+public class    Main2 {
     public static void main(String[] args) {
         // 实例化泛型类
         GenericClass<Integer> genericClass = new GenericClass<>();
