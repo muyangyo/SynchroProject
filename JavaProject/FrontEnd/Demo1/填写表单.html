@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ch">
+<head>
+    <meta charset="UTF-8">
+    <title>简介表单</title>
+</head>
+<body>
+
+<h2>请填写简历信息</h2>
+
+<form>
+
+    <label for="name">姓名<input type="text" id="name"> </label>
+    <br>
+
+    性别
+    <input type="radio" checked="checked" name="sex" id="male">
+    <label for="male">
+        <img src="../Img/male.png" width="15">男
+    </label>
+    <input type="radio" name="sex" id="female">
+    <label for="female">
+        <img src="../Img/female.png" width="15">女
+    </label>
+    <br>
+
+    出生日期
+    <select>
+        <option value="">--请选择年份--</option>
+        <option value="">2000</option>
+        <option value="">2001</option>
+        <option value="">2002</option>
+        <option value="">2003</option>
+        <option value="">2004</option>
+    </select>
+    <select>
+        <option value="">--请选择月份--</option>
+        <option value="">1</option>
+        <option value="">2</option>
+        <option value="">3</option>
+        <option value="">4</option>
+        <option value="">5</option>
+        <option value="">6</option>
+        <option value="">7</option>
+        <option value="">8</option>
+        <option value="">9</option>
+        <option value="">10</option>
+        <option value="">11</option>
+        <option value="">12</option>
+    </select>
+    <select>
+        <option value="">--请选择日期--</option>
+        <option value="">1</option>
+        <option value="">2</option>
+        <option value="">3</option>
+        <option value="">4</option>
+        <option value="">5</option>
+    </select>
+    <br>
+
+    <label for="school">就读学校</label><input type="text" id="school">
+    <br>
+
+    应聘岗位
+    <input type="checkbox" id="前端开发"> <label for="前端开发">前端开发</label>
+    <input type="checkbox" id="后端开发"> <label for="后端开发">后端开发</label>
+    <input type="checkbox" id="测试开发"> <label for="测试开发">测试开发</label>
+    <input type="checkbox" id="运维开发"> <label for="运维开发">运维开发</label>
+    <br>
+
+    掌握的技能<textarea rows="3" cols="10"></textarea><!--空格也会有影响,尽量什么都不写(或者回车)-->
+    <br>
+    项目经历 <textarea rows="3"></textarea>
+    <br>
+
+    <input type="checkbox" id="read"><label for="read">
+    <a href="https://www.baidu.com/">我已阅读条例</a></label>
+
+    <h2>请应聘者确认:</h2>
+    <ul>
+        <li>以上信息真实有效</li>
+        <li>接受加班</li>
+        <li>尽早前去公司</li>
+    </ul>
+
+</form>
+
+</body>
+</html>
