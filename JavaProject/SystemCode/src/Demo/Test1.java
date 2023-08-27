@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Time: 14:46
  */
 public class Test1 {
+
     private volatile static int count = 0;
 
     public static void main1(String[] args) throws InterruptedException {
