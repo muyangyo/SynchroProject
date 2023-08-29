@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>全选案例</title>
+    <style>
+        .All {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .selectAll {
+            width: 18px;
+            height: 18px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+
+<div>
+    <label class="All">
+        <input class="selectAll" type="checkbox" onclick="selectAll()">
+        全选
+    </label><br>
+</div>
+
+<input class="select" type="checkbox" onclick="selectOnly()">选项1 <br>
+<input class="select" type="checkbox" onclick="selectOnly()">选项2 <br>
+<input class="select" type="checkbox" onclick="selectOnly()">选项3 <br>
+<input class="select" type="checkbox" onclick="selectOnly()">选项4 <br>
+<input class="select" type="checkbox" onclick="selectOnly()">选项5 <br>
+
+
+</body>
+<script>
+    let OPTs = document.querySelectorAll(".select");
+    let AllOPT = document.querySelector(".selectAll");
+    console.dir(OPTs);//打印对象参数
+
+    function selectAll() {
+        for (let i = 0; i < OPTs.length; i++) {
+            OPTs[i].checked = AllOPT.checked;
+        }
+    }
+
+    function selectOnly() {
+        let flag = true;
+        for (let i = 0; i < OPTs.length; i++) {
+            if (OPTs[i].checked === false) {
+                AllOPT.checked = false;
+                flag = false;
+                break;
+            }
+        }
+        if (flag) //全部被选择了
+        {
+            AllOPT.checked = true;
+        }
+    }
+
+
+</script>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body></body>
+<script>
+    //使用 字面量 创建对象
+    let student = {
+        //成员变量
+        name: "小白",
+        height: 175,
+        weight: 100,
+        //成员方法
+        say: function (Str) {
+            console.log(Str);
+        }
+    }
+    console.log(student.name); //小白
+    student.say("你好"); //你好
+
+    //使用 "构造"方法创建对象
+    function People(name, height, weight) {
+        this.name = name;
+        this.height = height;
+        this.weight = weight;
+        this.say = function (Str) {
+            console.log(Str);
+        }
+    }
+
+    let exp1 = new People("小张", 180, 120);
+    console.log(exp1.name); //小张
+    exp1.say("你好"); // 你好
+
+
+    // ES6开始支持类和继承等等 (了解即可)
+    class 类名 {
+        //构造方法
+        constructor(name, height, weight) {
+            this.name = name;
+            this.height = height;
+            this.weight = weight;
+        }
+
+        //方法
+        say() {
+            console.log("你好!")
+        }
+
+        //静态方法(类的方法)
+        static fun1() {
+            console.log("我是类的方法");
+        }
+
+        //静态成员(类的变量)
+        static id = 10;
+    }
+
+    let exp2 = new 类名("小明", 190, 120);
+
+</script>
+</html>

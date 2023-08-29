@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>计数器</title>
+</head>
+<body>
+
+<input class="countAdd" type="button" onclick="Add()" value="+">
+<input class="count" type="text" value="0">
+<input class="countRed" type="button" onclick="Red()" value="-">
+
+</body>
+<script>
+
+    let count = document.querySelector(".count");
+
+    function Add() {
+        let temp = parseInt(count.value);
+        count.value = temp + 1;
+    }
+
+    function Red() {
+        let temp = parseInt(count.value);
+        count.value = temp - 1;
+    }
+
+</script>
+</html>

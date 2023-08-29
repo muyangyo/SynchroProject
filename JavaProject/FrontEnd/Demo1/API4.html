@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<input class="but1" type="button" value="播放" onclick="but1()">
+
+
+</body>
+<script>
+    //获取元素
+    let but = document.querySelector(".but1");
+
+    //监听事件 (事件源是其本身省略掉了)
+    function but1() {
+        //执行程序
+        if (but.value === "播放") {
+            but.value = "暂停";
+        } else {
+            but.value = "播放";
+        }
+    }
+
+
+</script>
+</html>
