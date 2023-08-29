@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+<script>
+    let num = 10;
+
+    function fun1() {
+        //可重复定义和声明变量
+        let num = 100;
+        console.log(num);
+    }
+
+    function fun2() {
+        //直接使用外部变量
+        console.log(num);
+    }
+
+    fun1();
+    fun2();
+
+    //没有修饰则为全局变量
+    for (j = 0; j < 100; j++) {
+        j += j;
+    }
+    console.log(j);
+
+    //使用 let 或 var 修饰则为局部变量
+    for (let i = 0; i < 100; i++) {
+        i += i;
+    }
+    console.log(i);
+
+</script>
+</html>

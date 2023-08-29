@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ch">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+
+</body>
+<script>
+    /*//函数的创建(声明与定义)
+    function Fun1(x, y) //不能使用 let x,let y
+    {
+        return x + y;//可以没有
+    }
+
+    //函数的调用
+    //正常情况
+    console.log(Fun1(1, 2));
+    //特殊情况
+    console.log(Fun1(1));
+    console.log(Fun1(1, 2, 3));*/
+
+    //特殊的函数创建方式 (将函数赋予给变量,其实就是 function ret() )
+    let ret = function () {
+        let sum = 0;
+        for (let i = 0; i < arguments.length; i++) {
+            sum += arguments[i];
+        }
+        return sum;
+    }
+    console.log(ret(10, 10, 10, 10, 10));
+    console.log(ret());
+    console.log(typeof (ret()));
+    console.log(typeof (ret));
+
+
+</script>
+</html>

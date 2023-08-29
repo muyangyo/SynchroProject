@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ch">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+
+</body>
+<script>
+    // 数组创建方式
+    let arr1 = new Array();// Array 的 A 要大写
+    let arr2 = [1, "你好", 2];// 不要求元素是相同类型
+
+    //  获取数组元素
+    console.log(arr2[1]);
+    console.log(arr1[-10]); // 如果下标超出范围读取元素, 则结果为 undefined
+
+    // 新增数组元素
+    // 方式1 (修改length)
+    console.log(arr1.length);
+    arr1.length = 10;
+    arr1[1] = 1;
+    console.log(arr1);
+
+    //方式2 (直接赋值)
+    let arr3 = new Array();
+    arr3[9] = 1;
+    console.log(arr3)
+
+    //方式3 (push追加)
+    let arr4 = new Array();
+    for (let i = 0; i < 10; i++) {
+        arr4.push(i);
+    }
+    console.log(arr4);
+
+    //数组元素删除
+    var arr = [9, 5, 1, 7];
+    arr.splice(2, 1);// 第一个参数表示从下标为 2 的位置开始删除. 第二个参数表示要删除的元素个数是 1 个
+    console.log(arr);
+
+</script>
+</html>
