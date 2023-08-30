@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div>
+    <p class="p1">这是第一行</p>
+    <p class="p2">这是第二行</p>
+    <p>这是第三行</p>
+    <p>这是第四行</p>
+    <p>这是第五行</p>
+</div>
+</body>
+<script>
+    let node1 = document.createElement("div"); //创建元素节点
+    node1.innerHTML = "这是由JS创建的一个div节点";
+    node1.className = "JSDiv";
+    // (目前只是创建了一个,但是没有插入到 DOM 树中,是不会在浏览器中显示的)
+
+    let parent = document.querySelector("div");
+    parent.appendChild(node1);//使用 appendChild 将节点插入到指定节点的最后一个孩子之后
+
+
+    let node2 = document.createElement("p"); //创建元素节点
+    node2.innerHTML = "这是由JS创建的一个p节点";
+    node2.className = "JSP";
+
+
+    let preciseDest = document.querySelector(".p1");//精准元素
+    parent.insertBefore(node2, preciseDest);//用 insertBefore 将节点插入到指定节点 (preciseDest) 之前.
+
+    delNode = parent.removeChild(document.querySelector(".p2"));//删除元素节点
+
+
+    let node3 = document.createTextNode("你好!");
+    parent.appendChild(node3);
+
+    let node4 = document.createComment("注释!");
+    parent.appendChild(node4);
+
+    let node5 = document.createAttribute("属性");
+    parent.appendChild(node5);
+
+
+</script>
+</html>
