@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>任务清单</title>
+</head>
+<style>
+    body, html {
+        width: 100%;
+        height: 100%;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    .submit {
+        width: 100%;
+        text-align: center;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        height: 50px;
+    }
+
+    .newTaskButton {
+        color: white;
+        font-size: 18px;
+
+        background-color: rgba(255, 166, 2, 0.8);
+        border: rgba(255, 166, 2, 0.8);
+        width: 20%;
+        height: 100%;
+    }
+
+    .newTaskText {
+        width: 60%;
+        height: 100%;
+        text-align: center;
+    }
+
+
+    div p {
+        text-align: center;
+        font-weight: bold;
+        font-size: 20px;
+        margin-top: 2px;
+        margin-bottom: 2px;
+    }
+
+    .todo, .finish {
+        width: 50%;
+        padding: 10px;
+        float: left;
+    }
+
+    .todo {
+        background-color: rgb(217, 230, 255);
+        border-radius: 10px;
+    }
+
+    .finish {
+        background-color: #c6c6c6;
+        border-radius: 10px;
+    }
+
+    .task {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        padding: 5px;
+        width: 100%;
+        border: #000000 2px dashed;
+
+        font-size: 15px;
+    }
+
+    .taskCheck {
+        margin: 5px;
+    }
+
+    .taskDel {
+        float: right;
+        font-size: 15px;
+
+        width: 10%;
+    }
+
+    .taskDel:hover {
+        background-color: #f58080;
+        color: white;
+    }
+</style>
+<body>
+<div class="submit">
+    <input class="newTaskText" type="text">
+    <input class="newTaskButton" type="button" value="新建任务">
+</div>
+<div class="tasks">
+    <div class="todo">
+        <p>未完成</p>
+        <div class="task">
+            <input class="taskCheck" type="checkbox">吃早饭
+            <input class="taskDel" type="button" value="删除">
+        </div>
+        <div class="task">
+            <input class="taskCheck" type="checkbox">吃早饭
+            <input class="taskDel" type="button" value="删除">
+        </div>
+        <div class="task">
+            <input class="taskCheck" type="checkbox">吃早饭
+            <input class="taskDel" type="button" value="删除">
+        </div>
+    </div>
+
+    <div class="finish">
+        <p>已完成</p>
+        <div class="task">
+            <input class="taskCheck" type="checkbox" checked="checked">吃早饭
+            <input class="taskDel" type="button" value="删除">
+        </div>
+    </div>
+</div>
+</body>
+</html>
