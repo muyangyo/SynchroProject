@@ -73,8 +73,71 @@ public class DoublePointer {
 
     }
 
+    //快乐数: https://leetcode.cn/problems/happy-number/description/
+    public static boolean isHappy(int n) {
+        int slow = n;
+        int fast = n;
+        boolean first = true;
+        while (slow != fast || first) {
+            if (first) {
+                first = false;
+            }
+            slow = getSum(slow);//走一步
+            fast = getSum(getSum(fast));//走两步
+        }
+        //相遇了,则说明已经在形成的环的地方相遇.那么只有两种可能
+        //1.两者都为 1
+        //2.两者不为 1
+        if (slow == 1) {
+            return true;
+        }
+        return false;
+    }
+
+    public static int getSum(int x) {
+        int sum = 0;
+        while (x != 0) {
+            int temp = x % 10;
+            sum += temp * temp;
+            x /= 10;
+        }
+        return sum;
+    }
+
+
+    //盛最多水的容器: https://leetcode.cn/problems/container-with-most-water/description/
+    public static int maxArea(int[] height) {
+        int max = 0;
+        int left = 0; //左指针
+        int right = height.length - 1; //右指针
+        while (left < right) //不能等于,因为等于后宽度为 0,面积一定为 0
+        {
+            //由于宽度一直在减小,所以要找高度是比原本高的
+            int area = (right - left) * Math.min(height[left], height[right]);
+            if (area > max) max = area;
+            if (height[left] > height[right]) {
+                int temp = height[right];
+                while (left < right) {
+                    right--;
+                    if (temp < height[right]) {
+                        break;//没有比原本高,则不需要计算
+                    }
+                }
+            } else {
+                int temp = height[left];
+                while (left < right) {
+                    left++;
+                    if (temp < height[left]) {
+                        break;
+                    }
+                }
+            }
+
+        }
+        return max;
+    }
+
     public static void main(String[] args) {
-        int[] arr = {1, 5, 2, 0, 6, 8, 0, 6, 0};
-        duplicateZeros(arr);
+        System.out.println(isHappy(2));
     }
 }
