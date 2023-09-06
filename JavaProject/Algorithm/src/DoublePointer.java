@@ -1,5 +1,7 @@
+import com.sun.javafx.scene.layout.region.SliceSequenceConverter;
+
 import java.lang.reflect.Array;
-import java.util.Arrays;
+import java.util.*;
 
 /**
  * 创建于 IntelliJ IDEA.
@@ -137,7 +139,108 @@ public class DoublePointer {
         return max;
     }
 
+    //有效三角形的个数: https://leetcode.cn/problems/valid-triangle-number/
+    public static int triangleNumber(int[] nums) {
+        Arrays.sort(nums);//必须先排序
+        int ret = 0;
+
+
+        for (int i = nums.length - 1; i > 1; i--) {
+            int left = 0;
+            int right = i - 1;
+            while (left < right) {
+                if (nums[left] + nums[right] > nums[i]) {
+                    ret += (right - left);
+                    right--;//走下一个区间
+                } else {
+                    left++;//走下一个区间
+                }
+            }
+        }
+
+        return ret;
+    }
+
+
+    //剑指 Offer 57. 和为s的两个数字: https://leetcode.cn/problems/he-wei-sde-liang-ge-shu-zi-lcof/
+    public static int[] twoSum(int[] nums, int target) {
+        //该题使用双指针双减法的前提: nums 为递增数组
+        int left = 0;
+        int right = nums.length - 1;
+        while (left < right) {
+            //int sum = nums[left] + nums[right];
+            if (nums[left] + nums[right] > target) {
+                right--;
+            } else if (nums[left] + nums[right] == target) {
+                return new int[]{nums[left], nums[right]};
+            } else {
+                left++;
+            }
+        }
+        return null;
+    }
+
+    //三数之和: https://leetcode.cn/problems/3sum/
+    public static List<List<Integer>> threeSum(int[] nums) {
+        Arrays.sort(nums);//排序
+
+        //寻找数字
+        Set<List<Integer>> set = new HashSet<>();//用于去重
+        for (int j = 0; j <= nums.length - 3; j++) {
+            //内部和 两数和 一样
+            int left = j + 1;
+            int right = nums.length - 1;
+
+            while (left < right) {
+                int temp = nums[left] + nums[right];
+                if (temp + nums[j] > 0) {
+                    right--;
+                } else if (temp + nums[j] == 0) {
+                    List<Integer> list = new ArrayList<>(Arrays.asList(nums[j], nums[left], nums[right]));
+                    set.add(list);
+                    left++;
+                    right--;
+                } else {
+                    left++;
+                }
+            }
+
+        }
+
+        List<List<Integer>> ret = new ArrayList<>(set);
+        return ret;
+    }
+
+    //四数之和: https://leetcode.cn/problems/4sum/
+    public static List<List<Integer>> fourSum(int[] nums, int target) {
+        //与三数和一样,只是多了一层循环而已
+        Arrays.sort(nums);//排序
+
+        Set<List<Integer>> set = new HashSet<>();
+        for (int i = 0; i <= nums.length - 4; i++) {
+            for (int j = i + 1; j <= nums.length - 3; j++) {
+                int left = j + 1;
+                int right = nums.length - 1;
+
+                while (left < right) {
+                    long count = (long) nums[j] + nums[left] + nums[right] + nums[i];
+                    if (count > target) {
+                        right--;
+                    } else if (count == target) {
+                        List<Integer> list = new ArrayList<>(Arrays.asList(nums[i], nums[j], nums[left], nums[right]));
+                        set.add(list);
+                        right--;
+                        left++;
+                    } else {
+                        left++;
+                    }
+                }
+            }
+        }
+        List<List<Integer>> ret = new ArrayList<>(set);
+        return ret;
+    }
+
     public static void main(String[] args) {
-        System.out.println(isHappy(2));
     }
 }
