@@ -1,9 +1,6 @@
 package NetWork;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
@@ -77,7 +74,8 @@ public class TcpEchoServer {
                 String response = process(request);
 
                 // 3. 把响应写回给客户端. 把 OutputStream 使用 PrinterWriter 包裹一下, 方便进行发数据.
-                PrintWriter writer = new PrintWriter(outputStream);
+                OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, "UTF8");
+                PrintWriter writer = new PrintWriter(outputStreamWriter);
                 //    使用 println 带上换行. 后续客户端读取请求, 就可以使用 scanner.next 来获取了
                 writer.println(response);
                 writer.flush();

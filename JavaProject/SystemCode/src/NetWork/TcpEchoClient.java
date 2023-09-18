@@ -10,9 +10,9 @@ import java.util.Scanner;
 public class TcpEchoClient {
     private Socket socket = null;
 
-    // 要和服务器通信, 就需要先知道, 服务器所在的位置.
+
     public TcpEchoClient(String serverIp, int serverPort) throws IOException {
-        // 这个 new 操作完成之后, 就完成了 tcp 连接的建立.
+        //这个 new 操作完成之后, 就完成了 tcp 连接的建立.(有服务器)
         socket = new Socket(serverIp, serverPort);
         start();
     }
@@ -20,7 +20,7 @@ public class TcpEchoClient {
     public void start() {
         System.out.println("客户端启动");
 
-        Scanner structure = new Scanner(System.in);
+        Scanner structure = new Scanner(System.in);//用于构造请求的 Scanner
 
         try (InputStream inputStream = socket.getInputStream();
              OutputStream outputStream = socket.getOutputStream()) {
@@ -37,7 +37,7 @@ public class TcpEchoClient {
                 printWriter.flush();
 
                 // 3. 处理响应
-                Scanner scannerResponse = new Scanner(inputStream);
+                Scanner scannerResponse = new Scanner(inputStream);//用于读取响应的
                 String response = scannerResponse.next();
 
                 // 4. 把响应打印出来(可不要)
