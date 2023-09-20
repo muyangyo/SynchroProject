@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 public class TcpEchoServer {
     private ServerSocket serverSocket = null;
 
-    private ExecutorService service = Executors.newCachedThreadPool();
+    private ExecutorService service = Executors.newCachedThreadPool();//自动调整的线程池
 
     // 设置 服务器端 的端口号
     public TcpEchoServer(int port) throws IOException {
