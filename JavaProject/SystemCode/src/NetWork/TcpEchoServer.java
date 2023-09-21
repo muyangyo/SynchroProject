@@ -25,12 +25,10 @@ public class TcpEchoServer {
             Socket clientSocket = serverSocket.accept();//带阻塞功能,建立连接
 
             /*
-        单个线程,实现不了这里的一边拉客,一边介绍(会导致后面的客人来不了)
-        就需要多线程. 主线程专门负责拉客. 每次有一个客户端, 都创建一个新的线程去服务
-        但是此处 不应该创建固定线程数目 的线程池/线程(避免重复的创建和关闭线程的开销)
+            不应该创建固定线程数目的线程池/线程(避免重复的创建和关闭线程的开销)
             Thread t = new Thread(() -> {
                 processConnection(clientSocket);
-            });
+            });//这是是lambda表达式实现的
             t.start();
          */
 
@@ -45,7 +43,7 @@ public class TcpEchoServer {
                         throw new RuntimeException(e);
                     }
                 }
-            });
+            });//线程池有任务则会自动分配线程执行,所以只需要submit即可
 
         }
     }
@@ -53,7 +51,6 @@ public class TcpEchoServer {
     // 通过这个方法来处理一个连接后的逻辑
     private void processConnection(Socket clientSocket) throws IOException {
         System.out.printf("[%s:%d] 客户端上线!\n", clientSocket.getInetAddress().toString(), clientSocket.getPort());
-        // 接下来就可以读取请求, 根据请求计算响应, 返回响应三步走了.
         // Socket 对象内部包含了两个字节流对象, 把这俩字节流对象获取到, 完成后续的读写工作
         try (InputStream inputStream = clientSocket.getInputStream();
              OutputStream outputStream = clientSocket.getOutputStream()) {
@@ -74,9 +71,8 @@ public class TcpEchoServer {
                 String response = process(request);
 
                 // 3. 把响应写回给客户端. 把 OutputStream 使用 PrinterWriter 包裹一下, 方便进行发数据.
-                OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, "UTF8");
+                OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, "UTF8");//规定编码格式
                 PrintWriter writer = new PrintWriter(outputStreamWriter);
-                //    使用 println 带上换行. 后续客户端读取请求, 就可以使用 scanner.next 来获取了
                 writer.println(response);
                 writer.flush();
 
@@ -90,6 +86,7 @@ public class TcpEchoServer {
 
     }
 
+    //处理请求部分
     public String process(String request) {
         return request;
     }

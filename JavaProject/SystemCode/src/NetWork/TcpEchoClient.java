@@ -12,7 +12,6 @@ public class TcpEchoClient {
 
 
     public TcpEchoClient(String serverIp, int serverPort) throws IOException {
-        //这个 new 操作完成之后, 就完成了 tcp 连接的建立.(有服务器)
         socket = new Socket(serverIp, serverPort);
         start();
     }
@@ -32,7 +31,6 @@ public class TcpEchoClient {
 
                 // 2. 发送请求
                 PrintWriter printWriter = new PrintWriter(outputStream);
-                //    使用 println 带上换行. 后续服务器读取请求, 就可以使用 scanner.next 来获取了
                 printWriter.println(request);
                 printWriter.flush();
 
