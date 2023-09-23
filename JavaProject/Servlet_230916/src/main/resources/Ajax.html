@@ -8,8 +8,14 @@
 <body>
 <script>
     $.ajax({
-        type: "delete",
-        url: "http://localhost:8080/Servlet230916/delete",
+        type: "post",
+        url: "http://localhost:8080/Servlet230916/post",
+        success: function (body) {
+            console.log("ok");
+        },
+        error: function (body) {
+            console.log("error")
+        }
     })
 </script>
 </body>
