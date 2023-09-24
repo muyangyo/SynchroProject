@@ -7,7 +7,7 @@
 </head>
 <body>
 <script>
-   /* $.ajax({
+    $.ajax({
         type: "post",
         url: "http://localhost:8080/Servlet230916/post",
         success: function (body) {
@@ -16,16 +16,7 @@
         error: function (body) {
             console.log("error")
         }
-    })*/
-   var settings = {
-       "url": "127.0.0.1:8080/Servlet230916/post",
-       "method": "POST",
-       "timeout": 0,
-   };
-
-   $.ajax(settings).done(function (response) {
-       console.log(response);
-   });
+    })
 </script>
 </body>
 </html>

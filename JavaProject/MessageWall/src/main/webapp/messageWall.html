@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>表白墙</title>
+  <style>
+    /* * 通配符选择器, 是选中页面所有元素 */
+    * {
+      /* 消除浏览器的默认样式. */
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .container {
+      width: 600px;
+      margin: 20px auto;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    p {
+      text-align: center;
+      color: #666;
+      margin: 20px 0;
+    }
+
+    .row {
+      /* 开启弹性布局 */
+      display: flex;
+      height: 40px;
+      /* 水平方向居中 */
+      justify-content: center;
+      /* 垂直方向居中 */
+      align-items: center;
+    }
+
+    .row span {
+      width: 80px;
+    }
+
+    .row input {
+      width: 200px;
+      height: 30px;
+    }
+
+    .row button {
+      width: 280px;
+      height: 30px;
+      color: white;
+      background-color: orange;
+      /* 去掉边框 */
+      border: none;
+      border-radius: 5px;
+    }
+
+    /* 点击的时候有个反馈 */
+    .row button:active {
+      background-color: grey;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>表白墙</h1>
+  <p>输入内容后点击提交, 信息会显示到下方表格中</p>
+  <div class="row">
+    <span>谁: </span>
+    <input type="text">
+  </div>
+  <div class="row">
+    <span>对谁: </span>
+    <input type="text">
+  </div>
+  <div class="row">
+    <span>说: </span>
+    <input type="text">
+  </div>
+  <div class="row">
+    <button id="submit">提交</button>
+  </div>
+  <!-- <div class="row">
+      xxx 对 xx 说 xxxx
+  </div> -->
+</div>
+
+<script>
+  // 实现提交操作. 点击提交按钮, 就能够把用户输入的内容提交到页面上显示.
+  // 点击的时候, 获取到三个输入框中的文本内容
+  // 创建一个新的 div.row 把内容构造到这个 div 中即可.
+  let containerDiv = document.querySelector('.container');
+  let inputs = document.querySelectorAll('input');
+  let button = document.querySelector('#submit');
+  button.onclick = function() {
+    // 1. 获取到三个输入框的内容
+    let from = inputs[0].value;
+    let to = inputs[1].value;
+    let msg = inputs[2].value;
+    if (from == '' || to == '' || msg == '') {
+      return;
+    }
+    // 2. 构造新 div
+    let rowDiv = document.createElement('div');
+    rowDiv.className = 'row message';
+    rowDiv.innerHTML = from + ' 对 ' + to + ' 说: ' + msg;
+    containerDiv.appendChild(rowDiv);
+    // 3. 清空之前的输入框内容
+    for (let input of inputs) {
+      input.value = '';
+    }
+  }
+  let revertButton = document.querySelector('#revert');
+  revertButton.onclick = function() {
+    // 删除最后一条消息.
+    // 选中所有的 row, 找出最后一个 row, 然后进行删除
+    let rows = document.querySelectorAll('.message');
+    if (rows == null || rows.length == 0) {
+      return;
+    }
+    containerDiv.removeChild(rows[rows.length - 1]);
+  }
+</script>
+</body>
+</html>
