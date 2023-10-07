@@ -16,6 +16,8 @@ import java.io.IOException;
 public class PUT extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        //设置 "Access-Control-Allow-Origin" 响应头
+        resp.setHeader("Access-Control-Allow-Origin", "http://localhost:8080/");
         resp.setContentType("text/html");
         resp.setCharacterEncoding("UTF8");
         resp.getWriter().println("你好!");
