@@ -24,13 +24,9 @@ public class IndexServlet extends HttpServlet {
         HttpSession session = req.getSession(false);
         //未登录状态
         if (session == null) {
-            /*printWriter.println("未登录,请先登录!");
+            printWriter.println("未登录,请先登录!");
             printWriter.flush();
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }*/
+
             resp.sendRedirect("login.html");
             return;
         }
