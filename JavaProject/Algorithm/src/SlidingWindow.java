@@ -86,4 +86,30 @@ public class SlidingWindow {
         }
         return length;
     }
+
+    //最大连续1的个数 III: https://leetcode.cn/problems/max-consecutive-ones-iii/description/
+    public int longestOnes(int[] nums, int k) {
+        int left = 0;
+        int right = 0;
+        int zeroCount = 0;
+        int maxLength = 0;
+        while (right < nums.length) {
+            if (nums[right] == 0) {
+                zeroCount++;
+                //当 0 的个数超过能容纳的个数时，需要抛出先入窗口的零,直到到可容纳范围
+                if (zeroCount > k) {
+                    while (zeroCount > k) {
+                        if (nums[left] == 0) zeroCount--;
+                        left++;
+                    }
+                }
+            }
+            int temp = right - left + 1;
+            if (temp > maxLength) maxLength = temp;
+            right++;
+        }
+        return maxLength;
+    }
+
+
 }

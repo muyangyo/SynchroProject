@@ -16,8 +16,7 @@ import java.io.IOException;
 public class PUT extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setCharacterEncoding("UTF8");
-        resp.setContentType("text/html");
+        resp.setContentType("text/html; charset=utf8");
         resp.getWriter().println("你好!");
         resp.getWriter().flush();
     }
