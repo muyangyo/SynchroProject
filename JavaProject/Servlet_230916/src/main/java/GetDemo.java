@@ -14,7 +14,7 @@ import java.util.Enumeration;
  * Date: 2023/9/20
  * Time: 11:57
  */
-@WebServlet("/Get")
+@WebServlet("/get")
 public class GetDemo extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
