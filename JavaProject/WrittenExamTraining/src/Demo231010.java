@@ -19,25 +19,22 @@ public class Demo231010 {
                 strings[i] = in.next();
             }
             //String[] cases = {"none", "lengths", "lexicographically", "both"};
-            char prevChar = 'a';
             int prevLength = 0;
             boolean lengthB = true;
             boolean lexB = true;
             for (int i = 0; i < n; i++) {
                 int length = strings[i].length();
-                char aChar = strings[i].charAt(0);
                 if (length < prevLength) lengthB = false;
-                if (aChar < prevChar) lexB = false;
+                if (i < n - 1 && strings[i].compareTo(strings[i + 1]) > 0) lexB = false;
                 if (!lengthB && !lexB) {
                     System.out.println("none");
                     break;
                 }
                 prevLength = length;
-                prevChar = aChar;
             }
             if (lengthB && lexB) System.out.println("both");
             else if (lengthB) System.out.println("lengths");
-            else System.out.println("lexicographically");
+            else if (lexB) System.out.println("lexicographically");
         }
     }
 
