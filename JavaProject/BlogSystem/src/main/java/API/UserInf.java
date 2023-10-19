@@ -40,17 +40,33 @@ public class UserInf extends HttpServlet {
             resp.setCharacterEncoding("UTF8");
             UserDAO userDAO = new UserDAO();
             BlogDAO blogDAO = new BlogDAO();
-
-            int id = 1;//用户id(后期要根据session的信息写)
-
-            User user = userDAO.getUsersById(id);
-            Inf inf = new Inf(user.userName, user.UserGitHub, blogDAO.getArticlesCount(id));
-
             ObjectMapper objectMapper = new ObjectMapper();
-            String json = objectMapper.writeValueAsString(inf);
-            System.out.println(json);
-            resp.getWriter().print(json);
-            resp.getWriter().flush();
+            //判断访问情况
+            String userId = req.getParameter("userId");
+            if (userId == null) {
+                //如果没有QueryString则是在访问博客列表页
+
+                int id = 1;//用户id(后期要根据session的信息写)
+
+                User user = userDAO.getUsersById(id);
+                Inf inf = new Inf(user.userName, user.UserGitHub, blogDAO.getArticlesCount(id));
+
+                String json = objectMapper.writeValueAsString(inf);
+                System.out.println(json);
+                resp.getWriter().print(json);
+                resp.getWriter().flush();
+            } else {
+                //访问详情页
+                int id =  new Integer(userId);
+
+                User user = userDAO.getUsersById(id);
+                Inf inf = new Inf(user.userName, user.UserGitHub, blogDAO.getArticlesCount(id));
+
+                String json = objectMapper.writeValueAsString(inf);
+                System.out.println(json);
+                resp.getWriter().print(json);
+                resp.getWriter().flush();
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

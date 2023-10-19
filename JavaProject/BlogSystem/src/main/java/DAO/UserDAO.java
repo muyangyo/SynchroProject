@@ -77,4 +77,30 @@ public class UserDAO {
         }
     }
 
+    public User getUsersByName(String userName) {
+        Connection connection = null;
+        ResultSet resultSet = null;
+        PreparedStatement preparedStatement = null;
+        try {
+            connection = dbManager.getConnection();
+            String sql = "select * from users where userName = ?";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, userName);
+
+            resultSet = preparedStatement.executeQuery();
+            User user = new User();
+            while (resultSet.next()) {
+                user.userId = resultSet.getInt("userId");
+                user.userName = resultSet.getString("userName");
+                user.password = resultSet.getString("password");
+                user.UserGitHub = resultSet.getString("userGitHub");
+            }
+            return user;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            dbManager.close(resultSet, preparedStatement, connection);
+        }
+    }
+
 }
