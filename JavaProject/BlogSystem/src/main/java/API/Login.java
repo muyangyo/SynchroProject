@@ -8,6 +8,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 
@@ -33,6 +34,10 @@ public class Login extends HttpServlet {
             if (user.userName != null) {
                 //账号存在
                 if (user.userName.equals(username) && user.password.equals(password)) {
+                    //设置session
+                    HttpSession session = req.getSession(true);
+                    session.setAttribute("lastLogin", System.currentTimeMillis());
+                    session.setAttribute("user", user.userName);//用于后面的登出
                     resp.sendRedirect("blog_list.html");
                     return;
                 } else {

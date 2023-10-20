@@ -35,40 +35,45 @@ public class UserInf extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try {
-            resp.setContentType("application/json");
-            resp.setCharacterEncoding("UTF8");
-            UserDAO userDAO = new UserDAO();
-            BlogDAO blogDAO = new BlogDAO();
-            ObjectMapper objectMapper = new ObjectMapper();
-            //判断访问情况
-            String userId = req.getParameter("userId");
-            if (userId == null) {
-                //如果没有QueryString则是在访问博客列表页
+        if (req.getSession(false) == null) {
+            return;
+        } else {
+            try {
+                resp.setContentType("application/json");
+                resp.setCharacterEncoding("UTF8");
+                UserDAO userDAO = new UserDAO();
+                BlogDAO blogDAO = new BlogDAO();
+                ObjectMapper objectMapper = new ObjectMapper();
+                //判断访问情况
+                String userId = req.getParameter("userId");
+                if (userId == null) {
+                    //如果没有QueryString则是在访问博客列表页
 
-                int id = 1;//用户id(后期要根据session的信息写)
+                    int id = 1;//用户id(后期要根据session的信息写)
 
-                User user = userDAO.getUsersById(id);
-                Inf inf = new Inf(user.userName, user.UserGitHub, blogDAO.getArticlesCount(id));
+                    User user = userDAO.getUsersById(id);
+                    Inf inf = new Inf(user.userName, user.UserGitHub, blogDAO.getArticlesCount(id));
 
-                String json = objectMapper.writeValueAsString(inf);
-                System.out.println(json);
-                resp.getWriter().print(json);
-                resp.getWriter().flush();
-            } else {
-                //访问详情页
-                int id =  new Integer(userId);
+                    String json = objectMapper.writeValueAsString(inf);
+                    System.out.println(json);
+                    resp.getWriter().print(json);
+                    resp.getWriter().flush();
+                } else {
+                    //访问详情页
+                    int id = new Integer(userId);
 
-                User user = userDAO.getUsersById(id);
-                Inf inf = new Inf(user.userName, user.UserGitHub, blogDAO.getArticlesCount(id));
+                    User user = userDAO.getUsersById(id);
+                    Inf inf = new Inf(user.userName, user.UserGitHub, blogDAO.getArticlesCount(id));
 
-                String json = objectMapper.writeValueAsString(inf);
-                System.out.println(json);
-                resp.getWriter().print(json);
-                resp.getWriter().flush();
+                    String json = objectMapper.writeValueAsString(inf);
+                    System.out.println(json);
+                    resp.getWriter().print(json);
+                    resp.getWriter().flush();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
+
     }
 }

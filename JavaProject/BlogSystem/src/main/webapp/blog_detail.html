@@ -8,6 +8,13 @@
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/blog_detail.css">
     <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="checklogin.js"></script>
+    <script src="logOut.js"></script>
+    <!-- 一定要引入 editormd 的依赖, 才能使用这里的方法 -->
+    <link rel="stylesheet" href="editor.md/css/editormd.min.css"/>
+    <script src="editor.md/lib/marked.min.js"></script>
+    <script src="editor.md/lib/prettify.min.js"></script>
+    <script src="editor.md/editormd.js"></script>
 </head>
 <body>
 <!-- 导航栏. nav 是 导航 这个词的缩写 -->
@@ -23,7 +30,7 @@
     <a href="blog_list.html">主页</a>
     <a href="blog_edit.html">写博客</a>
     <!-- 这里的地址回头再说 -->
-    <a href="">注销</a>
+    <a href="login.html" onclick="logOff()">注销</a>
 </div>
 <!-- 页面的主体部分 -->
 <div class="container">
@@ -53,27 +60,16 @@
 
     <!-- 右侧信息 -->
     <div class="container-right">
-        <!-- <h3>这是我的第一篇博客</h3>
-         <div class="date">2023-05-11 20:00:00</div>
-         <div class="content">
-             <p>从今天开始我要认真写代码, Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus quas soluta
-                 ipsam, molestiae totam accusamus minus beatae nam quo suscipit doloribus corporis eius alias ab minima
-                 impedit ullam? Optio, magni.</p>
-             <p>从今天开始我要认真写代码, Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus quas soluta
-                 ipsam, molestiae totam accusamus minus beatae nam quo suscipit doloribus corporis eius alias ab minima
-                 impedit ullam? Optio, magni.</p>
-             <p>从今天开始我要认真写代码, Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus quas soluta
-                 ipsam, molestiae totam accusamus minus beatae nam quo suscipit doloribus corporis eius alias ab minima
-                 impedit ullam? Optio, magni.</p>
-             <p>从今天开始我要认真写代码, Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus quas soluta
-                 ipsam, molestiae totam accusamus minus beatae nam quo suscipit doloribus corporis eius alias ab minima
-                 impedit ullam? Optio, magni.</p>
-         </div>-->
+        <h3>模板</h3>
+        <div class="date">2023-01-01</div>
+        <div class="content">
+        </div>
     </div>
 </div>
 
 </body>
 <script>
+    checkLogin();
     /*获取左侧信息*/
     $.ajax({
         type: "get",
@@ -97,23 +93,18 @@
         type: "get",
         url: "blogInf" + location.search,
         success: function (body) {
-                let blog = body;
+            let blog = body;
 
-                let divTitle = document.createElement("h3");
-                divTitle.className = "h3";
-                divTitle.innerHTML = blog.title;
-                divContainer.appendChild(divTitle);
+            let divTitle = document.querySelector(".container-right h3");
+            divTitle.innerHTML = blog.title;
 
-                let divDate = document.createElement("div");
-                divDate.className = "date";
-                divDate.innerHTML = blog.dateTime;
-                divContainer.appendChild(divDate);
+            let divDate = document.querySelector(".container-right .date");
+            divDate.innerHTML = blog.dateTime;
 
+            console.log(blog.content);
+            // let divContent = document.querySelector(".container-right .content");
+            editormd.markdownToHTML('content', {markdown: blog.content});
 
-                let divDesc = document.createElement("div");
-                divDesc.className = "content";
-                divDesc.innerHTML = blog.content;
-                divContainer.appendChild(divDesc);
         }
     })
 </script>

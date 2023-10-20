@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/blog_list.css">
     <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="checklogin.js"></script>
+    <script src="logOut.js"></script>
 </head>
 <body>
 <!-- 导航栏. nav 是 导航 这个词的缩写 -->
@@ -24,7 +26,8 @@
     <a href="blog_list.html">主页</a>
     <a href="blog_edit.html">写博客</a>
     <!-- 这里的地址回头再说 -->
-    <a href="">注销</a>
+    <a href="login.html" onclick="logOff()">注销</a>
+
 </div>
 
 <!-- 页面的主体部分 -->
@@ -79,6 +82,7 @@
         "userGitHub": userGitHub,
         "articlesCount": articlesCount
     }*/
+    checkLogin();
     $.ajax({
         type: "get",
         url: "userInf",
@@ -94,7 +98,7 @@
             span.innerHTML = userInf.articlesCount;
         }
     })
-
+    /*获取右侧信息*/
     let divContainer = document.querySelector(".container-right");
     console.log(divContainer);
     $.ajax({

@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/blog_edit.css">
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="checklogin.js"></script>
+    <script src="logOut.js"></script>
+
     <!-- 引入 editor.md 的依赖 -->
     <link rel="stylesheet" href="editor.md/css/editormd.min.css" />
     <script src="editor.md/lib/marked.min.js"></script>
@@ -28,7 +31,7 @@
         <a href="blog_list.html">主页</a>
         <a href="blog_edit.html">写博客</a>
         <!-- 这里的地址回头再说 -->
-        <a href="">注销</a>
+        <a href="login.html" onclick="logOff()">注销</a>
     </div>
 
     <!-- 博客编辑页的版心 -->
@@ -48,13 +51,14 @@
     </div>
 
     <script>
+        checkLogin();
         var editor = editormd("editor", {
-            // 这里的尺寸必须在这里设置. 设置样式会被 editormd 自动覆盖掉. 
+            // 这里的尺寸必须在这里设置. 设置样式会被 editormd 自动覆盖掉.
             width: "100%",
             // 设定编辑器高度
             height: "calc(100% - 50px)",
             // 编辑器中的初始内容
-            markdown: "# 在这里写下一篇博客",
+            markdown: "# 开始编辑",
             // 指定 editor.md 依赖的插件路径
             path: "editor.md/lib/"
         });

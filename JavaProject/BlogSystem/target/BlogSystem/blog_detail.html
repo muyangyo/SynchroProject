@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ch">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -7,6 +7,14 @@
     <title>博客详情页</title>
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/blog_detail.css">
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="checklogin.js"></script>
+    <script src="logOut.js"></script>
+    <!-- 一定要引入 editormd 的依赖, 才能使用这里的方法 -->
+    <link rel="stylesheet" href="editor.md/css/editormd.min.css"/>
+    <script src="editor.md/lib/marked.min.js"></script>
+    <script src="editor.md/lib/prettify.min.js"></script>
+    <script src="editor.md/editormd.js"></script>
 </head>
 <body>
 <!-- 导航栏. nav 是 导航 这个词的缩写 -->
@@ -22,7 +30,7 @@
     <a href="blog_list.html">主页</a>
     <a href="blog_edit.html">写博客</a>
     <!-- 这里的地址回头再说 -->
-    <a href="">注销</a>
+    <a href="login.html" onclick="logOff()">注销</a>
 </div>
 <!-- 页面的主体部分 -->
 <div class="container">
@@ -32,43 +40,72 @@
         <div class="card">
             <!-- 用户的头像 -->
             <img src="image/head.png" alt="">
-            <!-- 用户名 -->
             <h3>作者</h3>
-            <h3>用户名null</h3>
+            <!-- 用户名 -->
+            <h3 class="userName">用户名null</h3>
             <!-- github 地址 -->
-            <a href="https://www.github.com">github 地址</a>
+            <a href="https://www.github.com" class="userGitHub">github 地址</a>
             <!-- 统计信息 -->
             <div class="counter">
                 <span>文章</span>
-                <!--                    <span>分类</span>-->
+                <!--<span>分类</span>-->
             </div>
             <div class="counter">
-                <span>0</span>
-                <!--                    <span>1</span>-->
+                <!--文章数量-->
+                <span class="articlesCount">0</span>
+                <!-- <span>1</span>-->
             </div>
         </div>
     </div>
 
     <!-- 右侧信息 -->
     <div class="container-right">
-        <h3>这是我的第一篇博客</h3>
-        <div class="date">2023-05-11 20:00:00</div>
+        <h3>模板</h3>
+        <div class="date">2023-01-01</div>
         <div class="content">
-            <p>从今天开始我要认真写代码, Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus quas soluta
-                ipsam, molestiae totam accusamus minus beatae nam quo suscipit doloribus corporis eius alias ab minima
-                impedit ullam? Optio, magni.</p>
-            <p>从今天开始我要认真写代码, Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus quas soluta
-                ipsam, molestiae totam accusamus minus beatae nam quo suscipit doloribus corporis eius alias ab minima
-                impedit ullam? Optio, magni.</p>
-            <p>从今天开始我要认真写代码, Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus quas soluta
-                ipsam, molestiae totam accusamus minus beatae nam quo suscipit doloribus corporis eius alias ab minima
-                impedit ullam? Optio, magni.</p>
-            <p>从今天开始我要认真写代码, Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus quas soluta
-                ipsam, molestiae totam accusamus minus beatae nam quo suscipit doloribus corporis eius alias ab minima
-                impedit ullam? Optio, magni.</p>
         </div>
     </div>
 </div>
 
 </body>
+<script>
+    checkLogin();
+    /*获取左侧信息*/
+    $.ajax({
+        type: "get",
+        url: "userInf" + location.search,
+        success: function (body) {
+            let userInf = body;
+            console.log(userInf);
+            console.log(body);
+            let h3 = document.querySelector(".userName");
+            let a = document.querySelector(".userGitHub");
+            let span = document.querySelector(".articlesCount");
+            h3.innerHTML = userInf.userName;
+            a.innerHTML = userInf.userGitHub;
+            span.innerHTML = userInf.articlesCount;
+        }
+    })
+    /*获取右侧信息*/
+    let divContainer = document.querySelector(".container-right");
+    console.log(divContainer);
+    $.ajax({
+        type: "get",
+        url: "blogInf" + location.search,
+        success: function (body) {
+            let blog = body;
+
+            let divTitle = document.querySelector(".container-right h3");
+            divTitle.innerHTML = blog.title;
+
+            let divDate = document.querySelector(".container-right .date");
+            divDate.innerHTML = blog.dateTime;
+
+            console.log(blog.content);
+            // let divContent = document.querySelector(".container-right .content");
+            editormd.markdownToHTML('content', {markdown: blog.content});
+
+        }
+    })
+</script>
 </html>
