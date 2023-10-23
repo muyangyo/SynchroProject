@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ch">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -7,6 +7,7 @@
     <title>博客详情页</title>
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/blog_detail.css">
+
     <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="checklogin.js"></script>
     <script src="logOut.js"></script>
@@ -25,11 +26,10 @@
         <a href="blog_list.html">博客系统</a>
     </div>
     <!-- 只是一个空白, 用来把后面的链接挤过去 -->
-    <!-- 这是一个简单粗暴的写法~~ -->
     <div class="spacer"></div>
     <a href="blog_list.html">主页</a>
     <a href="blog_edit.html">写博客</a>
-    <!-- 这里的地址回头再说 -->
+
     <a href="login.html" onclick="logOff()">注销</a>
 </div>
 <!-- 页面的主体部分 -->
@@ -60,9 +60,9 @@
 
     <!-- 右侧信息 -->
     <div class="container-right">
-        <h3>模板</h3>
-        <div class="date">2023-01-01</div>
-        <div class="content">
+        <h3></h3>
+        <div class="date"></div>
+        <div class="content" id="content">
         </div>
     </div>
 </div>
@@ -83,6 +83,7 @@
             let span = document.querySelector(".articlesCount");
             h3.innerHTML = userInf.userName;
             a.innerHTML = userInf.userGitHub;
+            a.href = userInf.userGitHub;
             span.innerHTML = userInf.articlesCount;
         }
     })

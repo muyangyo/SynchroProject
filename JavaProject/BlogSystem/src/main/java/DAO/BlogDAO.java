@@ -84,6 +84,25 @@ public class BlogDAO {
 
     }
 
+    public void insertBlog(Blog blog) {
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        Connection connection = null;
+        try {
+            connection = dbManager.getConnection();
+            String sql = "insert into blogs values (null,?,?,now(),?)";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, blog.userId);
+            preparedStatement.setString(2, blog.title);
+            preparedStatement.setString(3, blog.content);
+
+            int n = preparedStatement.executeUpdate();
+            System.out.println(blog.userId + " 更新一篇博客");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public int getArticlesCount(int userId) {
         Connection connection = null;
         PreparedStatement preparedStatement = null;

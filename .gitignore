@@ -1,6 +1,7 @@
 
 .verysync/
 .idea/
+target/
 cmake-build-debug/
 *.class
 *.xml
@@ -19,6 +20,8 @@ cmake-build-debug/
 *.filters
 *.user
 *.ipch
+
+
 CProject/TestForSchool/CMakeLists.txt
 SchoolProject/T230414_1/CMakeLists.txt
 CProject/T230522/CMakeLists.txt

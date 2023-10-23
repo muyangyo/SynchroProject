@@ -8,6 +8,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 
@@ -45,14 +46,16 @@ public class UserInf extends HttpServlet {
                 BlogDAO blogDAO = new BlogDAO();
                 ObjectMapper objectMapper = new ObjectMapper();
                 //判断访问情况
-                String userId = req.getParameter("userId");
-                if (userId == null) {
+                String blogId = req.getParameter("blogId");
+                if (blogId == null) {
                     //如果没有QueryString则是在访问博客列表页
 
-                    int id = 1;//用户id(后期要根据session的信息写)
+                    HttpSession session = req.getSession(false);
+                    String userName = (String) session.getAttribute("user");
+                    User user = userDAO.getUsersByName(userName);
 
-                    User user = userDAO.getUsersById(id);
-                    Inf inf = new Inf(user.userName, user.UserGitHub, blogDAO.getArticlesCount(id));
+
+                    Inf inf = new Inf(user.userName, user.UserGitHub, blogDAO.getArticlesCount(user.userId));
 
                     String json = objectMapper.writeValueAsString(inf);
                     System.out.println(json);
@@ -60,10 +63,11 @@ public class UserInf extends HttpServlet {
                     resp.getWriter().flush();
                 } else {
                     //访问详情页
-                    int id = new Integer(userId);
+                    int id = new Integer(blogId);
 
-                    User user = userDAO.getUsersById(id);
-                    Inf inf = new Inf(user.userName, user.UserGitHub, blogDAO.getArticlesCount(id));
+                    Blog blog = blogDAO.getBlogById(id);
+                    User user = userDAO.getUsersById(blog.userId);
+                    Inf inf = new Inf(user.userName, user.UserGitHub, blogDAO.getArticlesCount(user.userId));
 
                     String json = objectMapper.writeValueAsString(inf);
                     System.out.println(json);

@@ -24,14 +24,10 @@ public class Blog {
     public Blog() {
     }
 
-    public Blog(int blogId, int userId, String title, Timestamp pDate, String content) {
-        this.blogId = blogId;
+    public Blog(int userId, String title, String content) {
         this.userId = userId;
         this.title = title;
-        this.pDate = pDate;
         this.content = content;
-        SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        this.dateTime = format.format(this.pDate);
     }
 
     @Override
