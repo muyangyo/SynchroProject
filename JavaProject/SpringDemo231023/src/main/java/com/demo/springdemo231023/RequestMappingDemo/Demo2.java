@@ -5,6 +5,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * 创建于 IntelliJ IDEA.
  * 描述：
@@ -40,4 +44,16 @@ public class Demo2 {
     public String m5(@RequestParam(value = "name", required = false) String username) {
         return "接收到了参数:" + username;
     }
+
+    @RequestMapping("/m6")
+    public String m6(String[] array) {
+        return "接收到了参数:" + Arrays.toString(array);
+    }
+
+    @RequestMapping("/m7")
+    public String m7(@RequestParam List<String> list) {
+        return "接收到了参数:" + list + " 大小为:" + list.size();
+    }
+
+
 }

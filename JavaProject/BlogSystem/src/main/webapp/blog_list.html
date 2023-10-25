@@ -94,7 +94,8 @@
             let a = document.querySelector(".userGitHub");
             let span = document.querySelector(".articlesCount");
             h3.innerHTML = userInf.userName;
-            a.innerHTML = userInf.userGitHub;
+            //a.innerHTML = userInf.userGitHub;
+            a.href = userInf.userGitHub;
             span.innerHTML = userInf.articlesCount;
         }
     })
