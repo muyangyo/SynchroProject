@@ -1,10 +1,9 @@
 package com.demo.springdemo231023.RequestMappingDemo;
 
-import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.plaf.multi.MultiFileChooserUI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -55,5 +54,24 @@ public class Demo2 {
         return "接收到了参数:" + list + " 大小为:" + list.size();
     }
 
+    @RequestMapping("/m8")
+    public String m8(@RequestBody(required = false) Person person) {
+        return "接收到的JSON对象是:" + person;
+    }
+
+    @RequestMapping("/m9/{userId}/{username}")
+    public String m9(@PathVariable Integer userId, @PathVariable("username") String name) {
+        return "获取到的URL中的参数 userId :" + userId + " name :" + name;
+    }
+
+    @RequestMapping("/m10")
+    public String m10(@RequestPart MultipartFile file) {
+        return "已上传文件:" + file.getName();
+    }
+
+    @RequestMapping("/m11")
+    public String m11(@RequestParam List<String> list) {
+        return "接收到了参数:" + list + " 大小为:" + list.size();
+    }
 
 }
