@@ -16,7 +16,7 @@ public class LoginServer {
             return false;
         }
         //假用户
-        User root = new User("root", "root");
+        User root = new User("root", "root"); // todo:
 
         if (root.getName().equals(user.getName()) && root.getPassword().equals(user.getPassword())) {
             return true;
