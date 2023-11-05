@@ -1,7 +1,7 @@
 package com.demo.springdemo231023;
 
-import com.demo.springdemo231023.IOC.Extension;
-import com.demo.springdemo231023.IOC.Main;
+import com.demo.springdemo231023.IoC.Demo;
+import com.demo.springdemo231023.IoC.Extension;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -11,11 +11,19 @@ public class SpringDemo231023Application {
 
     public static void main(String[] args) {
         ApplicationContext applicationContext = SpringApplication.run(SpringDemo231023Application.class, args);
-        System.out.println("成功启动!");
+        System.out.println();
 
-        Extension bean = applicationContext.getBean(Extension.class);
-        bean.run();
+        /*Extension bean1 = applicationContext.getBean("extensionDemo1", Extension.class);
+        bean1.run();*/
 
+        /*Extension bean2 = applicationContext.getBean("extensionDemo2", Extension.class);
+        bean2.run();*/
+
+        /*System.out.println(bean1 == bean2);*/
+
+
+        Demo bean = applicationContext.getBean(Demo.class);
+        bean.ex.run();
     }
 
 }
