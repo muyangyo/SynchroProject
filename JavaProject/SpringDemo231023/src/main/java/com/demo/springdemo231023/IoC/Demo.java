@@ -2,6 +2,7 @@ package com.demo.springdemo231023.IoC;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,15 +14,13 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class Demo {
-    @Autowired
-    public Extension ex;
+    @Bean
+    public Extension ex1() {
+        return new Extension("ex1");
+    }
 
-    /*@Autowired
-    public Demo(Extension ex)
-        this.extension = extension;
-    }*/
-
-
-    /*public Demo() {
-    }*/
+    @Bean
+    public Extension ex2() {
+        return new Extension("ex2");
+    }
 }

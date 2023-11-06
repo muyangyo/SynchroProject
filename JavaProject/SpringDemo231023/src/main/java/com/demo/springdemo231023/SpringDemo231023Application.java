@@ -2,6 +2,7 @@ package com.demo.springdemo231023;
 
 import com.demo.springdemo231023.IoC.Demo;
 import com.demo.springdemo231023.IoC.Extension;
+import com.demo.springdemo231023.IoC.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -22,8 +23,12 @@ public class SpringDemo231023Application {
         /*System.out.println(bean1 == bean2);*/
 
 
-        Demo bean = applicationContext.getBean(Demo.class);
-        bean.ex.run();
+        /*Demo bean = applicationContext.getBean(Demo.class);
+        bean.ex1.run();*/
+
+
+        Test bean = applicationContext.getBean(Test.class);
+        bean.extension.run();
     }
 
 }

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * Date: 2023/11/4
  * Time: 21:17
  */
-@Component
+//@Component
 public class Extension {
     String inf;
 
@@ -19,7 +19,7 @@ public class Extension {
         this.inf = inf;
     }
 
-    @Autowired
+    //@Autowired
     public Extension() {
     }
 
