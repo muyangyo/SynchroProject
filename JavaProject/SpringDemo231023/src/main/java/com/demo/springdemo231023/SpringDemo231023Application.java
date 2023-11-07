@@ -27,8 +27,10 @@ public class SpringDemo231023Application {
         bean.ex1.run();*/
 
 
-        Test bean = applicationContext.getBean(Test.class);
-        bean.extension.run();
+        /*Test bean = applicationContext.getBean(Test.class);
+        bean.extension.run();*/
+
+
     }
 
 }
