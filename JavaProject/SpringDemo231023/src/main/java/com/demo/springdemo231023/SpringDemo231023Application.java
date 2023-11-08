@@ -1,5 +1,6 @@
 package com.demo.springdemo231023;
 
+import com.demo.springdemo231023.Configs.Config;
 import com.demo.springdemo231023.IoC.Demo;
 import com.demo.springdemo231023.IoC.Extension;
 import com.demo.springdemo231023.IoC.Test;
@@ -30,7 +31,8 @@ public class SpringDemo231023Application {
         /*Test bean = applicationContext.getBean(Test.class);
         bean.extension.run();*/
 
-
+        Config bean = applicationContext.getBean(Config.class);
+        bean.outConfig();
     }
 
 }
