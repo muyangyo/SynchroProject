@@ -31,8 +31,8 @@ public class SpringDemo231023Application {
         /*Test bean = applicationContext.getBean(Test.class);
         bean.extension.run();*/
 
-        Config bean = applicationContext.getBean(Config.class);
-        bean.outConfig();
+        /*Config bean = applicationContext.getBean(Config.class);
+        bean.outConfig();*/
     }
 
 }
