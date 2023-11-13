@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>验证码</title>
+    <style>
+        #inputCaptcha {
+            height: 30px;
+            vertical-align: middle;
+        }
+
+        #verificationCodeImg {
+            vertical-align: middle;
+        }
+
+        #checkCaptcha {
+            height: 40px;
+            width: 100px;
+        }
+    </style>
+</head>
+
+<body>
+<h1>输入验证码</h1>
+<div id="confirm">
+    <input type="text" name="inputCaptcha" id="inputCaptcha">
+    <img id="verificationCodeImg" src="/MuYang-231110/captcha" style="cursor: pointer;" title="看不清？换一张"/>
+    <input type="button" value="提交" id="checkCaptcha">
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script>
+
+    $("#verificationCodeImg").click(function () {
+        $(this).hide().attr('src', '/MuYang-231110/captcha?dt=' + new Date().getTime()).fadeIn();
+    });
+
+    $("#checkCaptcha").click(function () {
+        $.ajax({
+            type:"get",
+            url: "/checkCaptcha/notTime",
+            data:{
+                captcha: $("#inputCaptcha").val()
+            },
+            success:function(result){
+                if(result){
+                    location.assign("success");
+                }else{
+                    alert("验证码错误");
+                }
+            }
+        });
+    });
+
+</script>
+</body>
+
+</html>

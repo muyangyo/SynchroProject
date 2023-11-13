@@ -251,7 +251,72 @@ public class SlidingWindow {
         return map1.equals(map2);
     }
 
+    //串联所有单词的子串: https://leetcode.cn/problems/substring-with-concatenation-of-all-words/description/
+    public static List<Integer> findSubstring(String s, String[] words) {
+        List<Integer> ret = new LinkedList<>();
+        if (s == null || words == null || s.length() < words[0].length()) return ret;
+        char[] chars = s.toCharArray();
+        int wordLength = words[0].length();//一个单词的长度
+        int kind = words.length;
+
+        HashMap<String, Integer> wordMap = new HashMap<>(kind);
+        for (String temp : words) {
+            if (wordMap.containsKey(temp)) {
+                //如果出现过了的,则需要累加次数
+                int v = wordMap.get(temp);
+                wordMap.put(temp, ++v);
+            } else {
+                wordMap.put(temp, 1);
+            }
+        }
+
+
+        for (int i = 0; i < wordLength; i++) {
+            int right = i;
+            int left = i;
+            int count = 0;
+            //这个必须在里面,要不然需要清空(不清空会影响下一次的for循环)
+            HashMap<String, Integer> map = new HashMap<>(kind + 1);//注意是将长度为 wordLength 的子字符串为整体塞进入的
+            while (right + wordLength <= chars.length) {
+                //入窗口
+                count++;
+                String temp = new String(chars, right, wordLength);
+                if (map.containsKey(temp)) {
+                    //如果出现过了的,则需要累加次数
+                    int v = map.get(temp);
+                    map.put(temp, ++v);
+                } else {
+                    map.put(temp, 1);
+                }
+                right += wordLength;
+
+                //判断条件是否要出窗口
+                if (count > kind) //如果大于了 kind 的话则需要出窗口
+                {
+                    temp = new String(chars, left, wordLength);
+                    int v = map.get(temp);
+                    if (v > 1) {
+                        //如果出现了一次以上的,则 --V 即可
+                        map.put(temp, --v);
+                    } else {
+                        //只出现了一次的,直接删即可
+                        map.remove(temp);
+                    }
+                    count--;
+                    left += wordLength;
+                }
+                //更新结果
+                if (checkEquals(map, wordMap)) {
+                    ret.add(left);
+                }
+            }
+        }
+        return ret;
+    }
+
+
     public static void main(String[] args) {
-        System.out.println(findAnagrams("abab", "ab"));
+        String[] strings = {"fooo", "barr", "wing", "ding", "wing"};
+        System.out.println(findSubstring("lingmindraboofooowingdingbarrwingmonkeypoundcake", strings));
     }
 }
