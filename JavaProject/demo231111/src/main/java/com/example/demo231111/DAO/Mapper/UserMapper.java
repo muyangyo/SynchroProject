@@ -39,4 +39,32 @@ public interface UserMapper {
     Integer insert3(@Param("user") User user1);
 
 
+    @Delete("delete from userinfo where id = #{user.id}")
+    Integer delete(@Param("user") User user1);
+
+
+    @Update("update userinfo set age = #{user.age} where id = #{user.id}")
+    void update(@Param("user") User user1);
+
+
+    @Select("select id,username,password,age,gender,phone," +
+            "delete_flag as deleteFlag," +
+            "create_time as createTime," +
+            "update_time as updateTime " +
+            "from userinfo")
+    List<User> select1();
+
+    @Results(id = "defaultMapper", value = {
+            @Result(column = "delete_flag", property = "deleteFlag"),
+            @Result(column = "create_time", property = "createTime"),
+            @Result(column = "update_time", property = "updateTime"),
+    })
+    @Select("select id,username,password,age,gender,phone," +
+            "delete_flag,create_time,update_time from userinfo")
+    List<User> select2();
+
+
+    @Select("select id,username,password,age,gender,phone," +
+            "delete_flag,create_time,update_time from userinfo")
+    List<User> select3();
 }
