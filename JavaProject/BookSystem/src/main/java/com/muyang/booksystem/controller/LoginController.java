@@ -1,11 +1,11 @@
 package com.muyang.booksystem.controller;
 
-import com.muyang.booksystem.dao.User;
+import com.muyang.booksystem.model.User;
 import com.muyang.booksystem.service.LoginServer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -18,14 +18,16 @@ import javax.servlet.http.HttpSession;
 @RequestMapping("/LoginController")
 @RestController
 public class LoginController {
-    private final LoginServer loginServer = new LoginServer();
+    @Autowired
+    private LoginServer loginServer;
+
 
     @RequestMapping("/Login")
     public boolean Login(String userName, String password, HttpSession session) {
         User user = new User(userName, password);
         System.out.println(user);
-        if (loginServer.login(user)) {
-            session.setAttribute("userName", user.getName());
+        if (loginServer.loginCheck(user)) {
+            session.setAttribute("userName", user.getUserName());
             return true;
         }
         return false;

@@ -76,12 +76,12 @@
                             finalHtml += '<tr>';
                             finalHtml += '<td><input type="checkbox" name="selectBook" value="'+book.id+'" id="selectBook" class="book-select"></td>';
                             finalHtml += '<td>'+book.id+'</td>';
-                            finalHtml += '<td>'+book.name+'</td>';
+                            finalHtml += '<td>'+book.bookName+'</td>';
                             finalHtml += '<td>'+book.author+'</td>';
                             finalHtml += '<td>'+book.count+'</td>';
                             finalHtml += '<td>'+book.price+'</td>';
                             finalHtml += '<td>'+book.publish+'</td>';
-                            finalHtml += '<td>'+book.remainCN+'</td>';
+                            finalHtml += '<td>'+'可借阅'+'</td>';
                             finalHtml += '<td><div class="op">';
                             finalHtml += '<a href="book_update.html?bookId='+book.id+'">修改</a>';
                             finalHtml += '<a href="javascript:void(0)" onclick="deleteBook('+book.id+')">删除</a>';
@@ -97,7 +97,7 @@
             $("#pageContainer").jqPaginator({
                 totalCounts: 100, //总记录数
                 pageSize: 10,    //每页的个数
-                visiblePages: 5, //可视页数
+                visiblePages: 8, //可视页数
                 currentPage: 1,  //当前页码
                 first: '<li class="page-item"><a class="page-link">首页</a></li>',
                 prev: '<li class="page-item"><a class="page-link" href="javascript:void(0);">上一页<\/a><\/li>',

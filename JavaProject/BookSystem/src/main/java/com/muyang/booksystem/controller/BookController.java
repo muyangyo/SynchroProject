@@ -1,7 +1,8 @@
 package com.muyang.booksystem.controller;
 
-import com.muyang.booksystem.dao.Book;
+import com.muyang.booksystem.model.Book;
 import com.muyang.booksystem.service.BookServer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,7 +18,8 @@ import java.util.List;
 @RequestMapping("/BookController")
 @RestController
 public class BookController {
-    private final BookServer bookServer = new BookServer();
+    @Autowired
+    private BookServer bookServer;
 
     @RequestMapping("/retBookList")
     public List<Book> retBookList() {

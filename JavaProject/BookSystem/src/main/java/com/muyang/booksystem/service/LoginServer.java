@@ -1,6 +1,9 @@
 package com.muyang.booksystem.service;
 
-import com.muyang.booksystem.dao.User;
+import com.muyang.booksystem.mapper.UserMapper;
+import com.muyang.booksystem.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 /**
@@ -10,15 +13,22 @@ import org.springframework.util.StringUtils;
  * Date: 2023/10/30
  * Time: 14:12
  */
+@Service
 public class LoginServer {
-    public boolean login(User user) {
-        if (user == null || !StringUtils.hasLength(user.getName()) || !StringUtils.hasLength(user.getPassword())) {
+    @Autowired
+    UserMapper userMapper;
+
+    public boolean loginCheck(User user) {
+        if (user == null || !StringUtils.hasLength(user.getUserName()) || !StringUtils.hasLength(user.getPassword())) {
             return false;
         }
-        //假用户
-        User root = new User("root", "root"); // todo:
 
-        if (root.getName().equals(user.getName()) && root.getPassword().equals(user.getPassword())) {
+        User temp = userMapper.selectOne(user);
+        if (temp == null) {
+            return false;
+        }
+
+        if (temp.getUserName().equals(user.getUserName()) && temp.getPassword().equals(user.getPassword())) {
             return true;
         }
         return false;

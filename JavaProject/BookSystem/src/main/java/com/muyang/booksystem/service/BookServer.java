@@ -1,6 +1,9 @@
 package com.muyang.booksystem.service;
 
-import com.muyang.booksystem.dao.Book;
+import com.muyang.booksystem.mapper.BookMapper;
+import com.muyang.booksystem.model.Book;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,33 +15,21 @@ import java.util.List;
  * Date: 2023/10/30
  * Time: 14:13
  */
+@Service
 public class BookServer {
+    @Autowired
+    private BookMapper bookMapper;
+
     public List<Book> getBookList() {
         //数据层
-        List<Book> ret = MockBookList(); //先弄个假数据 TODO:
+        List<Book> bookList = bookMapper.selectAll();
         //业务逻辑层
-        for (Book b : ret) {
-            if (b.getRemain() > 0) {
-                b.setRemainCN("可借阅");
-            } else {
-                b.setRemainCN("不可借阅");
+        for (Book b : bookList) {
+            if (b.getStatus() != 1) {
+                bookList.remove(b);
             }
         }
         //表现层
-        return ret;
-    }
-
-    public List<Book> MockBookList() {
-        List<Book> ret = new ArrayList<>(10);
-        for (int i = 1; i < 11; i++) {
-            Book book;
-            if (i % 5 == 0) {
-                book = new Book(i, "程序员的自我修养", "root", 20, 3300, "root", 0);
-            } else {
-                book = new Book(i, "程序员的自我修养", "root", 20, 3300, "root", 1);
-            }
-            ret.add(book);
-        }
-        return ret;
+        return bookList;
     }
 }

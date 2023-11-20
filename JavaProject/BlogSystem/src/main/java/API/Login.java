@@ -23,6 +23,7 @@ import java.sql.SQLException;
 public class Login extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+//        req.setCharacterEncoding("UTF8");
         String username = req.getParameter("username");
         String password = req.getParameter("password");
         resp.setContentType("text/html; charset=utf8");
