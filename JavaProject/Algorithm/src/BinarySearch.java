@@ -10,7 +10,6 @@ import java.util.Arrays;
  * Time: 10:51
  */
 public class BinarySearch {
-    //todo: 待确定是不是可以使用 break 解决问题
     //在排序数组中查找元素的第一个和最后一个位置: https://leetcode.cn/problems/find-first-and-last-position-of-element-in-sorted-array/description/
     public int[] searchRange(int[] nums, int target) {
         int[] ret = {-1, -1};
@@ -106,7 +105,63 @@ public class BinarySearch {
         return left + 1;
     }
 
-    public static void main(String[] args) {
-        System.out.println(searchInsert(new int[]{1, 3, 5, 6}, 2));
+    //山脉数组的峰顶索引: https://leetcode.cn/problems/peak-index-in-a-mountain-array/description/
+    public static int peakIndexInMountainArray(int[] arr) {
+        int left = 1;
+        int right = arr.length - 2;
+
+        //直接找左端点即可
+        while (left <= right) {
+            int mid = left + (right - left) / 2;//左中点
+            if (left == right) {
+                break;
+            }
+            //如果在右区间
+            else if (arr[mid] > arr[mid + 1]) {  //不能使用 arr[mid - 1] > arr[mid] 来进行判断
+                right = mid;
+            }
+            //如果在左区间
+            else {
+                left = mid + 1;
+            }
+        }
+        return left;
+    }
+
+    //寻找旋转排序数组中的最小值: https://leetcode.cn/problems/find-minimum-in-rotated-sorted-array/description/
+    public int findMin(int[] nums) {
+        int left = 0;
+        int right = nums.length - 1;
+        int stand = nums[nums.length - 1];
+        //找左端点
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (left == right) {
+                break;
+            } else if (nums[mid] > stand) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+        return nums[left];
+    }
+
+    //寻找峰值: https://leetcode.cn/problems/find-peak-element/description/
+    public int findPeakElement(int[] nums) {
+        int left = 0;
+        int right = nums.length - 1;
+        //找右端点
+        while (left <= right) {
+            int mid = left + (right - left + 1) / 2;
+            if (left == right) {
+                break;
+            } else if (nums[mid] > nums[mid - 1]) {
+                left = mid;
+            } else {
+                right = mid - 1;
+            }
+        }
+        return left;
     }
 }
