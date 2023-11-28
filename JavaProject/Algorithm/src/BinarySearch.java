@@ -164,4 +164,30 @@ public class BinarySearch {
         }
         return left;
     }
+
+    //点名: https://leetcode.cn/problems/que-shi-de-shu-zi-lcof/description/
+    public int takeAttendance(int[] records) {
+        int left = 0;
+        int right = records.length - 1;
+        //找左端点
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (left == right) {
+                break;
+            }
+            //左区间 满足值和下标对应
+            else if (records[mid] == mid) {
+                left = mid + 1;
+            }
+            //右区间
+            else {
+                right = mid;
+            }
+        }
+        //特殊情况:端点在最末尾的后一个的情况,此时末尾元素是在左区间内的(满足值和下标对应),所以排除下即可,因为我们相遇点肯定是满足右区间的
+        if (records[left] == left) {
+            return left + 1;
+        }
+        return left;
+    }
 }
