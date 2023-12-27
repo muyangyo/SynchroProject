@@ -100,6 +100,8 @@ public class BlogDAO {
             System.out.println(blog.userId + " 更新一篇博客");
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        } finally {
+            dbManager.close(resultSet, preparedStatement, connection);
         }
     }
 
@@ -119,6 +121,44 @@ public class BlogDAO {
                 count = resultSet.getInt("count(blogId)");
             }
             return count;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            dbManager.close(resultSet, preparedStatement, connection);
+        }
+    }
+
+    public int delBlog(int blogID) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        try {
+            connection = dbManager.getConnection();
+            String sql = "delete from blogs where blogId = ?";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, blogID);
+
+            int n = preparedStatement.executeUpdate();
+            return n;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            dbManager.close(null, preparedStatement, connection);
+        }
+    }
+
+    public void update(Blog blog) {
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        Connection connection = null;
+        try {
+            connection = dbManager.getConnection();
+            String sql = "update blogs set content = ?,title = ? where blogId = ?";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, blog.content);
+            preparedStatement.setString(2, blog.title);
+            preparedStatement.setInt(3, blog.blogId);
+
+            int n = preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {

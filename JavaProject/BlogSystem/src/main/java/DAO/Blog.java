@@ -30,6 +30,13 @@ public class Blog {
         this.content = content;
     }
 
+    public Blog(int blogId, int userId, String title, String content) {
+        this.blogId = blogId;
+        this.userId = userId;
+        this.title = title;
+        this.content = content;
+    }
+
     @Override
     public String toString() {
         return "Blog{" +

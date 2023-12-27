@@ -55,6 +55,10 @@
                 <span class="articlesCount">0</span>
                 <!-- <span>1</span>-->
             </div>
+
+            <!--               <button class="delete-button">删除</button>-->
+            <!--               <button class="edit-button">修改</button>-->
+
         </div>
     </div>
 
@@ -85,6 +89,44 @@
             // a.innerHTML = userInf.userGitHub;
             a.href = userInf.userGitHub;
             span.innerHTML = userInf.articlesCount;
+
+            let card = document.querySelector(".card")
+            if (userInf.isAuthor) {
+                var deleteButton = document.createElement('button');
+                deleteButton.className = 'delete-button';
+                deleteButton.textContent = '删除';
+                card.appendChild(deleteButton);
+
+                var editButton = document.createElement('button');
+                editButton.className = 'edit-button';
+                editButton.textContent = '修改';
+                card.appendChild(editButton);
+
+                deleteButton.addEventListener('click', function () {
+                    console.log('删除按钮被点击');
+                    var formData = {
+                        editor: userInf.userName,
+                        blogId: location.search
+                    };
+
+                    $.ajax({
+                        url: 'delBlog',
+                        type: 'get',
+                        data: formData,
+                        success: function () {
+                            location.assign('blog_list.html');
+                        },
+                        error: function () {
+                            console.log('删除失败');
+                        }
+                    });
+
+                });
+
+                editButton.addEventListener('click', function () {
+                    location.assign('blog_modify.html' + location.search);
+                });
+            }
         }
     })
     /*获取右侧信息*/

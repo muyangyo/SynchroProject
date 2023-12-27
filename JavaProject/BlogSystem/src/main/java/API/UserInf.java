@@ -2,6 +2,7 @@ package API;
 
 import DAO.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mysql.cj.Session;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -24,10 +25,16 @@ class Inf {
     public String userGitHub;
     public int articlesCount;
 
+    public boolean isAuthor;
+
     public Inf(String userName, String userGitHub, int articlesCount) {
         this.userName = userName;
         this.userGitHub = userGitHub;
         this.articlesCount = articlesCount;
+    }
+
+    public void setAuthor(boolean author) {
+        isAuthor = author;
     }
 }
 
@@ -68,6 +75,11 @@ public class UserInf extends HttpServlet {
                     Blog blog = blogDAO.getBlogById(id);
                     User user = userDAO.getUsersById(blog.userId);
                     Inf inf = new Inf(user.userName, user.UserGitHub, blogDAO.getArticlesCount(user.userId));
+                    HttpSession session = req.getSession(false);
+                    String userName = (String) session.getAttribute("user");
+                    if (userName.equals(inf.userName)) {
+                        inf.setAuthor(true);
+                    }
 
                     String json = objectMapper.writeValueAsString(inf);
                     System.out.println(json);
