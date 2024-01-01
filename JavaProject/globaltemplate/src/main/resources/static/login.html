@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>登录页</title>
+
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+</head>
+
+<body style="   background-image: url(https://s2.loli.net/2023/03/01/dYQMrXeK8GVihP3.jpg);">
+
+<div class="text-hide" style="height: 350px"></div>
+<!--登录窗口-->
+<div class="container text-center" style="width: 500px;background-color: rgba(255,255,255,0.36)">
+
+    <hr>
+    <form class="form-signin" id="loginForm">
+
+        <h2 class="form-signin-heading text-left">请登入</h2>
+        <br>
+        <div class="form-group">
+            <input type="text" id="username" class="form-control" placeholder="账号" required autofocus>
+        </div>
+        <div class="form-group">
+            <input type="password" id="password" class="form-control" placeholder="密码" required>
+        </div>
+        <div class="checkbox text-left">
+            <label>
+                <input type="checkbox" value="remember-me">记住我 (还未实现,需要使用到token)
+            </label>
+        </div>
+
+        <!--验证窗口-->
+        <div class="form-group">
+            <div id="errorMsg" class="alert alert-danger " style="display: none;"></div>
+        </div>
+
+        <button class="btn btn-lg btn-success btn-block" type="button" id="loginBtn">登录</button>
+    </form>
+
+    <br>
+    <a href="register.html">注册</a>
+    <hr>
+
+</div>
+
+
+</body>
+
+<script>
+    $(document).ready(function () {
+        $('#loginBtn').click(function (e) {
+            e.preventDefault();//清除 表单原有的提交功能
+            var username = $('#username').val();
+            var password = $('#password').val();
+            var data = {"username": username, "password": password};
+
+            var errorMsg = $('#errorMsg');
+            errorMsg.hide();
+            if (username === '' || password === '') {
+                errorMsg.text('请填写账号和密码!').show();
+                return;
+            }
+
+            $.ajax({
+                url: 'global/login',
+                type: 'POST',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                success: function (response) {
+                    if (response) {
+                        location.assign("index.html")
+                    } else {
+                        errorMsg.text('账号或密码错误').show();
+                        // 清空输入框
+                        $('#username').val('');
+                        $('#password').val('');
+                    }
+                },
+                error: function (error) {
+                    errorMsg.text('登录失败，请检查您的账号或密码').show();
+                }
+            });
+        });
+    });
+
+</script>
+</html>

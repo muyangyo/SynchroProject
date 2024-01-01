@@ -5,9 +5,9 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>首页</title>
+    <title>用户权限管理页</title>
     <link rel="stylesheet" href="css/bootstrap.css">
-    <link href="index.css" rel="stylesheet">
+    <link href="css/index.css" rel="stylesheet">
 
 
     <script src="js/jquery.min.js"></script>
@@ -115,76 +115,136 @@
         <div class="col-sm-3 col-md-2 sidebar">
             <!--侧边导航栏-->
             <ul class="nav nav-pills nav-stacked nav-sidebar">
-                <li class="active"><a href="index.html">首页</a></li>
-                <li><a href="UserRightsManagement.html">用户权限管理</a></li>
+                <li><a href="index.html">首页</a></li>
+                <li class="active"><a href="UserRightsManagement.html">用户权限管理</a></li>
                 <li><a href="#">其他功能待开发</a></li>
             </ul>
             <hr>
 
+
         </div>
+
         <!--主要内容容器-->
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
 
-            <h1 class="page-header">开发者</h1>
+            <!--搜索条件-->
             <div class="row">
-                <div class="col-xs-6 col-sm-3 col-md-2 placeholder">
-                    <img src="../../../../../../FEProject/BlogFE/images/HeadImage.png"
-                         width="200" height="200" class="img-responsive" alt="沐阳">
-                    <h4>沐阳</h4>
-                    <span class="text-muted">前后端开发者,熟悉 Java Spring</span><br>
-                    <a href="#">GitHub地址</a>
-                </div>
-            </div>
+                <form class="form-inline">
 
-            <h1 class="sub-header">项目介绍</h1>
-            <div class="row">
-                <div class="col-xs-12 col-sm-9 col-md-10">
-                    <div class=".text-justify">
-                        <p>
-                            <strong>后端：采用Python作为主要编程语言，使用Flask或Django等框架开发，数据库选用MySQL或MongoDB等。</strong>
-                        </p>
-                        <p>
-                            <strong>前端：采用HTML5、CSS3和JavaScript进行开发，使用Bootstrap或Vue等框架提高开发效率，配合jQuery或axios等库实现前后端交互。</strong>
-                        </p>
-                        <p><strong>部署：可以使用云服务器进行部署，如AWS、阿里云等，也可以使用Docker进行容器化部署。</strong>
-                        </p>
-                        <p>
-                            <strong>安全：对用户密码进行加密存储，防止数据泄露；对敏感操作进行身份验证和授权控制；防范常见的网络攻击，如SQL注入、XSS攻击等。</strong>
-                        </p>
-                        <p>
-                            <strong>性能优化：采用缓存策略，如Redis缓存数据和模板；优化数据库查询语句；使用负载均衡提高系统吞吐量。</strong>
-                        </p>
+                    <div class="form-group">
+                        <label for="SearchNickname" class="control-label">昵称</label>
+                        <input type="text" class="form-control" id="SearchNickname" placeholder="昵称">
                     </div>
-                </div>
+                    <div class="form-group">
+                        <label for="SearchUsername" class="control-label">账号</label>
+                        <input type="text" class="form-control" id="SearchUsername" placeholder="账号">
+                    </div>
+                    <div class="form-group">
+                        <label for="SearchOptions" class="control-label">账号状态</label>
+                        <select class="form-control" id="SearchOptions">
+                            <option>全部</option>
+                            <option>正常</option>
+                            <option>停用</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary text-right">搜索</button>
+                        <button type="button" class="btn btn-warning text-right">重置</button>
+                    </div>
+                </form>
             </div>
+            <hr>
 
 
-            <h2 class=" sub-header">开发日志</h2>
-            <div class="table-responsive">
-                <table class="table table-striped">
+            <!--表单操作-->
+            <div class="row">
+                <button type="button" class="btn btn-success">新增</button>
+                <button type="button" class="btn btn-primary" id="editBtn" disabled>修改</button> <!-- 添加disabled属性 -->
+                <button type="button" class="btn btn-danger" id="deleteBtn" disabled>删除</button> <!-- 添加disabled属性 -->
+                <button type="button" class="btn btn-info">导出</button>
+            </div>
+            <br>
+
+            <!--用户表单-->
+            <div class="row">
+                <table class="table table-hover">
                     <thead>
                     <tr>
-                        <th>更新时间</th>
-                        <th>更新内容</th>
-                        <th>版本</th>
+                        <th><input type="checkbox" value="" id="checkAll"></th>
+                        <th class="sortable" data-sorttype="number">用户ID</th>
+                        <th>账号</th>
+                        <th>操作</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr>
-                        <td>2023-12-31</td>
-                        <td>创建了前端页面</td>
-                        <td>0.0.1</td>
+                        <td><input type="checkbox" value="" class="checkboxItem"></td> <!-- 添加类名checkboxItem -->
+                        <td>1001</td>
+                        <td>john_doe</td>
+                        <td>
+                            <button class="btn btn-primary itemEditBtn">编辑</button> <!-- 添加类名itemEditBtn -->
+                            <button class="btn btn-danger itemDeleteBtn">删除</button> <!-- 添加类名itemDeleteBtn -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" value="" class="checkboxItem"></td> <!-- 添加类名checkboxItem -->
+                        <td>1002</td>
+                        <td>jane_doe</td>
+                        <td>
+                            <button class="btn btn-primary itemEditBtn">编辑</button> <!-- 添加类名itemEditBtn -->
+                            <button class="btn btn-danger itemDeleteBtn">删除</button> <!-- 添加类名itemDeleteBtn -->
+                        </td>
                     </tr>
                     </tbody>
                 </table>
             </div>
+
         </div>
+
     </div>
+</div>
 </div>
 </body>
 <script>
     let username = document.querySelector("#username");
     console.dir(username);
     username.value = "账号";
+
+    // 获取元素引用
+    const checkAll = document.getElementById('checkAll');
+    const editBtn = document.getElementById('editBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const checkboxes = document.querySelectorAll('.checkboxItem'); // 获取所有多选框元素
+
+
+    // 全选或反选功能函数
+    function toggleCheckboxes() {
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = checkAll.checked; // 如果全选框被选中，则选中所有多选框；否则取消选中所有多选框。
+        });
+        updateButtonStates(); // 更新按钮状态
+    }
+
+    // 更新按钮状态函数（根据选中的多选框数量）
+    function updateButtonStates() {
+        let checkedCount = 0; // 计数选中的多选框数量
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                checkedCount++; // 如果多选框被选中，则增加计数器。
+            }
+        });
+        editBtn.disabled = checkedCount !== 1; // 如果选中的多选框数量不是1，则禁用编辑按钮。
+        deleteBtn.disabled = checkedCount === 0; // 如果没有选中的多选框，则禁用删除按钮。
+        if (checkedCount === 0) {
+            checkAll.checked = false;
+        }
+    }
+
+    // 为全选框添加事件监听器以实现全选和反选功能。
+    checkAll.addEventListener('change', toggleCheckboxes);
+    // 为每个多选框添加事件监听器以更新按钮状态。
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateButtonStates); // 当任何一个多选框状态改变时，更新按钮状态。
+    });
 </script>
 </html>
