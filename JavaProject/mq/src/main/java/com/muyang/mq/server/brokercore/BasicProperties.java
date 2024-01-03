@@ -2,6 +2,8 @@ package com.muyang.mq.server.brokercore;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * 创建于 IntelliJ IDEA.
  * 描述：
@@ -10,7 +12,7 @@ import lombok.Data;
  * Time: 17:36
  */
 @Data
-public class BasicProperties {
+public class BasicProperties implements Serializable{
     private String id;
     /*
     不同类型的交换机,意义不一样

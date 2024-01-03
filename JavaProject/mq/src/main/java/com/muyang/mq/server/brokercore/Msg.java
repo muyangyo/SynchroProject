@@ -2,6 +2,7 @@ package com.muyang.mq.server.brokercore;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 
@@ -13,13 +14,13 @@ import java.util.UUID;
  * Time: 13:54
  */
 @Data
-public class Msg {
+public class Msg implements Serializable {
     private BasicProperties basicProperties;//属性部分
     private Byte[] body;//正文
 
     //持久化存储 附加属性 [)
-    private Long offsetBegin = 0L; //消息数据的开头 距离 文件开头文字的偏移量(字节)
-    private Long offsetEnd = 0L;
+    private transient Long offsetBegin = 0L; //消息数据的开头 距离 文件开头文字的偏移量(字节)
+    private transient Long offsetEnd = 0L;
     private Byte isValid = 0x01; //该条消息在 文件里 是否有效,0x00无效,0x01有效
 
 
