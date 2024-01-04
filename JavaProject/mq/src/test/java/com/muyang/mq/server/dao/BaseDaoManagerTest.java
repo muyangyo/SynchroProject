@@ -26,14 +26,12 @@ import java.util.List;
  */
 @SpringBootTest
 class BaseDaoManagerTest {
-    @Autowired
-    private BaseDaoManager daoManager;
-
-    private ConfigurableApplicationContext context;
+    //    @Autowired
+    private BaseDaoManager daoManager = new BaseDaoManager();
 
     @BeforeEach
     void setUp() {
-        this.context = SpringApplication.run(MqApplication.class);
+        MqApplication.context = SpringApplication.run(MqApplication.class);
         daoManager.init();
     }
 
@@ -43,7 +41,7 @@ class BaseDaoManagerTest {
          * 这里必须先关闭服务, 才能删除数据库, 否则会删除失败(Spring服务会持有数据库⽂件的访问权限)
          * 当然,Linux不会,Linux使用的是内存上的临时文件
          * */
-        context.close();
+        MqApplication.context.close();
         daoManager.deleteDB();
     }
 

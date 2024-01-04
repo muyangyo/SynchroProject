@@ -1,5 +1,6 @@
 package com.muyang.mq.server.dao;
 
+import com.muyang.mq.MqApplication;
 import com.muyang.mq.server.brokercore.Binding;
 import com.muyang.mq.server.brokercore.Exchange;
 import com.muyang.mq.server.brokercore.QueueCore;
@@ -19,13 +20,16 @@ import java.util.List;
  * Date: 2024/1/3
  * Time: 21:40
  */
-@Repository
+//@Repository
 @Slf4j
 public class BaseDaoManager {
-    @Autowired
+    //    @Autowired
     private BaseMapper baseMapper;
 
     public void init() {
+        //为了可以删除文件,只能手动从启动类引入对象
+        this.baseMapper = MqApplication.context.getBean(BaseMapper.class);
+
         // 先判定数据库文件存在不存在
         if (!checkDBExists()) {
             log.info("数据库初始化中...");
