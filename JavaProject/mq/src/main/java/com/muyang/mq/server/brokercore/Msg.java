@@ -15,6 +15,9 @@ import java.util.UUID;
  */
 @Data
 public class Msg implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     private BasicProperties basicProperties;//属性部分
     private Byte[] body;//正文
 

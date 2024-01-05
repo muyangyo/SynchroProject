@@ -47,4 +47,16 @@ public class Exchange {
             throw new RuntimeException(e);
         }
     }
+
+
+    /*
+     * 下面这两个是为了方便设置 hashMap 的 KV
+     * */
+    public void putArgsMap(String key, Object value) {
+        args.put(key, value);
+    }
+
+    public Object getArgsMap(String key) {
+        return args.get(key);
+    }
 }
