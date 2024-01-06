@@ -2,6 +2,7 @@ package com.muyang.mq.server.dao;
 
 import com.muyang.mq.common.BinTool;
 import com.muyang.mq.common.MqException;
+import com.muyang.mq.server.brokercore.Binding;
 import com.muyang.mq.server.brokercore.Msg;
 import com.muyang.mq.server.brokercore.QueueCore;
 import com.muyang.mq.server.dao.model.Stats;
@@ -11,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -63,7 +66,7 @@ public class MsgFileManager {
         }
     }
 
-    //  写stats文件
+    //  写stats文件(直接覆盖写)
     private void writeStats(String queueName, Stats stat) {
         File file = new File(getQueueStatsPath(queueName));
         try (FileOutputStream outputStream = new FileOutputStream(file); PrintWriter printWriter = new PrintWriter(outputStream)) {
@@ -148,9 +151,8 @@ public class MsgFileManager {
 
 
             // 4. 写入消息到数据文件, 注意, 是追加写入到数据文件末尾.
-            try (OutputStream outputStream = new FileOutputStream(data, true);
-                 DataOutputStream dataOutputStream = new DataOutputStream(outputStream)) {
-                    dataOutputStream.writeInt(bytes.length);//先写入 当前Msg 的大小
+            try (OutputStream outputStream = new FileOutputStream(data, true); DataOutputStream dataOutputStream = new DataOutputStream(outputStream)) {
+                dataOutputStream.writeInt(bytes.length);//先写入 当前Msg 的大小
                 dataOutputStream.write(bytes);
                 dataOutputStream.flush();
             }
@@ -164,4 +166,134 @@ public class MsgFileManager {
     }
 
 
+    // 这个是删除消息的方法. 这里的删除是逻辑删除, 也就是把硬盘上存储的这个 Msg 里面的那个 isValid 属性设置成 0
+    public void deleteMessage(QueueCore queue, Msg message) throws IOException, ClassNotFoundException {
+        synchronized (queue) {
+            // 1. 先把文件中的这一段数据, 读出来, 还原回 Message 对象;
+            try (RandomAccessFile randomAccessFile = new RandomAccessFile(getQueueDataPath(queue.getName()), "rw")) {
+                randomAccessFile.seek(message.getOffsetBegin());//将光标设置到 Msg 的起始位置
+                byte[] buffer = new byte[(int) (message.getOffsetEnd() - message.getOffsetBegin())];//读取缓存区
+                randomAccessFile.read(buffer);
+                Msg diskMsg = (Msg) BinTool.fromBytes(buffer);//反序列化
+
+                // 2. 把 isValid 改成 0;
+                diskMsg.setIsValid((byte) 0x00);
+
+                // 3. 重新写回文件里
+                byte[] bytes = BinTool.toBytes(diskMsg);
+                randomAccessFile.seek(message.getOffsetBegin());//重新将光标设置到起始位置(读取和写入操作会移动光标)
+                randomAccessFile.write(bytes);
+            }
+            // 4. 更新统计信息
+            Stats stats = readStats(queue.getName());
+            stats.setValidCount(stats.getValidCount() - 1);
+            writeStats(queue.getName(), stats);
+        }
+    }
+
+    /*
+    使用这个方法从文件中, 读取出所有有效的消息内容, 加载到内存中(具体来说是放到一个链表里)
+    由于该方法是在程序启动时调用, 此时服务器还不能处理请求,所以不涉及多线程操作文件
+    */
+    public LinkedList<Msg> loadAllMessageFromQueue(String queueName) throws IOException, MqException, ClassNotFoundException {
+        LinkedList<Msg> ret = new LinkedList<>();
+        long pos = 0;//记录指针位置
+        try (InputStream inputStream = new FileInputStream(getQueueDataPath(queueName)); DataInputStream dataInputStream = new DataInputStream(inputStream)) {
+
+            while (true) {
+                // 1. 读取当前消息的长度, 这里的 readInt 可能会读到文件的末尾(EOF)然后抛出 "异常"
+                //EOFException – if this input stream reaches the end before reading four bytes.
+                int msgLength = dataInputStream.readInt();
+                pos += 4;//指针位移
+
+                // 2. 按照这个长度, 读取消息内容
+                byte[] msgBytes = new byte[msgLength];
+                int count = dataInputStream.read(msgBytes);
+                if (count < msgLength) {
+                    //如果出现不符合长度的信息时,则可能这条消息有数据丢失
+                    throw new MqException("Msg数据格式出错!请检查消息源文件");
+                }
+                // 3. 把这个读到的二进制数据, 反序列化回 Msg 对象
+                Msg msg = (Msg) BinTool.fromBytes(msgBytes);
+                // 4. 判定一下看看这个消息对象, 是不是无效对象.
+                if (msg.getIsValid() == 0x00) {
+                    // 注意这里也要移动指针位置
+                    pos += msgLength;
+                    continue;//无效信息跳过
+                }
+                // 5. 有效数据, 则需要把这个 Msg 对象加入到链表中. 加入之前还需要填写 offsetBeg 和 offsetEnd
+                // 由于 DataInputStream 没有获取获取当前指针位置的函数,只能借助 一个变量 来记录指针位置
+                msg.setOffsetBegin(pos);
+                msg.setOffsetEnd(pos + msgLength);
+                pos += msgLength;
+                ret.add(msg);
+            }
+
+        } catch (EOFException e) {
+            log.info("{}队列数据加载完成", queueName);
+            return ret;
+        }
+    }
+
+    // 检查当前是否要针对 该队列的 消息 数据文件进行 GC
+    public boolean checkGC(String queueName) {
+        Stats stats = readStats(queueName);
+        //如果 总信息数大于2000 且 有效信息占比小于 0.5 则执行 GC
+        return stats.getTotalCount() > 2000 && ((double) stats.getValidCount() / (double) stats.getTotalCount() < 0.5);
+    }
+
+
+    //获取 临时中转文件 路径
+    private String getQueueDataTempPath(String queueName) {
+        return getQueueDir(queueName) + "/queue_data_temp.txt";
+    }
+
+    // 这个方法是真正执行消息数据文件的垃圾回收操作的,利用 复制算法 先将有效消息存储在临时文件上,把原有文件删除后,重新命名为原文件
+    public void gc(QueueCore queue) throws MqException, IOException, ClassNotFoundException {
+        //由于GC操作的时间比较长,且对数据文件影响很大,所以在gc时,不能让其他线程操作
+        synchronized (queue) {
+            // 1. 创建一个新的文件
+            File tempFile = new File(getQueueDataTempPath(queue.getName()));
+            if (tempFile.exists()) {
+                //如果文件存在,则说明上次 gc 异常中断了.
+                throw new MqException("gc失败,原因是上次gc失败导致的数据错乱,需要手动删除临时文件" + tempFile.getAbsoluteFile());
+            }
+            boolean ok = tempFile.createNewFile();
+            if (!ok) {
+                throw new MqException("创建新文件失败!"+tempFile.getAbsoluteFile());
+            }
+
+            // 2. 从旧的文件中, 读取出所有的有效消息对象了.(直接调用前面的方法就行了)
+            LinkedList<Msg> msgLinkedList = loadAllMessageFromQueue(queue.getName());
+
+            // 3. 把有效消息, 写入到新的文件中.
+            try (OutputStream outputStream = new FileOutputStream(tempFile);
+                 DataOutputStream dataOutputStream = new DataOutputStream(outputStream)) {
+                for (Msg temp : msgLinkedList) {
+                    byte[] bytes = BinTool.toBytes(temp);
+                    dataOutputStream.writeInt(bytes.length);
+                    dataOutputStream.write(bytes);
+                }
+                dataOutputStream.flush();//避免缓冲区残余
+            }
+
+            // 4. 删除旧的数据文件, 并且把新的文件进行重命名
+            File file = new File(getQueueDataPath(queue.getName()));
+            ok = file.delete();
+            if (!ok) {
+                throw new MqException("gc失败,原因是旧数据文件被占用,无法删除!请关闭后重试!" + file.getAbsoluteFile());
+            }
+            ok = tempFile.renameTo(file);
+            if (!ok) {
+                throw new MqException("gc重命名失败");
+            }
+
+            // 5. 更新统计文件
+            Stats stats = new Stats();
+            stats.setValidCount(msgLinkedList.size());
+            stats.setTotalCount(msgLinkedList.size());
+            writeStats(queue.getName(), stats);
+        }
+
+    }
 }
