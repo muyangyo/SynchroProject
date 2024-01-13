@@ -9,6 +9,7 @@ import com.muyang.mq.server.dao.model.Stats;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -24,12 +25,16 @@ import java.util.Scanner;
  * Time: 15:25
  */
 @Slf4j
-@Service
+//@Repository
 public class MsgFileManager {
 
-    private final String MSG_BIG_SIZE = "int";
+    //    private final String MSG_BIG_SIZE = "int";
     @Value("${MuYang-mq.msg-locations}")
     private String basePath;//基准路径
+
+    public void init() {
+        //目前为空方法,为了统一形式和后期拓展
+    }
 
     public MsgFileManager() {
         if (basePath == null) {
@@ -83,10 +88,16 @@ public class MsgFileManager {
         boolean isOkDir = dir.mkdirs();
 
         File data = new File(getQueueDataPath(queueName));
-        boolean isOkData = data.mkdirs();
+        boolean isOkData = data.createNewFile();
 
         File stats = new File(getQueueStatsPath(queueName));
-        boolean isOkStats = stats.mkdirs();
+        boolean isOkStats = stats.createNewFile();
+
+        //初始化stats文件
+        Stats initStats = new Stats();
+        initStats.setTotalCount(0);
+        initStats.setValidCount(0);
+        writeStats(queueName, initStats);
 
         if (!isOkDir || !isOkData || !isOkStats) {
             throw new IOException("队列相关文件创建失败!");
@@ -96,14 +107,14 @@ public class MsgFileManager {
 
     // 删除队列的目录和文件. 删除掉无用队列的全部数据
     public void destroyQueueFiles(String queueName) throws IOException {
-        File dir = new File(getQueueDir(queueName));
-        boolean isOkDir = dir.delete();
-
         File data = new File(getQueueDataPath(queueName));
         boolean isOkData = data.delete();
 
         File stats = new File(getQueueStatsPath(queueName));
         boolean isOkStats = stats.delete();
+
+        File dir = new File(getQueueDir(queueName));
+        boolean isOkDir = dir.delete();
 
         if (!isOkDir || !isOkData || !isOkStats) {
             throw new IOException("队列相关文件删除失败!");
@@ -230,7 +241,7 @@ public class MsgFileManager {
             }
 
         } catch (EOFException e) {
-            log.info("{}队列数据加载完成", queueName);
+            log.info("{} 队列数据加载完成", queueName);
             return ret;
         }
     }
@@ -260,7 +271,7 @@ public class MsgFileManager {
             }
             boolean ok = tempFile.createNewFile();
             if (!ok) {
-                throw new MqException("创建新文件失败!"+tempFile.getAbsoluteFile());
+                throw new MqException("创建新文件失败!" + tempFile.getAbsoluteFile());
             }
 
             // 2. 从旧的文件中, 读取出所有的有效消息对象了.(直接调用前面的方法就行了)

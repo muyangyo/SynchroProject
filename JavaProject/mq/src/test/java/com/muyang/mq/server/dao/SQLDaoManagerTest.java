@@ -9,10 +9,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ConfigurableApplicationContext;
 
 import java.util.List;
 
@@ -25,9 +23,9 @@ import java.util.List;
  * Time: 22:06
  */
 @SpringBootTest
-class BaseDaoManagerTest {
+class SQLDaoManagerTest {
     //    @Autowired
-    private BaseDaoManager daoManager = new BaseDaoManager();
+    private SQLDaoManager daoManager = new SQLDaoManager();
 
     @BeforeEach
     void setUp() {

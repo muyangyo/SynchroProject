@@ -7,8 +7,6 @@ import com.muyang.mq.server.brokercore.QueueCore;
 import com.muyang.mq.server.brokercore.constant.ExchangeType;
 import com.muyang.mq.server.mapper.BaseMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 
 import java.io.File;
 import java.util.List;
@@ -22,7 +20,7 @@ import java.util.List;
  */
 //@Repository
 @Slf4j
-public class BaseDaoManager {
+public class SQLDaoManager {
     //    @Autowired
     private BaseMapper baseMapper;
 

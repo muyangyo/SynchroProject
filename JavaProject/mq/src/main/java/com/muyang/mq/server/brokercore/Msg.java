@@ -19,15 +19,15 @@ public class Msg implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private BasicProperties basicProperties;//属性部分
-    private Byte[] body;//正文
+    private byte[] body;//正文
 
     //持久化存储 附加属性 [)
     private transient Long offsetBegin = 0L; //消息数据的开头 距离 文件开头文字的偏移量(字节)
     private transient Long offsetEnd = 0L;
-    private Byte isValid = 0x01; //该条消息在 文件里 是否有效,0x00无效,0x01有效
+    private byte isValid = 0x01; //该条消息在 文件里 是否有效,0x00无效,0x01有效
 
 
-    public static Msg createMsgWithId(String routingKey, BasicProperties basicProperties, Byte[] body) {
+    public static Msg createMsgWithId(String routingKey, BasicProperties basicProperties, byte[] body) {
         Msg msg = new Msg();
 
         if (basicProperties != null) {
@@ -44,7 +44,7 @@ public class Msg implements Serializable {
         return msg;
     }
 
-    public static Msg createMsgWithId(BasicProperties basicProperties, Byte[] body) {
+    public static Msg createMsgWithId(BasicProperties basicProperties, byte[] body) {
         Msg msg = new Msg();
 
         if (basicProperties != null) {
