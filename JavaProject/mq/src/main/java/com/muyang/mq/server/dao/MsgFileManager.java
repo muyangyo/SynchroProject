@@ -29,7 +29,7 @@ import java.util.Scanner;
 public class MsgFileManager {
 
     //    private final String MSG_BIG_SIZE = "int";
-    @Value("${MuYang-mq.msg-locations}")
+//    @Value("${MuYang-mq.msg-locations}")
     private String basePath;//基准路径
 
     public void init() {
