@@ -28,10 +28,13 @@ public class ProController {
     @RequestMapping("/p1")
     public String p1(String userName, String password) {
         Integer result = userService.insertUser(userName, password);
-        log.info("用户插入成功, result:" + result);
+        log.info("用户插入成功1, result:" + result);
 
         Integer result2 = logService.insertLog(userName, "用户自行注册");
         log.info("日志表插入成功, result:" + result2);
+
+        Integer result3 = userService.insertUser(userName + "2", password + "2");
+        log.info("用户插入成功2, result:" + result);
         return "注册成功";
     }
 }

@@ -1,4 +1,4 @@
-package com.muyang.globaltemplate.global.responsemodel;
+package com.muyang.globaltemplate.global.requestmodel;
 
 import lombok.Data;
 

@@ -1,7 +1,7 @@
 package com.muyang.globaltemplate.global.controller;
 
 import com.muyang.globaltemplate.global.model.User;
-import com.muyang.globaltemplate.global.responsemodel.ForLogin;
+import com.muyang.globaltemplate.global.requestmodel.ForLogin;
 import com.muyang.globaltemplate.global.service.LoginServer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

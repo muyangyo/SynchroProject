@@ -100,7 +100,7 @@ public class MsgFileManager {
         writeStats(queueName, initStats);
 
         if (!isOkDir || !isOkData || !isOkStats) {
-            throw new IOException("队列相关文件创建失败!");
+            throw new IOException("队列相关文件创建失败!请检查是否有同名文件或者文件已存在.");
         }
         log.info("队列相关文件创建成功!");
     }
@@ -117,7 +117,7 @@ public class MsgFileManager {
         boolean isOkDir = dir.delete();
 
         if (!isOkDir || !isOkData || !isOkStats) {
-            throw new IOException("队列相关文件删除失败!");
+            throw new IOException("队列相关文件删除失败!可能有文件还在使用.");
         }
         log.info("队列相关文件删除成功!");
     }
@@ -140,7 +140,7 @@ public class MsgFileManager {
     public void sendMessage(QueueCore queue, Msg message) throws MqException, IOException {
         // 1. 检查一下当前要写入的队列对应的文件是否存在.
         if (!checkFilesExits(queue.getName())) {
-            throw new MqException(queue.getName() + "的文件不存在!");
+            throw new MqException(queue.getName() + "的文件不存在!无法保存信息!");
         }
         // 2. 把 Msg 对象, 进行序列化, 转成二进制的字节数组.
         byte[] bytes = BinTool.toBytes(message);
@@ -267,11 +267,11 @@ public class MsgFileManager {
             File tempFile = new File(getQueueDataTempPath(queue.getName()));
             if (tempFile.exists()) {
                 //如果文件存在,则说明上次 gc 异常中断了.
-                throw new MqException("gc失败,原因是上次gc失败导致的数据错乱,需要手动删除临时文件" + tempFile.getAbsoluteFile());
+                throw new MqException("gc失败,可能是上次gc一半时中断,请手动删除文件:" + tempFile.getAbsoluteFile());
             }
             boolean ok = tempFile.createNewFile();
             if (!ok) {
-                throw new MqException("创建新文件失败!" + tempFile.getAbsoluteFile());
+                throw new MqException("创建新文件失败!请手动删除文件:" + tempFile.getAbsoluteFile());
             }
 
             // 2. 从旧的文件中, 读取出所有的有效消息对象了.(直接调用前面的方法就行了)
@@ -296,7 +296,7 @@ public class MsgFileManager {
             }
             ok = tempFile.renameTo(file);
             if (!ok) {
-                throw new MqException("gc重命名失败");
+                throw new MqException("gc重命名失败,请检查是否有同名文件");
             }
 
             // 5. 更新统计文件
