@@ -1,0 +1,41 @@
+
+.container-right h3 {
+    font-size: 22px;
+    text-align: center;
+    font-weight: 900;
+    padding: 20px 0;
+}
+
+.container-right .date {
+    text-align: center;
+    color: rgb(0, 128, 0);
+    padding: 10px 0;
+}
+
+.container-right .content p {
+    text-indent: 2em;
+    margin-bottom: 5px;
+}
+
+/* 删除按钮样式 */
+.delete-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: rgba(255, 80, 17, 0.75);
+    color: #fff;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+/* 修改按钮样式 */
+.edit-button {
+    display: inline-block;
+    margin-left: 5px;
+    padding: 10px 20px;
+    background-color: rgba(17, 255, 119, 0.67);
+    color: #fff;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}

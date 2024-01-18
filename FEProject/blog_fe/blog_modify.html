@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客更改页</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/blog_edit.css">
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="checklogin.js"></script>
+    <script src="logOut.js"></script>
+
+    <!-- 引入 editor.md 的依赖 -->
+    <link rel="stylesheet" href="editor.md/css/editormd.min.css"/>
+    <script src="editor.md/lib/marked.min.js"></script>
+    <script src="editor.md/lib/prettify.min.js"></script>
+    <script src="editor.md/editormd.js"></script>
+</head>
+<body>
+<!-- 导航栏. nav 是 导航 这个词的缩写 -->
+<div class="nav">
+    <!-- logo -->
+    <img src="image/logo.png" alt="">
+    <div class="title">
+        <a href="blog_list.html">博客系统</a>
+    </div>
+    <!-- 只是一个空白, 用来把后面的链接挤过去 -->
+    <!-- 这是一个简单粗暴的写法~~ -->
+    <div class="spacer"></div>
+    <a href="blog_list.html">主页</a>
+    <a href="blog_edit.html">写博客</a>
+    <!-- 这里的地址回头再说 -->
+    <a href="login.html" onclick="logOff()">注销</a>
+</div>
+
+<!-- 博客编辑页的版心 -->
+<div class="blog-edit-container">
+    <!-- 整一个form表单进行数据传输-->
+    <form action="modifyBlog" method="post">
+        <!-- 标题编辑区 -->
+        <div class="title">
+            <input type="text" id="title-input" name="title">
+            <input type="text" id="userId" name="userId" style="visibility: hidden;">
+            <input type="text" id="blogId" name="blogId" style="visibility: hidden;">
+            <input type="submit" id="submit">
+        </div>
+        <!-- 博客编辑器 -->
+        <!-- 把 md 编辑器放到这个 div 中 -->
+        <div id="editor">
+            <textarea name="content"></textarea>
+        </div>
+    </form>
+</div>
+
+<script>
+    // checkLogin();
+    /*获取博客信息*/
+    let content = "加载中...";
+    $.ajax({
+        type: "get",
+        url: "blogInf" + location.search,
+        success: function (body) {
+            let blog = body;
+            userId = blog.userId;
+
+            let divTitle = document.querySelector("#title-input");
+            console.dir(divTitle);
+            divTitle.value = blog.title;
+
+            console.log(blog.content);
+            content = blog.content;
+
+            var editor = editormd("editor", {
+                // 这里的尺寸必须在这里设置. 设置样式会被 editormd 自动覆盖掉.
+                width: "100%",
+                // 设定编辑器高度
+                height: "calc(100% - 50px)",
+                // 编辑器中的初始内容
+                markdown: content,
+                // 指定 editor.md 依赖的插件路径
+                path: "editor.md/lib/"
+            });
+
+            let userIdInput = document.querySelector("#userId");
+            userIdInput.value = blog.userId;
+            console.dir(userIdInput);
+
+
+            let blogIdInput = document.querySelector("#blogId");
+            blogIdInput.value = blog.blogId
+            console.dir(blogIdInput);
+        }
+    });
+</script>
+</body>
+</html>

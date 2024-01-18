@@ -14,4 +14,8 @@ public enum StatusCode {
     StatusCode(Integer code) {
         this.code = code;
     }
+
+    public int getCode() {
+        return code;
+    }
 }

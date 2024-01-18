@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客详情页</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/blog_detail.css">
+
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="checklogin.js"></script>
+    <script src="logOut.js"></script>
+    <!-- 一定要引入 editormd 的依赖, 才能使用这里的方法 -->
+    <link rel="stylesheet" href="editor.md/css/editormd.min.css"/>
+    <script src="editor.md/lib/marked.min.js"></script>
+    <script src="editor.md/lib/prettify.min.js"></script>
+    <script src="editor.md/editormd.js"></script>
+</head>
+<body>
+<!-- 导航栏. nav 是 导航 这个词的缩写 -->
+<div class="nav">
+    <!-- logo -->
+    <img src="image/logo.png" alt="">
+    <div class="title">
+        <a href="blog_list.html">博客系统</a>
+    </div>
+    <!-- 只是一个空白, 用来把后面的链接挤过去 -->
+    <div class="spacer"></div>
+    <a href="blog_list.html">主页</a>
+    <a href="blog_edit.html">写博客</a>
+
+    <a href="login.html" onclick="logOff()">注销</a>
+</div>
+<!-- 页面的主体部分 -->
+<div class="container">
+    <!-- 左侧信息 -->
+    <div class="container-left">
+        <!-- 这个 div 表示整个用户信息的区域 -->
+        <div class="card">
+            <!-- 用户的头像 -->
+            <img src="image/head.png" alt="">
+            <h3>作者</h3>
+            <!-- 用户名 -->
+            <h3 class="userName">用户名null</h3>
+            <!-- github 地址 -->
+            <a href="https://www.github.com" class="userGitHub">github 地址</a>
+            <!-- 统计信息 -->
+            <div class="counter">
+                <span>文章</span>
+                <!--<span>分类</span>-->
+            </div>
+            <div class="counter">
+                <!--文章数量-->
+                <span class="articlesCount">0</span>
+                <!-- <span>1</span>-->
+            </div>
+
+            <!--               <button class="delete-button">删除</button>-->
+            <!--               <button class="edit-button">修改</button>-->
+
+        </div>
+    </div>
+
+    <!-- 右侧信息 -->
+    <div class="container-right">
+        <h3></h3>
+        <div class="date"></div>
+        <div class="content" id="content">
+        </div>
+    </div>
+</div>
+
+</body>
+<script>
+    checkLogin();
+    /*获取左侧信息*/
+    $.ajax({
+        type: "get",
+        url: "userInf" + location.search,
+        success: function (body) {
+            let userInf = body;
+            console.log(userInf);
+            console.log(body);
+            let h3 = document.querySelector(".userName");
+            let a = document.querySelector(".userGitHub");
+            let span = document.querySelector(".articlesCount");
+            h3.innerHTML = userInf.userName;
+            // a.innerHTML = userInf.userGitHub;
+            a.href = userInf.userGitHub;
+            span.innerHTML = userInf.articlesCount;
+
+            let card = document.querySelector(".card")
+            if (userInf.isAuthor) {
+                var deleteButton = document.createElement('button');
+                deleteButton.className = 'delete-button';
+                deleteButton.textContent = '删除';
+                card.appendChild(deleteButton);
+
+                var editButton = document.createElement('button');
+                editButton.className = 'edit-button';
+                editButton.textContent = '修改';
+                card.appendChild(editButton);
+
+                deleteButton.addEventListener('click', function () {
+                    console.log('删除按钮被点击');
+                    var formData = {
+                        editor: userInf.userName,
+                        blogId: location.search
+                    };
+
+                    $.ajax({
+                        url: 'delBlog',
+                        type: 'get',
+                        data: formData,
+                        success: function () {
+                            location.assign('blog_list.html');
+                        },
+                        error: function () {
+                            console.log('删除失败');
+                        }
+                    });
+
+                });
+
+                editButton.addEventListener('click', function () {
+                    location.assign('blog_modify.html' + location.search);
+                });
+            }
+        }
+    })
+    /*获取右侧信息*/
+    let divContainer = document.querySelector(".container-right");
+    console.log(divContainer);
+    $.ajax({
+        type: "get",
+        url: "blogInf" + location.search,
+        success: function (body) {
+            let blog = body;
+
+            let divTitle = document.querySelector(".container-right h3");
+            divTitle.innerHTML = blog.title;
+
+            let divDate = document.querySelector(".container-right .date");
+            divDate.innerHTML = blog.dateTime;
+
+            console.log(blog.content);
+            // let divContent = document.querySelector(".container-right .content");
+            editormd.markdownToHTML('content', {markdown: blog.content});
+
+        }
+    })
+</script>
+</html>

@@ -1,16 +1,30 @@
 /* 专门写 博客列表页 的专属样式 */
 
-/* 甚至整个 blog div 的样式 */
+/* 整个 blog div 的样式 */
 .blog {
     padding: 20px;
+    border-bottom: rgb(146, 177, 226) 1px solid;
+    cursor: pointer;
+    background-color: #fefefe;
+    border-radius: 10px;
+    margin: 6px 10px;
+    box-shadow: #665b5b 0px 0px 16px;
+    transition: all 0.5s;
+}
+
+.blog:hover {
+    box-shadow: rgba(0, 255, 255, 0.61) 0px 0px 25px;
+    background-color: rgba(167, 167, 167, 0.48);
 }
 
 /* 设置博客的标题 */
 .blog .title {
     font-size: 22px;
     text-align: center;
-    font-weight: 900;
+    /*font-weight: 900;*/
+    font-weight: 500;
 }
+
 
 /* 设置发布时间 */
 .blog .date {

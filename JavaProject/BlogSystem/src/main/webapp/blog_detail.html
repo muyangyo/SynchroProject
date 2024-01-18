@@ -48,18 +48,48 @@
             <!-- 统计信息 -->
             <div class="counter">
                 <span>文章</span>
-                <!--<span>分类</span>-->
+                <span>分类</span>
             </div>
             <div class="counter">
                 <!--文章数量-->
                 <span class="articlesCount">0</span>
-                <!-- <span>1</span>-->
+                <span class="articlesCategory">0</span>
             </div>
+
 
             <!--               <button class="delete-button">删除</button>-->
             <!--               <button class="edit-button">修改</button>-->
 
         </div>
+        <!-- 用来创造间隔的 -->
+        <div style="height: 5px"></div>
+        <!-- 评论区 -->
+        <div class="commentArea">
+            <h3>评论区</h3>
+            <!--评论-->
+            <div class="comment">
+                <h4 class="commenterName">评论者1</h4>
+                <p class="commentContent">真棒!</p>
+                <p class="commentTime">2023-07-19 10:00:00</p>
+                <div style="height: 20px"></div><!--用来当间隔-->
+            </div>
+
+            <div class="comment">
+                <h4 class="commenterName">评论者2</h4>
+                <p class="commentContent">评论言论2</p>
+                <p class="commentTime">2023-07-19 10:00:00</p>
+                <div style="height: 20px"></div><!--用来当间隔-->
+            </div>
+
+            <!-- 提交 评论 -->
+            <div class="newComment">
+                <input type="text" placeholder="请输入评论内容" class="commentInput"/>
+                <button type="button" class="submitButton">评论</button>
+            </div>
+
+        </div>
+
+
     </div>
 
     <!-- 右侧信息 -->
@@ -73,7 +103,7 @@
 
 </body>
 <script>
-    checkLogin();
+    // checkLogin();
     /*获取左侧信息*/
     $.ajax({
         type: "get",
@@ -150,5 +180,10 @@
 
         }
     })
+
+
+    document.querySelector('.submitButton').addEventListener('click', function () {
+        location.reload();
+    });
 </script>
 </html>

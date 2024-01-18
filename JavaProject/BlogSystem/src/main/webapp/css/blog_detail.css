@@ -39,3 +39,68 @@
     border: none;
     cursor: pointer;
 }
+
+/*评论区*/
+.commentArea {
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.commentArea h3 {
+    font-size: 22px;
+    text-align: center;
+    font-weight: 900;
+    padding-bottom: 20px;
+}
+
+/*评论者名字*/
+.commenterName {
+    font-size: 16px;
+    margin-bottom: 5px;
+    text-align: left; /* 评论者向左对齐 */
+}
+
+/*评论正文*/
+.commentContent {
+    width: 100%; /* 宽度自适应，超出部分自动换行 */
+    text-indent: 2em; /* 首行缩进 */
+    line-height: 1.5;
+}
+
+.commentTime {
+    font-size: 12px;
+    color: #888; /* 修改日期颜色 */
+    text-align: right; /* 右对齐 */
+    margin-top: 5px; /* 添加上边距 */
+}
+
+/*提交评论区*/
+.newComment {
+    display: flex;
+    justify-content: space-between; /* 使输入框和按钮水平对齐 */
+}
+
+/*新评论输入框*/
+.commentInput {
+    width: 100%; /* 宽度自适应 */
+    padding: 5px; /* 内边距 */
+    border: 1px solid #ccc; /* 边框 */
+}
+
+.submitButton {
+    display: inline-block;
+    padding: 5px 5px;
+    background-color: #007BFF; /* 蓝色背景 */
+    color: white; /* 白色文本 */
+    border: none; /* 无边框 */
+    cursor: pointer; /* 鼠标悬停时显示为手形光标 */
+    transition: background-color 0.3s ease; /* 背景颜色过渡效果 */
+}
+
+/* 评论按钮的鼠标悬停效果 */
+.submitButton:hover {
+    background-color: #0056b3; /* 鼠标悬停时的蓝色背景 */
+}

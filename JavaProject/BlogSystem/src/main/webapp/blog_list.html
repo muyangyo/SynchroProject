@@ -45,33 +45,44 @@
             <!-- 统计信息 -->
             <div class="counter">
                 <span>文章</span>
-                <!--<span>分类</span>-->
+                <span>分类</span>
             </div>
             <div class="counter">
                 <!--文章数量-->
                 <span class="articlesCount">0</span>
-                <!-- <span>1</span>-->
+                <span class="articlesCategory">0</span>
+
             </div>
         </div>
     </div>
     <!-- 右侧信息 -->
     <div class="container-right">
-        <!-- 这个 div 表示一个 博客  -->
-        <!--<div class="blog">
-            &lt;!&ndash; 博客标题 &ndash;&gt;
+        <div class="blog">
+            <!-- 博客标题 -->
             <div class="title">我的第一篇博客</div>
-            &lt;!&ndash; 博客的发布时间 &ndash;&gt;
+            <!-- 博客的发布时间 -->
             <div class="date">2023-05-11 20:00:00</div>
-            &lt;!&ndash; 博客的摘要&ndash;&gt;
+            <!-- 博客的摘要-->
             <div class="desc">
-                &lt;!&ndash; 使用 lorem 生成一段随机的字符串 &ndash;&gt;
+                <!-- 使用 lorem 生成一段随机的字符串 -->
                 从今天起, 我要认真敲代码. Lorem ipsum dolor sit amet consectetur, adipisicing elit. Debitis repellendus
                 voluptatum, reiciendis rem consectetur incidunt aspernatur eveniet excepturi magni quis sint, provident
                 est at et pariatur dolorem aliquid fugit voluptatem.
             </div>
-            &lt;!&ndash; html 中不能直接写 大于号, 大于号可能会被当成标签的一部分 &ndash;&gt;
-            <a href="blog_detail.html?blogId=1">查看全文 &gt;&gt; </a>
-        </div>-->
+        </div>
+        <div class="blog">
+            <!-- 博客标题 -->
+            <div class="title">我的第一篇博客</div>
+            <!-- 博客的发布时间 -->
+            <div class="date">2023-05-11 20:00:00</div>
+            <!-- 博客的摘要-->
+            <div class="desc">
+                <!-- 使用 lorem 生成一段随机的字符串 -->
+                从今天起, 我要认真敲代码. Lorem ipsum dolor sit amet consectetur, adipisicing elit. Debitis repellendus
+                voluptatum, reiciendis rem consectetur incidunt aspernatur eveniet excepturi magni quis sint, provident
+                est at et pariatur dolorem aliquid fugit voluptatem.
+            </div>
+        </div>
     </div>
 </div>
 </body>
@@ -82,7 +93,7 @@
         "userGitHub": userGitHub,
         "articlesCount": articlesCount
     }*/
-    checkLogin();
+    // checkLogin();
     $.ajax({
         type: "get",
         url: "userInf",
@@ -137,5 +148,8 @@
             }
         }
     })
+    document.querySelector('.blog').addEventListener('click', function () {
+        window.location.href = "https://www.sogou.com"; // 替换为你想要跳转的网址
+    });
 </script>
 </html>

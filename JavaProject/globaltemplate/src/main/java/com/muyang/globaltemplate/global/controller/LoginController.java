@@ -1,7 +1,7 @@
 package com.muyang.globaltemplate.global.controller;
 
 import com.muyang.globaltemplate.global.model.User;
-import com.muyang.globaltemplate.global.requestmodel.ForLogin;
+import com.muyang.globaltemplate.global.model.requestmodel.ForLogin;
 import com.muyang.globaltemplate.global.service.LoginServer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +22,13 @@ public class LoginController {
     @Autowired
     LoginServer loginServer;
 
-    @RequestMapping( value = "/login",method = RequestMethod.POST)
+    @RequestMapping(value = "/login", method = RequestMethod.POST)
     public Boolean login(@RequestBody(required = false) ForLogin forLogin) {
         /*类型转换*/
         User user = new User();
         user.setUsername(forLogin.getUsername());
         user.setPassword(forLogin.getPassword());
-        log.info(user+"登录中...");
+        log.info(user + "登录中...");
         return loginServer.check(user);
     }
 }
