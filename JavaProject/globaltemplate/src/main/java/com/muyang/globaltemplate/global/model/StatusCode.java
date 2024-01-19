@@ -9,9 +9,9 @@ package com.muyang.globaltemplate.global.model;
  */
 public enum StatusCode {
     SUCCESS(1), ERROR(-1);
-    private final Integer code;
+    private final int code;
 
-    StatusCode(Integer code) {
+    StatusCode(int code) {
         this.code = code;
     }
 

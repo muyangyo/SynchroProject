@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ch">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客列表页</title>
+
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/blog_list.css">
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="checklogin.js"></script>
+    <script src="logOut.js"></script>
+</head>
+<body>
+<!-- 导航栏. nav 是 导航 这个词的缩写 -->
+<div class="nav">
+    <!-- logo -->
+    <img src="image/logo.png" alt="">
+    <div class="title">
+        <a href="blog_list.html">博客系统</a>
+    </div>
+    <!-- 只是一个空白, 用来把后面的链接挤过去 -->
+    <!-- 这是一个简单粗暴的写法~~ -->
+    <div class="spacer"></div>
+    <a href="blog_list.html">主页</a>
+    <a href="blog_edit.html">写博客</a>
+    <!-- 这里的地址回头再说 -->
+    <a href="login.html" onclick="logOff()">注销</a>
+
+</div>
+
+<!-- 页面的主体部分 -->
+<div class="container">
+    <!-- 左侧信息 -->
+    <div class="container-left">
+        <!-- 这个 div 表示整个用户信息的区域 -->
+        <div class="card">
+            <!-- 用户的头像 -->
+            <img src="image/head.png" alt="">
+            <!-- 用户名 -->
+            <h3 class="userName">用户名null</h3>
+            <!-- github 地址 -->
+            <a href="https://www.github.com" class="userGitHub">github 地址</a>
+            <!-- 统计信息 -->
+            <div class="counter">
+                <span>文章</span>
+                <span>分类</span>
+            </div>
+            <div class="counter">
+                <!--文章数量-->
+                <span class="articlesCount">0</span>
+                <span class="articlesCategory">0</span>
+
+            </div>
+        </div>
+    </div>
+    <!-- 右侧信息 -->
+    <div class="container-right">
+        <div class="blog">
+            <!-- 博客标题 -->
+            <div class="title">我的第一篇博客</div>
+            <!-- 博客的发布时间 -->
+            <div class="date">2023-05-11 20:00:00</div>
+            <!-- 博客的摘要-->
+            <div class="desc">
+                <!-- 使用 lorem 生成一段随机的字符串 -->
+                从今天起, 我要认真敲代码. Lorem ipsum dolor sit amet consectetur, adipisicing elit. Debitis repellendus
+                voluptatum, reiciendis rem consectetur incidunt aspernatur eveniet excepturi magni quis sint, provident
+                est at et pariatur dolorem aliquid fugit voluptatem.
+            </div>
+        </div>
+        <div class="blog">
+            <!-- 博客标题 -->
+            <div class="title">我的第一篇博客</div>
+            <!-- 博客的发布时间 -->
+            <div class="date">2023-05-11 20:00:00</div>
+            <!-- 博客的摘要-->
+            <div class="desc">
+                <!-- 使用 lorem 生成一段随机的字符串 -->
+                从今天起, 我要认真敲代码. Lorem ipsum dolor sit amet consectetur, adipisicing elit. Debitis repellendus
+                voluptatum, reiciendis rem consectetur incidunt aspernatur eveniet excepturi magni quis sint, provident
+                est at et pariatur dolorem aliquid fugit voluptatem.
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    /*获取左侧信息*/
+    $.ajax({
+        type: "get",
+        url: "userInf",
+        success: function (body) {
+            let userInf = body;
+            console.log(userInf);
+            console.log(body);
+            let h3 = document.querySelector(".userName");
+            let a = document.querySelector(".userGitHub");
+            let span = document.querySelector(".articlesCount");
+            h3.innerHTML = userInf.userName;
+            //a.innerHTML = userInf.userGitHub;
+            a.href = userInf.userGitHub;
+            span.innerHTML = userInf.articlesCount;
+        }
+    })
+
+    /*获取右侧信息*/
+    let divContainer = document.querySelector(".container-right");
+    console.log(divContainer);
+    $.ajax({
+        type: "get",
+        url: "blogList",
+        success: function (body) {
+            for (let i = 0; i < body.length; i++) {
+                let blog = body[i];
+                let divBlog = document.createElement("div");
+                divBlog.className = "blog";
+
+                let divTitle = document.createElement("div");
+                divTitle.className = "title";
+                divTitle.innerHTML = blog.title;
+                divBlog.appendChild(divTitle);
+
+                let divDate = document.createElement("div");
+                divDate.className = "date";
+                divDate.innerHTML = blog.dateTime;
+                divBlog.appendChild(divDate);
+
+
+                let divDesc = document.createElement("div");
+                divDesc.className = "desc";
+                divDesc.innerHTML = blog.content;
+                divBlog.appendChild(divDesc);
+
+
+                let a = document.createElement("a");
+                a.href = "blog_detail.html?blogId=" + blog.blogId;
+                a.innerHTML = "查看全文 &gt;&gt; "
+                divBlog.appendChild(a);
+
+                divContainer.appendChild(divBlog);
+            }
+        }
+    })
+    /*点击博客区块跳转*/
+    document.querySelector('.blog').addEventListener('click', function () {
+        window.location.href = "https://www.sogou.com"; // 替换为你想要跳转的网址
+    });
+</script>
+</html>

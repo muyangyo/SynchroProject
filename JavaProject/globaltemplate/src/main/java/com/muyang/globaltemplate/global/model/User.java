@@ -13,11 +13,11 @@ import java.util.Date;
  */
 @Data
 public class User {
-    private Integer id;
+    private int id;
     private String username;
     private String password;
     private String nickname;
-    private Integer gender;// 0为女  1为男  2为秘密
+    private int gender;// 0为女  1为男  2为秘密
     private Date createTime;
     private Date updateTime;
 }

@@ -1,0 +1,70 @@
+/* 专门写 博客列表页 的专属样式 */
+
+/* 整个 blog div 的样式 */
+.blog {
+    padding: 20px;
+    border-bottom: rgb(146, 177, 226) 1px solid;
+    cursor: pointer;
+    background-color: #fefefe;
+    border-radius: 10px;
+    margin: 6px 10px;
+    box-shadow: #665b5b 0px 0px 16px;
+    transition: all 0.5s;
+}
+
+.blog:hover {
+    box-shadow: rgba(0, 255, 255, 0.61) 0px 0px 25px;
+    background-color: rgba(167, 167, 167, 0.48);
+}
+
+/* 设置博客的标题 */
+.blog .title {
+    font-size: 22px;
+    text-align: center;
+    /*font-weight: 900;*/
+    font-weight: 500;
+}
+
+
+/* 设置发布时间 */
+.blog .date {
+    text-align: center;
+    color: rgb(0, 128, 0);
+    padding: 15px 0;
+}
+
+/* 设置摘要部分 */
+.blog .desc {
+    /* text-indent: 28px; */
+    /* em 也是一个单位, 和 px 是并列的. 1em == 一个文字的大小 */
+    text-indent: 2em;
+}
+
+.blog a {
+    /* 改成块级元素, 此时才能够设置尺寸 */
+    display: block;
+    width: 150px;
+    height: 40px;
+    border: 2px solid black;
+
+    /* 把里面的文字改一下颜色, 和下划线 */
+    color: black;
+    text-align: center;
+    text-decoration: none;
+
+    /* 当文字的行高和元素高度一样的时候, 文字恰好是垂直居中的 */
+    line-height: 40px;
+
+    /* 水平居中 */
+    margin: 10px auto;
+
+    /* 加上背景切换的过渡效果, all 表示针对所有的变化都进行过渡. 2s 意思是过渡的时间是 2s */
+    transition: all 0.8s;
+}
+
+/* :hover 是一个 伪类选择器, 不是选中元素, 而是选中元素的某种状态 */
+/* 具体来说, :hover 就是选中了元素被鼠标悬停的状态 */
+.blog a:hover {
+    background-color: gray;
+    color: white;
+}

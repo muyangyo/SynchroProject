@@ -1,0 +1,52 @@
+/* 放博客编辑页的样式 */
+.blog-edit-container {
+    width: 1000px;
+    height: calc(100% - 50px);
+    margin: 0 auto;
+}
+
+/* 注意, 使用后代选择器, 防止和导航栏中的 .title 冲突 */
+.blog-edit-container .title {
+    height: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 标题的输入框 */
+#title-input {
+    height: 40px;
+    width: 896px;
+
+    border-radius: 10px;
+    border: none;
+    font-size: 20px;
+    text-indent: 10px;
+}
+
+/* 提交按钮 */
+#submit {
+    height: 40px;
+    width: 100px;
+
+    border-radius: 10px;
+    border: none;
+
+    color: white;
+    background-color: orange;
+}
+
+#submit:hover {
+    background-color: gray;
+}
+
+.blog-edit-container form {
+    height: 100%;
+}
+
+#editor {
+    border-radius: 10px;
+    /* background-color: rgba(255, 255, 255, 0.8); */
+    /* 这个也是设置半透明. 会让子元素也跟着一起半透明 */
+    opacity: 80%;
+}

@@ -1,6 +1,9 @@
 -- 创建数据库
-CREATE DATABASE globaltemplate;
-USE globaltemplate;
+CREATE DATABASE IF NOT EXISTS global_template CHARSET utf8mb4;
+USE global_template;
+
+-- 删除已存在的用户表
+DROP TABLE IF EXISTS users;
 
 -- 创建用户表
 CREATE TABLE users (
