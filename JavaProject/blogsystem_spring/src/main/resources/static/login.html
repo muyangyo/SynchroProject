@@ -7,6 +7,7 @@
     <title>博客登录页</title>
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/login.css">
+    <script src="js/jquery.min.js"></script>
 </head>
 <body>
 <!-- 导航栏. nav 是 导航 这个词的缩写 -->
@@ -29,7 +30,7 @@
     <div class="login-dialog">
         <h2>登录</h2>
         <!-- 使用 form 包裹一下下列内容, 便于后续给服务器提交数据 -->
-        <form action="login" method="post">
+        <form id="loginForm">
             <div class="row">
                 <span>用户名</span>
                 <input type="text" id="username" name="username">
@@ -42,11 +43,44 @@
                 <input type="submit" id="submit" value="登录">
             </div>
         </form>
+        <div style="height: 20px"></div><!--用来间隔的-->
+        <div style="text-align: center">
+            <a href="register.html"
+               style="  color: blue; text-decoration: none; font-size: 16px;">
+                注册</a>
+        </div>
     </div>
 </div>
 <div class="design">
     <a href="https://github.com/muyangyo/">后端支持: 沐阳.</a>
 </div>
-
+<script>
+    $(document).ready(function () {
+        $('#loginForm').on('submit', function (e) {
+            e.preventDefault(); // 阻止默认提交行为
+            var username = $('#username').val();
+            var password = $('#password').val();
+            $.ajax({
+                url: '/user/login',
+                type: 'POST',
+                data: {username: username, password: password},
+                success: function (response) {
+                    // 验证密码并获取token
+                    if (response.statusCode === 'SUCCESS') {
+                        // 将token设置到缓存中，这里使用localStorage
+                        localStorage.setItem('token', response.data);
+                        alert('登录成功，token已存入缓存！');
+                        location.assign("blog_list.html");
+                    } else {
+                        alert('登录失败! ' + response.errMsg);
+                    }
+                },
+                error: function () {
+                    alert("网络错误");
+                }
+            });
+        });
+    });
+</script>
 </body>
 </html>

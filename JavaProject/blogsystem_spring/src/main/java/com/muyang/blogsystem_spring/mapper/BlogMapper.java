@@ -1,7 +1,6 @@
 package com.muyang.blogsystem_spring.mapper;
 
 import com.muyang.blogsystem_spring.model.Blog;
-import com.muyang.blogsystem_spring.model.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -17,11 +16,11 @@ import java.util.List;
 @Mapper
 public interface BlogMapper {
 
-    Blog getBlogById(@Param("blogId") int blogId);
+    Blog selectBlogById(@Param("blogId") int blogId);
 
-    int getBlogCount(@Param("userId") int userId);
+    int selectBlogCount(@Param("userId") int userId);
 
-    List<Blog> getAllBlogs();
+    List<Blog> selectAllBlogs();
 
     int insertBlog(@Param("blog") Blog blog);
 

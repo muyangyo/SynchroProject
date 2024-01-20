@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 /**
  * 创建于 IntelliJ IDEA.
  * 描述：
@@ -22,17 +20,17 @@ class BlogMapperTest {
 
     @Test
     void getBlogById() {
-        System.out.println(blogMapper.getBlogById(1));
+        System.out.println(blogMapper.selectBlogById(1));
     }
 
     @Test
     void getBlogCount() {
-        System.out.println(blogMapper.getBlogCount(1));
+        System.out.println(blogMapper.selectBlogCount(1));
     }
 
     @Test
     void getAllBlogs() {
-        System.out.println(blogMapper.getAllBlogs());
+        System.out.println(blogMapper.selectAllBlogs());
     }
 
     @Test
@@ -42,13 +40,13 @@ class BlogMapperTest {
         blog.setContent("123123");
         blog.setUserId(1);
         blogMapper.insertBlog(blog);
-        System.out.println(blogMapper.getBlogById(3));
+        System.out.println(blogMapper.selectBlogById(3));
     }
 
     @Test
     void delBlog() {
         blogMapper.delBlog(2);
-        System.out.println(blogMapper.getAllBlogs());
+        System.out.println(blogMapper.selectAllBlogs());
     }
 
     @Test

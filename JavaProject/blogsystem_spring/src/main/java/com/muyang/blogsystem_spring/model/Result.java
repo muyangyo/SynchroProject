@@ -31,4 +31,12 @@ public class Result {
         return result;
     }
 
+    public static Result fail(String errMsg) {
+        Result result = new Result();
+        result.setStatusCode(StatusCode.ERROR);
+        result.setErrMsg(errMsg);
+        result.setData(null);
+        return result;
+    }
+
 }

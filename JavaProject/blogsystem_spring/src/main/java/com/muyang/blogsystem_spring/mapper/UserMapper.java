@@ -16,10 +16,12 @@ import java.util.List;
  */
 @Mapper
 public interface UserMapper {
-    User getUserById(@Param("id") int id);
+    User selectUserById(@Param("id") int id);
 
-    User getUserByName(@Param("userName") String userName);
+    User selectUserByName(@Param("userName") String userName);
 
-    List<User> getAllUsers();
+    List<User> selectAllUsers();
+
+    int insertUsers(@Param("user") User user);
 
 }

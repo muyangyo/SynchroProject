@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>用户权限管理页</title>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link href="css/index.css" rel="stylesheet">
+
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.js"></script>
+</head>
+<body>
+<!--顶部导航栏-->
+<nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container-fluid">
+
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">无实际效果</span>
+                <!--这个是装饰用的,不要添加内容-->
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">系统</a>
+        </div>
+
+        <div id="navbar" class="navbar-collapse collapse">
+
+            <ul class="nav nav-pills navbar-nav navbar-right">
+                <!--<li class="active"><a href="#">你好!</a></li>  加个.active是默认选中的-->
+                <li><a href="#" data-toggle="modal" data-target="#accountModal">您好!管理员: xx </a></li>
+                <li><a href="#" data-toggle="modal" data-target="#accountModal">账户设置</a></li>
+
+
+                <li><a href="login.html">登出</a></li>
+            </ul>
+
+            <!--搜索-->
+            <div>
+                <form class="navbar-form navbar-right" role="search" action="https://www.baidu.com/">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="搜索...">
+                    </div>
+                    <button type="submit" class="btn btn-default">搜索</button>
+                </form>
+            </div>
+
+
+        </div>
+
+    </div>
+</nav>
+
+<!--用户模态框-->
+<div class="modal fade" id="accountModal" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel"
+     aria-hidden="true" data-keyboard="true" data-backdrop="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="accountModalLabel">账户管理</h4>
+            </div>
+            <div class="modal-body"><!--模态框主体-->
+
+                <form>
+                    <div class="form-group">
+                        <label for="nickname">用户名</label>
+                        <input type="text" class="form-control" id="nickname" placeholder="用户名">
+                    </div>
+                    <div class="form-group">
+                        <label for="username">账号</label>
+                        <input type="text" class="form-control" id="username" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">密码</label>
+                        <input type="text" class="form-control" id="password" placeholder="密码">
+                    </div>
+
+
+                    <div class="form-group">
+                        <label>性别选择</label>
+                        <br>
+                        <div class="row">
+                            <label class="radio-inline col-md-4 col-md-offset-1 col-sm-offset-1">
+                                <input type="radio" name="genderSelection" id="male" value="option1">男
+                            </label>
+                            <label class="radio-inline col-md-4">
+                                <input type="radio" name="genderSelection" id="secret" value="option2" checked>秘密
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" name="genderSelection" id="female" value="option3">女
+                            </label>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary">提交更改</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--顶部导航栏下半部分-->
+<div class="container-fluid">
+    <div class="row">
+        <!--侧边栏容器-->
+        <div class="col-sm-3 col-md-2 sidebar">
+            <!--侧边导航栏-->
+            <ul class="nav nav-pills nav-stacked nav-sidebar">
+                <li><a href="index.html">首页</a></li>
+                <li class="active"><a href="UserRightsManagement.html">用户权限管理</a></li>
+                <li><a href="#">其他功能待开发</a></li>
+            </ul>
+            <hr>
+
+
+        </div>
+
+        <!--主要内容容器-->
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+
+            <!--搜索条件-->
+            <div class="row">
+                <form class="form-inline">
+
+                    <div class="form-group">
+                        <label for="SearchNickname" class="control-label">昵称</label>
+                        <input type="text" class="form-control" id="SearchNickname" placeholder="昵称">
+                    </div>
+                    <div class="form-group">
+                        <label for="SearchUsername" class="control-label">账号</label>
+                        <input type="text" class="form-control" id="SearchUsername" placeholder="账号">
+                    </div>
+                    <div class="form-group">
+                        <label for="SearchOptions" class="control-label">账号状态</label>
+                        <select class="form-control" id="SearchOptions">
+                            <option>全部</option>
+                            <option>正常</option>
+                            <option>停用</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary text-right">搜索</button>
+                        <button type="button" class="btn btn-warning text-right">重置</button>
+                    </div>
+                </form>
+            </div>
+            <hr>
+
+
+            <!--表单操作-->
+            <div class="row">
+                <button type="button" class="btn btn-success">新增</button>
+                <button type="button" class="btn btn-primary" id="editBtn" disabled>修改</button> <!-- 添加disabled属性 -->
+                <button type="button" class="btn btn-danger" id="deleteBtn" disabled>删除</button> <!-- 添加disabled属性 -->
+                <button type="button" class="btn btn-info">导出</button>
+            </div>
+            <br>
+
+            <!--用户表单-->
+            <div class="row">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th><input type="checkbox" value="" id="checkAll"></th>
+                        <th class="sortable" data-sorttype="number">用户ID</th>
+                        <th>账号</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><input type="checkbox" value="" class="checkboxItem"></td> <!-- 添加类名checkboxItem -->
+                        <td>1001</td>
+                        <td>john_doe</td>
+                        <td>
+                            <button class="btn btn-primary itemEditBtn">编辑</button> <!-- 添加类名itemEditBtn -->
+                            <button class="btn btn-danger itemDeleteBtn">删除</button> <!-- 添加类名itemDeleteBtn -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" value="" class="checkboxItem"></td> <!-- 添加类名checkboxItem -->
+                        <td>1002</td>
+                        <td>jane_doe</td>
+                        <td>
+                            <button class="btn btn-primary itemEditBtn">编辑</button> <!-- 添加类名itemEditBtn -->
+                            <button class="btn btn-danger itemDeleteBtn">删除</button> <!-- 添加类名itemDeleteBtn -->
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+</div>
+</body>
+<script>
+    let username = document.querySelector("#username");
+    console.dir(username);
+    username.value = "账号";
+
+    // 获取元素引用
+    const checkAll = document.getElementById('checkAll');
+    const editBtn = document.getElementById('editBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const checkboxes = document.querySelectorAll('.checkboxItem'); // 获取所有多选框元素
+
+
+    // 全选或反选功能函数
+    function toggleCheckboxes() {
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = checkAll.checked; // 如果全选框被选中，则选中所有多选框；否则取消选中所有多选框。
+        });
+        updateButtonStates(); // 更新按钮状态
+    }
+
+    // 更新按钮状态函数（根据选中的多选框数量）
+    function updateButtonStates() {
+        let checkedCount = 0; // 计数选中的多选框数量
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                checkedCount++; // 如果多选框被选中，则增加计数器。
+            }
+        });
+        editBtn.disabled = checkedCount !== 1; // 如果选中的多选框数量不是1，则禁用编辑按钮。
+        deleteBtn.disabled = checkedCount === 0; // 如果没有选中的多选框，则禁用删除按钮。
+        if (checkedCount === 0) {
+            checkAll.checked = false;
+        }
+    }
+
+    // 为全选框添加事件监听器以实现全选和反选功能。
+    checkAll.addEventListener('change', toggleCheckboxes);
+    // 为每个多选框添加事件监听器以更新按钮状态。
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateButtonStates); // 当任何一个多选框状态改变时，更新按钮状态。
+    });
+</script>
+</html>

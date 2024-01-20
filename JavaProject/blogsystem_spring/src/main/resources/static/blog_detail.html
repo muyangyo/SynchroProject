@@ -8,9 +8,9 @@
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/blog_detail.css">
 
-    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script src="checklogin.js"></script>
-    <script src="logOut.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/common.js"></script>
+
     <!-- 一定要引入 editormd 的依赖, 才能使用这里的方法 -->
     <link rel="stylesheet" href="editor.md/css/editormd.min.css"/>
     <script src="editor.md/lib/marked.min.js"></script>
@@ -30,7 +30,7 @@
     <a href="blog_list.html">主页</a>
     <a href="blog_edit.html">写博客</a>
 
-    <a href="login.html" onclick="logOff()">注销</a>
+    <a href="login.html" onclick="logout()">注销</a>
 </div>
 <!-- 页面的主体部分 -->
 <div class="container">
@@ -48,12 +48,12 @@
             <!-- 统计信息 -->
             <div class="counter">
                 <span>文章</span>
-                <span>分类</span>
+                <!--                <span>分类</span>-->
             </div>
             <div class="counter">
                 <!--文章数量-->
                 <span class="articlesCount">0</span>
-                <span class="articlesCategory">0</span>
+                <!--                <span class="articlesCategory">0</span>-->
             </div>
 
 
@@ -67,19 +67,12 @@
         <div class="commentArea">
             <h3>评论区</h3>
             <!--评论-->
-            <div class="comment">
+            <!--<div class="comment">
                 <h4 class="commenterName">评论者1</h4>
                 <p class="commentContent">真棒!</p>
                 <p class="commentTime">2023-07-19 10:00:00</p>
-                <div style="height: 20px"></div><!--用来当间隔-->
-            </div>
-
-            <div class="comment">
-                <h4 class="commenterName">评论者2</h4>
-                <p class="commentContent">评论言论2</p>
-                <p class="commentTime">2023-07-19 10:00:00</p>
-                <div style="height: 20px"></div><!--用来当间隔-->
-            </div>
+                <div style="height: 20px"></div>&lt;!&ndash;用来当间隔&ndash;&gt;
+            </div>-->
 
             <!-- 提交 评论 -->
             <div class="newComment">
@@ -106,21 +99,20 @@
     /*获取左侧信息*/
     $.ajax({
         type: "get",
-        url: "userInf" + location.search,
+        url: "/user/getEditorUserInfo" + location.search,
         success: function (body) {
-            let userInf = body;
+            let userInf = body.data;
             console.log(userInf);
-            console.log(body);
             let h3 = document.querySelector(".userName");
             let a = document.querySelector(".userGitHub");
             let span = document.querySelector(".articlesCount");
             h3.innerHTML = userInf.userName;
-            // a.innerHTML = userInf.userGitHub;
-            a.href = userInf.userGitHub;
+            a.href = userInf.githubUrl;
             span.innerHTML = userInf.articlesCount;
 
             let card = document.querySelector(".card")
-            if (userInf.isAuthor) {
+            if (userInf.author) {
+                //是作者时加上这两个操作
                 var deleteButton = document.createElement('button');
                 deleteButton.className = 'delete-button';
                 deleteButton.textContent = '删除';
@@ -131,19 +123,20 @@
                 editButton.textContent = '修改';
                 card.appendChild(editButton);
 
+                //删除按钮事件
                 deleteButton.addEventListener('click', function () {
                     console.log('删除按钮被点击');
-                    var formData = {
-                        editor: userInf.userName,
-                        blogId: location.search
-                    };
 
                     $.ajax({
-                        url: 'delBlog',
+                        url: '/blog/delBlog' + location.search,
                         type: 'get',
-                        data: formData,
-                        success: function () {
-                            location.assign('blog_list.html');
+                        success: function (body) {
+                            if (body.statusCode === "SUCCESS") {
+                                alert("成功删除!")
+                                location.assign('blog_list.html');
+                            } else {
+                                alert("删除失败!" + body.errMsg);
+                            }
                         },
                         error: function () {
                             console.log('删除失败');
@@ -152,6 +145,7 @@
 
                 });
 
+                //编辑按钮事件
                 editButton.addEventListener('click', function () {
                     location.assign('blog_modify.html' + location.search);
                 });
@@ -159,20 +153,49 @@
         }
     })
 
+    /*获取评论列表*/
+    $.ajax({
+        url: '/comment/getCommentByBlogId' + location.search,
+        type: 'GET',
+        success: function (response) {
+            if (response.statusCode === 'SUCCESS') {
+
+                for (var i = 0; i < response.data.length; i++) {
+                    var commentDiv = $('<div class="comment"></div>');
+                    var commenterName = $('<h4 class="commenterName"></h4>').text(response.data[i].userName);
+                    var commentContent = $('<p class="commentContent"></p>').text(response.data[i].content);
+                    var commentTime = $('<p class="commentTime"></p>').text(response.data[i].createTime);
+
+                    commentDiv.append(commenterName, commentContent, commentTime);
+
+                    // 添加充当间隔的div
+                    commentDiv.append('<div style="height: 20px;"></div>');
+
+                    $('.commentArea').append(commentDiv);  // 将评论添加到评论区域
+                }
+            } else {
+                alert(response.errMsg);
+            }
+        },
+        error: function () {
+            alert("网络错误!");
+        }
+    });
+
     /*获取右侧信息*/
     let divContainer = document.querySelector(".container-right");
     console.log(divContainer);
     $.ajax({
         type: "get",
-        url: "blogInf" + location.search,
+        url: "/blog/getBlog" + location.search,
         success: function (body) {
-            let blog = body;
+            let blog = body.data;
 
             let divTitle = document.querySelector(".container-right h3");
             divTitle.innerHTML = blog.title;
 
             let divDate = document.querySelector(".container-right .date");
-            divDate.innerHTML = blog.dateTime;
+            divDate.innerHTML = blog.createTime;
 
             console.log(blog.content);
             // let divContent = document.querySelector(".container-right .content");
@@ -183,7 +206,25 @@
 
     /*添加评论后刷新*/
     document.querySelector('.submitButton').addEventListener('click', function () {
-        location.reload();
+        // 获取输入框的内容
+        var comment = $('.commentInput').val();
+
+        // 发送POST请求到后端
+        $.ajax({
+            url: '/comment/updateComment' + location.search + '&comment=' + comment,
+            type: 'get',
+            success: function (response) {
+                if (response.statusCode === 'SUCCESS') {
+                    alert(response.data);
+                    location.reload();
+                } else {
+                    alert(response.errMsg);
+                }
+            },
+            error: function () {
+                alert("网络错误!");
+            }
+        });
     });
 </script>
 </html>

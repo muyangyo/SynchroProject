@@ -7,7 +7,7 @@ DROP TABLE IF EXISTS blog_spring.user;
 -- 创建用户表
 CREATE TABLE blog_spring.user (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    user_name VARCHAR(128) NOT NULL,
+    user_name VARCHAR(128) NOT NULL UNIQUE,
     password VARCHAR(128) NOT NULL,
     github_url VARCHAR(128) NULL,
     delete_flag TINYINT(4) NULL DEFAULT 0,
