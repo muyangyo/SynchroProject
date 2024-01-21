@@ -26,4 +26,17 @@ public class Blog {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         return dateFormat.format(createTime);
     }
+
+    @Override
+    public String toString() {
+        return "Blog(" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", content='" + content + '\'' +
+                ", userId=" + userId +
+                ", deleteFlag=" + deleteFlag +
+                ", createTime=" + createTime +
+                ", updateTime=" + updateTime +
+                ')';
+    }
 }

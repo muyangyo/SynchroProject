@@ -2,6 +2,7 @@ package com.muyang.blogsystem_spring.service;
 
 import com.muyang.blogsystem_spring.mapper.BlogMapper;
 import com.muyang.blogsystem_spring.model.Blog;
+import com.muyang.blogsystem_spring.model.Result;
 import com.muyang.blogsystem_spring.tools.TokenTool;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
@@ -55,5 +56,21 @@ public class BlogService {
             throw new Exception("删除博客失败");
         }
         return true;
+    }
+
+    public Result addBlog(Blog blog) {
+        if (blogMapper.insertBlog(blog) == 1) {
+            log.info("成功添加一篇博客" + blog);
+            return Result.success("成功添加!");
+        }
+        return Result.fail("内部错误,请联系管理员!");
+    }
+
+    public Result updateBlog(Blog blog) {
+        if (blogMapper.updateBlog(blog) == 1) {
+            log.info("修改博客成功" + blog);
+            return Result.success("成功修改!");
+        }
+        return Result.fail("内部错误,请联系管理员!");
     }
 }

@@ -58,8 +58,8 @@
     $(document).ready(function () {
         $('#loginForm').on('submit', function (e) {
             e.preventDefault(); // 阻止默认提交行为
-            var username = $('#username').val();
-            var password = $('#password').val();
+            let username = $('#username').val();
+            let password = $('#password').val();
             $.ajax({
                 url: '/user/login',
                 type: 'POST',

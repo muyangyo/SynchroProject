@@ -45,6 +45,12 @@
                     </div>
                 </div>
                 <div class="form-group">
+                    <label for="inputMail" class="col-sm-2 control-label">邮箱</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="inputMail" required/>
+                    </div>
+                </div>
+                <div class="form-group">
                     <label for="inputNickname" class="col-sm-2 control-label">昵称</label>
                     <div class="col-sm-10">
                         <input type="text" class="form-control" id="inputNickname" required/>
@@ -57,23 +63,21 @@
                         <input type="password" class="form-control" id="inputPassword" required/>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="inputREPassword" class="col-sm-2 control-label">请再确定密码</label>
+                <div class="form-group" id="reInputDiv">
+                    <label id="reInputLab" for="inputREPassword" class="col-sm-2 control-label">请再确定密码</label>
                     <div class="col-sm-10">
                         <input type="password" class="form-control" id="inputREPassword" required/>
                     </div>
                 </div>
 
                 <div class="form-group checkbox text-center">
-                    <input type="checkbox"/><a href="#">已阅读用户协议</a>
+                    <input id="agreeCheckBox" type="checkbox"/><a href="userAgreement.html">已阅读用户协议</a>
                 </div>
                 <hr>
 
 
-
-
                 <div class="form-group text-center">
-                        <button type="submit" class="btn btn-success btn-lg">注册</button>
+                    <button id="registerBtn" type="submit" class="btn btn-success btn-lg">注册</button>
                 </div>
 
             </form>
@@ -84,4 +88,60 @@
     </div>
 </div>
 </body>
+<script>
+    $(document).ready(function () {
+        //点击注册按钮触发
+        $('#registerBtn').click(function (e) {
+            e.preventDefault();//阻止 表单原有的提交功能
+            let username = $('#inputUsername').val();
+            let mail = $('#inputMail').val();
+            let nickName = $('#inputNickname').val();
+            let password = $('#inputPassword').val();
+            let rePassword = $('#inputREPassword').val();
+
+            /*这个是复选框的选中判断*/
+            /*            let checkBox = $('#agreeCheckBox');
+                        if (checkBox.is(':unchecked')) {
+                            checkBox.addClass("text-danger");
+                            return;
+                        }*/
+
+
+            let reDiv = $('#reInputDiv');
+            if (password !== rePassword) {
+                // 如果两次不一致则标红
+                $('#reInputLab').text("两次输入不同!");
+                reDiv.addClass("has-error");
+                return;
+            } else {
+                $('#reInputLab').text("请再确定密码");
+                reDiv.removeClass("has-error");
+            }
+
+
+            //正确则发送请求
+            let data = {
+                "username": username,
+                "mail": mail,
+                "nickName": nickName,
+                "password": password
+            };
+            $.ajax({
+                url: 'url',
+                type: 'POST',
+                data: data,
+                success: function (body) {
+                    if (body) {
+                        location.assign("index.html")
+                    } else {
+
+                    }
+                },
+                error: function () {
+
+                }
+            });
+        });
+    });
+</script>
 </html>

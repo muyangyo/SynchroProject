@@ -161,10 +161,10 @@
             if (response.statusCode === 'SUCCESS') {
 
                 for (var i = 0; i < response.data.length; i++) {
-                    var commentDiv = $('<div class="comment"></div>');
-                    var commenterName = $('<h4 class="commenterName"></h4>').text(response.data[i].userName);
-                    var commentContent = $('<p class="commentContent"></p>').text(response.data[i].content);
-                    var commentTime = $('<p class="commentTime"></p>').text(response.data[i].createTime);
+                    let commentDiv = $('<div class="comment"></div>');
+                    let commenterName = $('<h4 class="commenterName"></h4>').text(response.data[i].userName);
+                    let commentContent = $('<p class="commentContent"></p>').text(response.data[i].content);
+                    let commentTime = $('<p class="commentTime"></p>').text(response.data[i].createTime);
 
                     commentDiv.append(commenterName, commentContent, commentTime);
 
@@ -207,7 +207,7 @@
     /*添加评论后刷新*/
     document.querySelector('.submitButton').addEventListener('click', function () {
         // 获取输入框的内容
-        var comment = $('.commentInput').val();
+        let comment = $('.commentInput').val();
 
         // 发送POST请求到后端
         $.ajax({

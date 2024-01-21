@@ -26,4 +26,17 @@ public class Comment {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         return dateFormat.format(createTime);
     }
+
+    @Override
+    public String toString() {
+        return "Comment(" +
+                "id=" + id +
+                ", userName='" + userName + '\'' +
+                ", content='" + content + '\'' +
+                ", blogId=" + blogId +
+                ", deleteFlag=" + deleteFlag +
+                ", createTime=" + createTime +
+                ", updateTime=" + updateTime +
+                ')';
+    }
 }

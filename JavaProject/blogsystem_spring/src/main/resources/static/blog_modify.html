@@ -29,13 +29,13 @@
     <a href="blog_list.html">主页</a>
     <a href="blog_edit.html">写博客</a>
     <!-- 这里的地址回头再说 -->
-    <a href="login.html" onclick="logOff()">注销</a>
+    <a href="login.html" onclick="logout()">注销</a>
 </div>
 
 <!-- 博客编辑页的版心 -->
 <div class="blog-edit-container">
     <!-- 整一个form表单进行数据传输-->
-    <form action="modifyBlog" method="post">
+    <form>
         <!-- 标题编辑区 -->
         <div class="title">
             <input type="text" id="title-input" name="title">
@@ -46,7 +46,7 @@
         <!-- 博客编辑器 -->
         <!-- 把 md 编辑器放到这个 div 中 -->
         <div id="editor">
-            <textarea name="content"></textarea>
+            <textarea name="content" id="content"></textarea>
         </div>
     </form>
 </div>
@@ -56,9 +56,9 @@
     let content = "加载中...";
     $.ajax({
         type: "get",
-        url: "blogInf" + location.search,
+        url: "/blog/getBlog" + location.search,
         success: function (body) {
-            let blog = body;
+            let blog = body.data;
             userId = blog.userId;
 
             let divTitle = document.querySelector("#title-input");
@@ -85,9 +85,43 @@
 
 
             let blogIdInput = document.querySelector("#blogId");
-            blogIdInput.value = blog.blogId
+            blogIdInput.value = blog.id
             console.dir(blogIdInput);
         }
+    });
+
+    //提交修改后的文章
+    $(document).ready(function () {
+        // 绑定提交事件到表单
+        $('form').submit(function (event) {
+            //阻止表单的默认提交行为
+            event.preventDefault();
+            let title = $('#title-input').val();
+            let content = $('#content').val();
+            let userId = $('#userId').val();
+            let blogId = $('#blogId').val();
+
+            console.log(title);
+            console.log(content);
+            $.ajax({
+                url: '/blog/updateBlog',
+                type: 'POST',
+                data: {title: title, content: content, userId: userId, blogId: blogId},
+                success: function (response) {
+                    if (response.statusCode === "SUCCESS") {
+                        alert(response.data);
+                        console.log("成功修改博客!");
+                        location.assign("blog_detail.html" + location.search);
+                    } else {
+                        alert('修改失败! ' + response.errMsg);
+                    }
+                },
+                error: function () {
+                    alert("网络错误");
+                }
+            });
+
+        });
     });
 </script>
 </body>

@@ -22,7 +22,7 @@ public class EnrollInterceptor implements WebMvcConfigurer {
     Interceptor interceptor;
 
     List<String> excludeURL = Arrays.asList("/**/*.html", "/**/*.css", "/**/*.css.map",
-            "/**/*.js", "/**/*.png", "/fonts/**", "/favicon.ico",
+            "/**/*.js", "/**/*.png", "/fonts/**", "/favicon.ico", "/editor.md/**",
             "/user/login", "/user/register"
     );
 

@@ -30,14 +30,12 @@
     <div class="spacer"></div>
     <a href="blog_list.html">主页</a>
     <a href="blog_edit.html">写博客</a>
-    <!-- 这里的地址回头再说 -->
-    <a href="login.html" onclick="logOff()">注销</a>
+    <a href="login.html" onclick="logout()">注销</a>
 </div>
 
 <!-- 博客编辑页的版心 -->
 <div class="blog-edit-container">
-    <!-- 整一个form表单进行数据传输-->
-    <form action="blogUpdate" method="post">
+    <form id="getBlog">
         <!-- 标题编辑区 -->
         <div class="title">
             <input type="text" id="title-input" name="title">
@@ -46,13 +44,13 @@
         <!-- 博客编辑器 -->
         <!-- 把 md 编辑器放到这个 div 中 -->
         <div id="editor">
-            <textarea name="content" style="display: none;"></textarea>
+            <textarea id = "content" name="content" style="display: none;"></textarea>
         </div>
     </form>
 </div>
 
 <script>
-    var editor = editormd("editor", {
+    let editor = editormd("editor", {
         // 这里的尺寸必须在这里设置. 设置样式会被 editormd 自动覆盖掉.
         width: "100%",
         // 设定编辑器高度
@@ -61,6 +59,32 @@
         markdown: "# 开始编辑",
         // 指定 editor.md 依赖的插件路径
         path: "editor.md/lib/"
+    });
+
+    $(document).ready(function () {
+        $('#getBlog').on('submit', function (e) {
+            e.preventDefault(); // 阻止默认提交行为
+            let title = $('#title-input').val();
+            let content = $('#content').val();
+            console.log(title);
+            console.log(content);
+            $.ajax({
+                url: '/blog/addBlog',
+                type: 'POST',
+                data: {title: title, content: content},
+                success: function (response) {
+                    if (response.statusCode === 'SUCCESS') {
+                        alert(response.data);
+                        location.assign("blog_list.html");
+                    } else {
+                        alert('添加失败! ' + response.errMsg);
+                    }
+                },
+                error: function () {
+                    alert("网络错误");
+                }
+            });
+        });
     });
 </script>
 </body>
