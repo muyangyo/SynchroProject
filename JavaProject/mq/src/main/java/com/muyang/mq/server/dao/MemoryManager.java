@@ -56,7 +56,7 @@ public class MemoryManager {
      * @param exchangeName 交换机名称
      * @return 交换机对象，如果找不到则返回null
      */
-    public Exchange getExchange(String exchangeName) throws MqException {
+    public Exchange getExchange(String exchangeName) {
         Exchange exchange = exchangeMap.get(exchangeName);
         if (exchange == null) {
             log.warn("{} 无此交换机!", exchangeName);
@@ -91,7 +91,7 @@ public class MemoryManager {
      * @param queueName 队列名称
      * @return 队列对象，如果找不到则返回null
      */
-    public QueueCore getQueue(String queueName) throws MqException {
+    public QueueCore getQueue(String queueName) {
         QueueCore queueCore = queueMap.get(queueName);
         if (queueCore == null) {
             log.warn("{} 无此队列!", queueName);
@@ -253,7 +253,7 @@ public class MemoryManager {
      * @param queueName 队列名称
      * @return 指定队列中的消息个数，如果队列没有创建消息链表则返回0并记录警告日志提示用户先发送消息到该队列后再获取消息个数！
      */
-    public int getMsgCount(String queueName) throws MqException {
+    public int getMsgCount(String queueName)  {
         LinkedList<Msg> list = queueMsgMap.get(queueName);
         if (list == null) {
             log.warn(queueName + " 队列没有创建消息链表!请先进行初次发送消息到指定的队列,再获取消息个数!");

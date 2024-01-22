@@ -1,6 +1,5 @@
 package com.muyang.mq.server.brokercore;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,7 +7,6 @@ import lombok.Data;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * 创建于 IntelliJ IDEA.
@@ -26,6 +24,11 @@ public class QueueCore {
     //    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Map<String, Object> args = new HashMap<>();//额外参数
 
+    /**
+     * 给数据库用的,将 args 转为字符串
+     *
+     * @return Map字符串, 给数据库用的
+     */
     public String getArgs() {
         ObjectMapper objectMapper = new ObjectMapper();
         String ret = "";
@@ -37,6 +40,11 @@ public class QueueCore {
         }
     }
 
+    /**
+     * 从数据库中读取字符串转换为Map
+     *
+     * @param string 数据库提供
+     */
     public void setArgs(String string) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -45,6 +53,15 @@ public class QueueCore {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * 直接设置Map
+     *
+     * @param arguments 其他参数表
+     */
+    public void setArgs(Map<String, Object> arguments) {
+        this.args = arguments;
     }
 
     /*
@@ -57,4 +74,6 @@ public class QueueCore {
     public Object getArgsMap(String key) {
         return args.get(key);
     }
+
+
 }

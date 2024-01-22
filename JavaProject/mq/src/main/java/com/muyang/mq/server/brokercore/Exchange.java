@@ -6,11 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.muyang.mq.server.brokercore.constant.ExchangeType;
 import lombok.Data;
 
-import java.lang.ref.PhantomReference;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * 创建于 IntelliJ IDEA.
@@ -27,6 +24,11 @@ public class Exchange {
     private Boolean autoDelete = false;//是否自动删除
     private Map<String, Object> args = new HashMap<>();//额外的参数选项
 
+    /**
+     * 给数据库用的,将 args 转为字符串
+     *
+     * @return Map字符串, 给数据库用的
+     */
     public String getArgs() {
         ObjectMapper objectMapper = new ObjectMapper();
         String ret = "";
@@ -38,6 +40,11 @@ public class Exchange {
         }
     }
 
+    /**
+     * 从数据库中读取字符串转换为Map
+     *
+     * @param string 数据库提供
+     */
     public void setArgs(String string) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -48,6 +55,14 @@ public class Exchange {
         }
     }
 
+    /**
+     * 直接设置Map
+     *
+     * @param arguments Map表
+     */
+    public void setArgs(Map<String, Object> arguments) {
+        this.args = arguments;
+    }
 
     /*
      * 下面这两个是为了方便设置 hashMap 的 KV
@@ -59,4 +74,6 @@ public class Exchange {
     public Object getArgsMap(String key) {
         return args.get(key);
     }
+
+
 }
