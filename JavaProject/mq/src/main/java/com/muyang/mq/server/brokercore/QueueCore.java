@@ -1,12 +1,13 @@
 package com.muyang.mq.server.brokercore;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.muyang.mq.common.ConsumerEnv;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 创建于 IntelliJ IDEA.
@@ -24,35 +25,33 @@ public class QueueCore {
     //    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Map<String, Object> args = new HashMap<>();//额外参数
 
+    // 这些是用来帮助消费的
+    // 当前队列都有哪些订阅者
+    private List<ConsumerEnv> consumerEnvList = new ArrayList<>();
+    // 记录当前取到了第几个消费者. 方便实现轮询策略.(使用原子类保证线程安全)
+    private AtomicInteger consumerSeq = new AtomicInteger(0);
+
     /**
-     * 给数据库用的,将 args 转为字符串
+     * 添加订阅泽
      *
-     * @return Map字符串, 给数据库用的
+     * @param consumerEnv 订阅者
      */
-    public String getArgs() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String ret = "";
-        try {
-            ret = objectMapper.writeValueAsString(args);
-            return ret;
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+    public void addConsumerEnv(ConsumerEnv consumerEnv) {
+        consumerEnvList.add(consumerEnv);
     }
 
     /**
-     * 从数据库中读取字符串转换为Map
-     *
-     * @param string 数据库提供
+     * 选择一个订阅者,发消息用
      */
-    public void setArgs(String string) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            this.args = objectMapper.readValue(string, new TypeReference<HashMap<String, Object>>() {
-            }); //有泛型的类型,必须要用 TypeReference 捕获和操作泛型类型信息
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+    public ConsumerEnv chooseConsumer() {
+        if (consumerEnvList.size() == 0) {
+            // 该队列没有人订阅
+            return null;
         }
+        // 计算一下当前要取的元素的下标
+        int index = consumerSeq.get() % consumerEnvList.size();//避免越界
+        consumerSeq.incrementAndGet();
+        return consumerEnvList.get(index);
     }
 
     /**

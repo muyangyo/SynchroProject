@@ -1,5 +1,6 @@
 package com.muyang.mq.server;
 
+import com.muyang.mq.common.ConsumerBehavior;
 import com.muyang.mq.common.MqException;
 import com.muyang.mq.server.brokercore.*;
 import com.muyang.mq.server.brokercore.constant.ExchangeType;
@@ -24,6 +25,7 @@ public class VirtualHost {
     private MemoryManager memoryManager;
     private DiskDataManager diskDataManager;
     private Router router;
+    private ConsumerManager consumerManager;
     private final Object exchangeLocker = new Object();//交换机锁
     private final Object queueLocker = new Object();//队列锁
 
@@ -32,7 +34,7 @@ public class VirtualHost {
         this.diskDataManager = new DiskDataManager();
         this.memoryManager = new MemoryManager();
         this.router = new Router();
-
+        this.consumerManager = new ConsumerManager(this);
         //恢复全部数据到硬盘上
         try {
             memoryManager.recovery(diskDataManager);
@@ -260,18 +262,22 @@ public class VirtualHost {
                         log.error("{} 交换机不存在!无法创建绑定", exchangeName);
                         return false;
                     }
+                    // 4. 如果是 主题交换机 则判断是否需要优化 bindingKey
+                    if (exchange.getType() == ExchangeType.TOPIC) {
+                        bindingKey = Router.convertor(bindingKey);
+                    }
 
-                    // 4. 创建 Binding 对象
+                    // 5. 创建 Binding 对象
                     Binding binding = new Binding();
                     binding.setExchangeName(exchangeName);
                     binding.setQueueName(queueName);
                     binding.setBindingKey(bindingKey);
 
-                    // 5. 先写硬盘
+                    // 6. 先写硬盘
                     if (queue.getDurable() && exchange.getDurable()) {
                         diskDataManager.insertBinding(binding);
                     }
-                    // 6. 写入内存
+                    // 7. 写入内存
                     memoryManager.insertBinding(binding);
                     log.info("{} 绑定创建成功!", binding);
                 }
@@ -394,7 +400,7 @@ public class VirtualHost {
 
 
     //上面方法的提取
-    private void sendMessage(QueueCore queue, Msg message) throws IOException, MqException {
+    private void sendMessage(QueueCore queue, Msg message) throws IOException, MqException, InterruptedException {
         // 此处发送消息, 就是把消息写入到 硬盘 和 内存 上.
         int deliverMode = message.getBasicProperties().getDeliverMode();
         // 1 表示不持久化,2 表示持久化(这里不使用Boolean是为了仿照rabbitMq)
@@ -403,7 +409,31 @@ public class VirtualHost {
         }
         // 写入内存
         memoryManager.sendMsg(queue, message);
-        // TODO: 2024/1/22 这里可能还需要存入 未确定的消息总表
+        // TODO:  2024/1/22 这里可能还需要存入 未确定的消息总表
+
+        // 发送通知
+        consumerManager.notifyConsume(queue.getName());
+    }
+
+    /**
+     * 添加一个队列的订阅者, 当队列收到消息之后, 就要把消息<strong> 推 </strong>送给对应的订阅者.(而不是订阅者去拿)
+     *
+     * @param consumerTag      消费者的身份标识
+     * @param queueName        订阅的队列名
+     * @param autoAck          消息被消费完成后, 应答的方式. 为 true 自动应答. 为 false 手动应答.
+     * @param consumerBehavior 是一个回调函数. 此处类型设定成函数式接口,就可以写作 lambda 样子了.
+     * @return 成功订阅返回 true ,否则返回 false
+     */
+    public boolean basicConsume(String consumerTag, String queueName, boolean autoAck, ConsumerBehavior consumerBehavior) {
+        try {
+            consumerManager.addConsumer(consumerTag, queueName, autoAck, consumerBehavior);
+            log.info("{} 队列添加订阅者成功", queueName);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("{} 队列添加订阅者失败", queueName);
+            return false;
+        }
     }
 
 }
