@@ -23,7 +23,7 @@ public class GetStartPort {
     @Value("${server.port}")
     private Integer port;
 
-    @EventListener(ContextRefreshedEvent.class)
+    @EventListener(ContextRefreshedEvent.class)//监听启动事件
     public void start() {
         log.info("网页服务成功启动于: http://127.0.0.1:" + port);
     }

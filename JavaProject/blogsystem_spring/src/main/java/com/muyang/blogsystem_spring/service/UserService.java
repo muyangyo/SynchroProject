@@ -6,6 +6,7 @@ import com.muyang.blogsystem_spring.model.Blog;
 import com.muyang.blogsystem_spring.model.Result;
 import com.muyang.blogsystem_spring.model.User;
 import com.muyang.blogsystem_spring.model.UserInfo;
+import com.muyang.blogsystem_spring.tools.MD5Tool;
 import com.muyang.blogsystem_spring.tools.TokenTool;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +59,7 @@ public class UserService {
         if (user == null) {
             return Result.fail("账号或者密码错误!");
         }
-        if (userName.equals(user.getUserName()) && password.equals(user.getPassword())) {
+        if (userName.equals(user.getUserName()) && MD5Tool.verify(password, user.getPassword())) {
 
             Map<String, String> map = new HashMap<>(2);
             map.put("userId", String.valueOf(user.getId()));
@@ -77,6 +78,7 @@ public class UserService {
         if (temp != null) {
             return Result.fail("有同名账号,请取别的名字!");
         }
+        user.setPassword(MD5Tool.encipher(user.getPassword()));
         int i = userMapper.insertUsers(user);
         if (i > 0) {
             log.info(user + " 成功注册");

@@ -43,5 +43,3 @@ CREATE TABLE blog_spring.comment (
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-insert into user (user_name,password) values ("admin","admin");
-insert into blog (title,content,user_id) values ("第一篇文章","测试文章",1);

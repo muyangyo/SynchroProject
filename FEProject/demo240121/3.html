@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>搜索建议示例</title>
+    <link rel="stylesheet" href="css/bootstrap.css">
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <style>.suggestions {
+        display: none;
+        position: absolute;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        z-index: 1;
+    }
+
+    .suggestions li {
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .suggestions li:last-child {
+        border-bottom: none;
+    }</style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <input type="text" class="form-control" id="searchInput" placeholder="请输入搜索内容">
+            <ul class="suggestions list-group" id="suggestions"></ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        let searchInput = $('#searchInput');
+        let suggestions = ['搜索建议1', '搜索建议2', '搜索建议3']; // 这里可以存放你的搜索建议数据
+        let suggestionsList = $('#suggestions'); // 获取建议列表的元素
+
+        // 当输入框内容变化时，显示建议
+        searchInput.on('input', function () {
+            let inputVal = $(this).val().toUpperCase(); // 将输入内容转换为大写，以便匹配建议数据
+            suggestionsList.empty(); // 清空先前的建议列表项
+            if (inputVal.length > 1) { // 如果输入长度大于1，则显示建议
+                for (var i = 0; i < suggestions.length; i++) {
+                    if (suggestions[i].toLowerCase().indexOf(inputVal) === 0) { // 检查是否匹配建议数据
+                        var suggestion = $('<li></li>'); // 创建新的建议列表项元素
+                        suggestion.text(suggestions[i]); // 设置建议文本内容
+                        suggestion.data('url', 'http://example.com/' + suggestions[i]); // 设置建议的URL数据属性值，可以根据需要进行修改
+                        suggestionsList.append(suggestion); // 将新的建议列表项添加到列表中
+                    }
+                }
+                suggestionsList.show(); // 显示建议列表
+            } else { // 如果输入长度小于或等于1，则隐藏所有建议列表项
+                suggestionsList.hide();
+            }
+        });
+
+        // 当点击建议列表项时，执行跳转操作
+        suggestionsList.on('click', 'li', function () {
+            var selectedUrl = $(this).data('url'); // 获取建议列表项的数据-url属性值
+            window.location.href = selectedUrl; // 执行跳转操作
+        });
+    });
+</script>
+</body>
+</html>

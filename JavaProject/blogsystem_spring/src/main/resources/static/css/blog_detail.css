@@ -44,6 +44,7 @@
 .commentArea {
     display: flex;
     width: 200px;
+    word-wrap: break-word;
     flex-direction: column;
     background-color: rgba(255, 255, 255, 0.8);
     border-radius: 10px;
