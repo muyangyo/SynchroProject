@@ -1,9 +1,11 @@
 package com.example.demo240125_2.demo;
 
+import jakarta.annotation.PreDestroy;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * 创建于 IntelliJ IDEA.
@@ -16,7 +18,12 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class User {
+public class User implements BeanNameAware {
     private Integer id;
     private String name;
+
+    @Override
+    public void setBeanName(String name) {
+        System.out.println("setBeanName:" + name);
+    }
 }
