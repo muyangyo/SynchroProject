@@ -149,7 +149,11 @@ public class MemoryManager {
      * @return 绑定对象，如果找不到则返回null
      */
     public Binding getBinding(String exchangeName, String queueName) {
-        return (bindingsMap.get(exchangeName)).get(queueName);
+        ConcurrentHashMap<String, Binding> bindingMap = bindingsMap.get(exchangeName);
+        if (bindingMap == null) {
+            return null;
+        }
+        return bindingMap.get(queueName);
     }
 
     /**
@@ -205,7 +209,7 @@ public class MemoryManager {
      */
     public void deleteMessage(String messageId) {
         msgMap.remove(messageId);
-        log.info("id为: {} 的消息已移出总表!", messageId);
+        log.info("id为: {} 的消息已移出信息总表!", messageId);
     }
 
 
@@ -242,7 +246,7 @@ public class MemoryManager {
                 return null;//没有信息的时候
             }
             Msg msg = list.remove(0);
-            log.info("{} 信息已从 {} 取出", msg.getBasicProperties().getId(), queueName);
+            log.info("{} 信息已从 {} 取出,准备进行消费", msg.getBasicProperties().getId(), queueName);
             return msg;
         }
     }
@@ -253,7 +257,7 @@ public class MemoryManager {
      * @param queueName 队列名称
      * @return 指定队列中的消息个数，如果队列没有创建消息链表则返回0并记录警告日志提示用户先发送消息到该队列后再获取消息个数！
      */
-    public int getMsgCount(String queueName)  {
+    public int getMsgCount(String queueName) {
         LinkedList<Msg> list = queueMsgMap.get(queueName);
         if (list == null) {
             log.warn(queueName + " 队列没有创建消息链表!请先进行初次发送消息到指定的队列,再获取消息个数!");

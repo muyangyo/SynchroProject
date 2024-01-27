@@ -54,8 +54,8 @@ public class Router {
             if (temp >= '0' && temp <= '9') {
                 continue;
             }
-            // 判定是否是 _ 或者 .
-            if (temp == '_' || temp == '.') {
+            // 判定是否是 _ 或者 . 或者 # 或者 *
+            if (temp == '_' || temp == '.' || temp == '#' || temp == '*') {
                 continue;
             }
             // 该字符, 不是上述任何一种合法情况, 就直接返回 false

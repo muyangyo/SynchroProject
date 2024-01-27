@@ -409,7 +409,7 @@ public class VirtualHost {
         }
         // 写入内存
         memoryManager.sendMsg(queue, message);
-        // TODO:  2024/1/22 这里可能还需要存入 未确定的消息总表
+        //这里可能还需要存入 未确定的消息总表:已解决,在消费消息时进行判断
 
         // 发送通知
         consumerManager.notifyConsume(queue.getName());
@@ -425,6 +425,7 @@ public class VirtualHost {
      * @return 成功订阅返回 true ,否则返回 false
      */
     public boolean basicConsume(String consumerTag, String queueName, boolean autoAck, ConsumerBehavior consumerBehavior) {
+        queueName = virtualHostName + queueName;
         try {
             consumerManager.addConsumer(consumerTag, queueName, autoAck, consumerBehavior);
             log.info("{} 队列添加订阅者成功", queueName);
@@ -432,6 +433,47 @@ public class VirtualHost {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("{} 队列添加订阅者失败", queueName);
+            return false;
+        }
+    }
+
+
+    /**
+     * 手动应答
+     *
+     * @param queueName 消息所在的队列名
+     * @param messageId 消息id
+     * @return 成功手动应答返回 true,否则返回 false
+     */
+    public boolean basicAck(String queueName, String messageId) {
+        queueName = virtualHostName + queueName;
+        try {
+            // 1. 获取到消息和队列
+            Msg message = memoryManager.getMessage(messageId);
+            if (message == null) {
+                throw new MqException("要确认的消息不存在! messageId=" + messageId);
+            }
+            QueueCore queue = memoryManager.getQueue(queueName);
+            if (queue == null) {
+                throw new MqException("要确认的队列不存在! queueName=" + queueName);
+            }
+
+            // 2. 删除硬盘上的数据
+            if (message.getBasicProperties().getDeliverMode() == 2) {
+                diskDataManager.deleteMsg(queue, message);//持久化了的要删除
+            }
+
+            // 3. 删除消息总表中的数据
+            memoryManager.deleteMessage(messageId);
+
+            // 4. 删除待确认消息的表中的数据
+            memoryManager.removeMessageWaitAck(queueName, messageId);
+            log.info("手动应答成功! 消息被成功消费! 队列名: {} 消息id: {}", queueName, messageId);
+            return true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("手动应答失败!队列名: {} 消息id: {}", queueName, messageId);
             return false;
         }
     }
