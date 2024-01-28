@@ -1,6 +1,10 @@
-package com.muyang.mq.common.network.Requests;
+package com.muyang.mq.common.network.request_args;
+
+import lombok.Data;
 
 import java.io.Serializable;
+
+
 
 /**
  * 创建于 IntelliJ IDEA.
@@ -9,6 +13,8 @@ import java.io.Serializable;
  * Date: 2024/1/27
  * Time: 20:54
  */
+@Data
+
 public class QueueDeleteRequestArguments extends BasicRequestArguments implements Serializable {
     String queueName;
 }

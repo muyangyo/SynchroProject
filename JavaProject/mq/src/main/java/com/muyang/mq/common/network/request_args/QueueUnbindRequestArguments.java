@@ -1,4 +1,4 @@
-package com.muyang.mq.common.network.Requests;
+package com.muyang.mq.common.network.request_args;
 
 import lombok.Data;
 
