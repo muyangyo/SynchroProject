@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>权限不足</title>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link href="css/index.css" rel="stylesheet">
+
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.js"></script>
+</head>
+<body>
+<!--顶部导航栏-->
+<nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container-fluid">
+
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">折叠菜单(有点小问题)</span>
+                <!--这个是装饰用的,不要添加内容-->
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">系统</a>
+        </div>
+
+        <div id="navbar" class="navbar-collapse collapse">
+
+            <ul class="nav nav-pills navbar-nav navbar-right">
+                <!--<li class="active"><a href="#">你好!</a></li>  加个.active是默认选中的-->
+                <li><a href="#" data-toggle="modal" data-target="#accountModal">您好!管理员: xx </a></li>
+                <li><a href="#" data-toggle="modal" data-target="#accountModal">账户设置</a></li>
+
+
+                <li><a href="login.html">登出</a></li>
+            </ul>
+
+            <!--搜索-->
+            <div>
+                <form class="navbar-form navbar-right" role="search" action="https://www.baidu.com/">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="搜索...">
+                    </div>
+                    <button type="submit" class="btn btn-default">搜索</button>
+                </form>
+            </div>
+
+
+        </div>
+
+    </div>
+</nav>
+
+<!--用户模态框-->
+<div class="modal fade" id="accountModal" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel"
+     aria-hidden="true" data-keyboard="true" data-backdrop="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="accountModalLabel">账户管理</h4>
+            </div>
+            <div class="modal-body"><!--模态框主体-->
+
+                <div class="row">
+                    <div class="col-sm-4  col-sm-offset-col-md-4 col-md-offset-4 placeholder">
+                        <img src="images/HeadImage.png" width="200" height="200" class="img-responsive" alt="头像">
+                        <input type="file" id="fileInput" style="display: none;">
+                    </div>
+                </div>
+
+                <form>
+                    <div class="form-group">
+                        <label for="nickname">用户名</label>
+                        <input type="text" class="form-control" id="nickname" placeholder="用户名">
+                    </div>
+                    <div class="form-group">
+                        <label for="username">账号</label>
+                        <input type="text" class="form-control" id="username" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">密码</label>
+                        <input type="text" class="form-control" id="password" placeholder="密码">
+                    </div>
+
+
+                    <div class="form-group">
+                        <label>性别选择</label>
+                        <br>
+                        <div class="row">
+                            <label class="radio-inline col-md-4 col-md-offset-1 col-sm-offset-1">
+                                <input type="radio" name="genderSelection" id="male" value="option1">男
+                            </label>
+                            <label class="radio-inline col-md-4">
+                                <input type="radio" name="genderSelection" id="secret" value="option2" checked>秘密
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" name="genderSelection" id="female" value="option3">女
+                            </label>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary">提交更改</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--顶部导航栏下半部分-->
+<div class="container-fluid">
+    <div class="row">
+        <!--侧边栏容器-->
+        <div class="col-sm-3 col-md-2 sidebar">
+            <!--侧边导航栏-->
+            <ul class="nav nav-pills nav-stacked nav-sidebar">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="userRightsManagement.html">用户权限管理</a></li>
+                <li><a href="#">其他功能待开发</a></li>
+            </ul>
+            <hr>
+
+        </div>
+        <!--主要内容容器-->
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <div class="well well-lg">
+                <h1>权限不足,请返回首页!</h1>
+                <p>
+                    &nbsp;&nbsp;如果需要继续访问,请<a href="#permissionApplication" data-toggle="modal">申请权限</a>
+                </p>
+                <p>
+                    <a class="btn btn-lg btn-primary" href="index.html" role="button">返回首页&raquo;</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<!--权限申请模态框-->
+<div class="modal fade" id="permissionApplication" tabindex="-1" role="dialog"
+     aria-labelledby="permissionApplicationLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="permissionApplicationLabel">
+                    申请单
+                </h4>
+            </div>
+
+            <div class="modal-body">
+
+                <div>
+                    <label for="applicationReason"><strong>申请理由</strong></label>
+                </div>
+
+                <textarea id="applicationReason" rows="5" style="width: 100%"></textarea>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="applicationReasonSubmit">
+                    提交申请
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</body>
+<script>
+    let username = document.querySelector("#username");
+    console.dir(username);
+    username.value = "账号";
+
+    $('#applicationReasonSubmit').click(function () {
+        // 获取用户输入的申请理由
+        let applicationReason = $('#applicationReason').val();
+
+        $.ajax({
+            type: 'POST',
+            url: 'your-backend-url',
+            data: {applicationReason: applicationReason},
+            success: function (body) {
+            },
+            error: function (body) {
+
+            }
+        });
+    });
+
+    //点击头像
+    $('.img-responsive').click(function () {
+        $('#fileInput').click();  // 触发文件选择对话框
+        // 绑定文件选择后的上传事件
+        $('#fileInput').on('change', function () {
+            let file = this.files[0]; // 获取选中的文件
+            let formData = new FormData(); // 创建一个FormData对象
+            formData.append('file', file); // 将文件添加到FormData对象中
+
+            $.ajax({
+                url: 'upload.php', // 你的上传处理页面的URL
+                type: 'POST', // 使用POST方法上传数据
+                data: formData, // 将FormData对象作为数据源发送
+                processData: false, // 不处理数据，直接发送原始数据
+                contentType: false, // 不设置内容类型，让浏览器自动处理
+                success: function (bdoy) {
+
+                },
+                error: function (body) {
+
+                }
+            });
+        });
+    });
+</script>
+</html>

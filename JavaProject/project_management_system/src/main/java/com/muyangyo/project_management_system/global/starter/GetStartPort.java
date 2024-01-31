@@ -1,4 +1,4 @@
-package com.muyang.globaltemplate.global.starter;
+package com.muyangyo.project_management_system.global.starter;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
-
-import javax.annotation.PostConstruct;
 
 /**
  * 创建于 IntelliJ IDEA.

@@ -5,9 +5,6 @@ import com.muyang.mq.server.brokercore.Binding;
 import com.muyang.mq.server.brokercore.Exchange;
 import com.muyang.mq.server.brokercore.Msg;
 import com.muyang.mq.server.brokercore.QueueCore;
-import jdk.nashorn.internal.objects.annotations.Getter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
 import java.util.LinkedList;

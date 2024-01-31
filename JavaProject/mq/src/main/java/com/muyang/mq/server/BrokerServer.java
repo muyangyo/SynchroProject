@@ -58,6 +58,26 @@ public class BrokerServer {
         executorService = Executors.newCachedThreadPool();//弄一个可变的线程池来处理请求
         try {
             while (runnable) {
+                //扫描线程,监管socket失效,失效立刻清除数据
+                Thread thread = new Thread(() -> {
+                    while (true) {
+
+                        List<String> toDeleteChannelId = new ArrayList<>();
+                        for (Map.Entry<String, Socket> entry : sessions.entrySet()) {
+                            if (entry.getValue().isClosed()) {
+                                toDeleteChannelId.add(entry.getKey());
+                            }
+                        }
+                        for (String s : toDeleteChannelId) {
+                            sessions.remove(s);
+//                            log.info("成功清除无效socket!");
+                        }
+
+                    }
+                });
+                thread.setDaemon(true);
+                thread.start();
+
                 Socket clientSocket = serverSocket.accept();
                 // 把处理连接的逻辑丢给这个线程池,主线程继续等其他连接
                 executorService.submit(() -> {
@@ -139,7 +159,7 @@ public class BrokerServer {
         } else if (request.getType() == 0x02) {
             // 销毁 channel
             sessions.remove(requestArgs.getChannelId());
-            log.info("销毁 channel 完成! 频道Id为: {}" , requestArgs.getChannelId());
+            log.info("销毁 channel 完成! 频道Id为: {}", requestArgs.getChannelId());
         } else if (request.getType() == 0x03) {
             // 创建交换机
             ExchangeDeclareRequestArguments arguments = (ExchangeDeclareRequestArguments) requestArgs;
@@ -236,7 +256,7 @@ public class BrokerServer {
         for (String channelId : toDeleteChannelId) {
             sessions.remove(channelId);
         }
-        log.info("成功清除所有使用TCP连接IP为: {} 的channel", clientSocket.getInetAddress());
+        log.info("成功清除所有使用TCP连接IP为: {}:{} 的channel", clientSocket.getInetAddress(), clientSocket.getPort());
     }
 
 }

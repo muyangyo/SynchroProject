@@ -1,0 +1,105 @@
+/*下移内容，因为我们有一个50像素高的固定导航栏*/
+body {
+    padding-top: 50px;
+}
+
+/*
+*全局加载项
+*/
+.sub-header {
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(41, 42, 48, 0.36);
+}
+
+/*
+*顶部导航
+*隐藏默认边框以删除1px行。
+*/
+.navbar-fixed-top {
+    border: 0;
+}
+
+/*
+*边栏
+*/
+
+.sidebar {
+    display: none;
+}
+
+
+@media (min-width: 768px) {
+    .sidebar {
+        position: fixed;
+        top: 51px;
+        bottom: 0;
+        left: 0;
+        z-index: 1000;
+        display: block;
+        padding: 20px;
+        overflow-x: hidden;
+        overflow-y: auto; /*如果视口比内容短，则可滚动内容*/
+        background-color: #f5f5f5;
+        border-right: 1px solid #eee;
+    }
+
+}
+
+/*边栏导航*/
+.nav-sidebar {
+    margin-right: -21px;
+    margin-bottom: 20px;
+    margin-left: -20px;
+}
+
+.nav-sidebar > li > a {
+    padding-right: 20px;
+    padding-left: 20px;
+}
+
+.nav-sidebar > .active > a,
+.nav-sidebar > .active > a:hover,
+.nav-sidebar > .active > a:focus {
+    color: #fff;
+    background-color: #60a5d8;
+}
+
+
+.main {
+    padding: 20px;
+
+}
+
+@media (min-width: 768px) {
+    .main {
+        padding-right: 40px;
+        padding-left: 40px;
+    }
+}
+
+.main .page-header {
+    margin-top: 0;
+}
+
+
+/*
+*占位符面板想法
+*/
+
+.placeholders {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.placeholders h4 {
+    margin-bottom: 0;
+}
+
+.placeholder {
+    margin-bottom: 20px;
+}
+
+.placeholder img {
+    display: inline-block;
+    border-radius: 50%;
+}
