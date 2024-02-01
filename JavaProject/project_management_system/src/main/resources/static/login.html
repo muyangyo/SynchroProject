@@ -112,7 +112,7 @@
                 url: 'global/login',
                 type: 'POST',
                 data: JSON.stringify(data),
-                contentType: 'application/json',
+                contentType: 'application/json', //使用这个格式就必须要去body里找,而不是表单参数里找
                 success: function (response) {
                     if (response) {
                         location.assign("index.html")
