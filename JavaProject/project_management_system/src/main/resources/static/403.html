@@ -14,6 +14,7 @@
     <script src="js/bootstrap.js"></script>
 </head>
 <body>
+
 <!--顶部导航栏-->
 <nav class="navbar navbar-default navbar-fixed-top">
     <div class="container-fluid">
@@ -34,20 +35,21 @@
 
             <ul class="nav nav-pills navbar-nav navbar-right">
                 <!--<li class="active"><a href="#">你好!</a></li>  加个.active是默认选中的-->
-                <li><a href="#" data-toggle="modal" data-target="#accountModal">您好!管理员: xx </a></li>
+                <li><a href="#" id="welcomeInfo" data-toggle="modal" data-target="#accountModal">你好!</a>
+                </li>
                 <li><a href="#" data-toggle="modal" data-target="#accountModal">账户设置</a></li>
 
 
-                <li><a href="login.html">登出</a></li>
+                <li><a href="login.html" onclick="logout()">登出</a></li>
             </ul>
 
             <!--搜索-->
             <div>
-                <form class="navbar-form navbar-right" role="search" action="https://www.baidu.com/">
+                <form class="navbar-form navbar-right" role="search">
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="搜索...">
+                        <input id="searchInfo" type="text" class="form-control" placeholder="搜索...">
                     </div>
-                    <button type="submit" class="btn btn-default">搜索</button>
+                    <button id="searchBtn" type="submit" class="btn btn-default">搜索</button>
                 </form>
             </div>
 
@@ -56,7 +58,6 @@
 
     </div>
 </nav>
-
 <!--用户模态框-->
 <div class="modal fade" id="accountModal" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel"
      aria-hidden="true" data-keyboard="true" data-backdrop="true">
@@ -66,51 +67,65 @@
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h4 class="modal-title" id="accountModalLabel">账户管理</h4>
             </div>
-            <div class="modal-body"><!--模态框主体-->
-
+            <div class="modal-body">
+                <!-- 模态框主体 -->
                 <div class="row">
-                    <div class="col-sm-4  col-sm-offset-col-md-4 col-md-offset-4 placeholder">
-                        <img src="images/HeadImage.png" width="200" height="200" class="img-responsive" alt="头像">
-                        <input type="file" id="fileInput" style="display: none;">
+                    <div class="col-sm-4 col-sm-offset-2 col-md-4 col-md-offset-4 placeholder">
+                        <img id="userHead" src="images/HeadImage.png" width="200" height="200" class="img-responsive"
+                             alt="头像">
+                        <input type="file" id="fileInput" style="display:none;">
                     </div>
                 </div>
+                <form id="accountForm">
 
-                <form>
-                    <div class="form-group">
-                        <label for="nickname">用户名</label>
-                        <input type="text" class="form-control" id="nickname" placeholder="用户名">
-                    </div>
                     <div class="form-group">
                         <label for="username">账号</label>
                         <input type="text" class="form-control" id="username" disabled>
                     </div>
+
                     <div class="form-group">
                         <label for="password">密码</label>
                         <input type="text" class="form-control" id="password" placeholder="密码">
                     </div>
 
+                    <div class="form-group">
+                        <label for="nickname">昵称</label>
+                        <input type="text" class="form-control" id="nickname" placeholder="昵称">
+                    </div>
 
                     <div class="form-group">
                         <label>性别选择</label>
                         <br>
                         <div class="row">
                             <label class="radio-inline col-md-4 col-md-offset-1 col-sm-offset-1">
-                                <input type="radio" name="genderSelection" id="male" value="option1">男
-                            </label>
+                                <input type="radio" name="genderSelection" id="male" value="male">男</label>
                             <label class="radio-inline col-md-4">
-                                <input type="radio" name="genderSelection" id="secret" value="option2" checked>秘密
-                            </label>
+                                <input type="radio" name="genderSelection" id="secret" value="secret"
+                                       checked>秘密</label>
                             <label class="radio-inline">
-                                <input type="radio" name="genderSelection" id="female" value="option3">女
-                            </label>
+                                <input type="radio" name="genderSelection" id="female" value="female">女</label>
                         </div>
                     </div>
                 </form>
-
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary">提交更改</button>
+                <button id="userInfoEdit" type="button" data-dismiss="modal" class="btn btn-primary">提交更改</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--统用操作通知模态框-->
+<div class="modal fade" id="noticeModal" tabindex="-1" role="dialog" aria-labelledby="noticeModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <!-- 模态框主体 -->
+            <div class="modal-body">
+                <div style="height: 10px"></div><!--占位用的-->
+                <strong>
+                    <p id="Msg" class="text-center"></p>
+                </strong>
             </div>
         </div>
     </div>
@@ -176,52 +191,8 @@
         </div>
     </div>
 </div>
-</div>
+
 </body>
-<script>
-    let username = document.querySelector("#username");
-    console.dir(username);
-    username.value = "账号";
-
-    $('#applicationReasonSubmit').click(function () {
-        // 获取用户输入的申请理由
-        let applicationReason = $('#applicationReason').val();
-
-        $.ajax({
-            type: 'POST',
-            url: 'your-backend-url',
-            data: {applicationReason: applicationReason},
-            success: function (body) {
-            },
-            error: function (body) {
-
-            }
-        });
-    });
-
-    //点击头像
-    $('.img-responsive').click(function () {
-        $('#fileInput').click();  // 触发文件选择对话框
-        // 绑定文件选择后的上传事件
-        $('#fileInput').on('change', function () {
-            let file = this.files[0]; // 获取选中的文件
-            let formData = new FormData(); // 创建一个FormData对象
-            formData.append('file', file); // 将文件添加到FormData对象中
-
-            $.ajax({
-                url: 'upload.php', // 你的上传处理页面的URL
-                type: 'POST', // 使用POST方法上传数据
-                data: formData, // 将FormData对象作为数据源发送
-                processData: false, // 不处理数据，直接发送原始数据
-                contentType: false, // 不设置内容类型，让浏览器自动处理
-                success: function (bdoy) {
-
-                },
-                error: function (body) {
-
-                }
-            });
-        });
-    });
-</script>
+<script src="js/navCommon.js"></script>
+<script src="js/path/403.js"></script>
 </html>

@@ -1,5 +1,50 @@
+getUserInfo();
+
 /**
- * 初始化滑动开关
+ * 获取所有用户的信息(小于用户权限的)
+ */
+function getAllUserInfo() {
+    $.ajax({
+        url: '/update',
+        type: 'get',
+        success: function (body) {
+            let userId = '2';
+            let username = '123123';
+            let password = '******';
+            let nickname = 'demo';
+            let authority = '管理员';
+            let userState = 'checked';
+
+            // 构造 HTML 内容
+            let htmlContent = '<!--这是一个用户的数据-->\n' +
+                '<tr>\n' +
+                '<!--以id作为行标识符-->\n' +
+                '<td><input type="checkbox" value="" class="checkboxItem" id="checkBox_' + userId + '"></td>\n' +
+                '<td id="userId_' + userId + '">' + userId + '</td>\n' +
+                '<td id="username_' + userId + '">' + username + '</td>\n' +
+                '<td id="password_' + userId + '">' + password + '</td>\n' +
+                '<td id="nickname_' + userId + '">' + nickname + '</td>\n' +
+                '<td id="authority_' + userId + '">' + authority + '</td>\n' +
+                '<td><input type="checkbox" class="state" id="userState_' + userId + '" ' + userState + '/></td>\n' +
+                '<td>\n' +
+                '  <button id="editBtn_' + userId + '" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#userInfo" onclick="handleEditClickOnline(event)">编辑</button>\n' +
+                '  <button id="deleteBtn_' + userId + '" class="btn btn-danger btn-sm" onclick="handleDeleteClickOnline(event)">删除</button>\n' +
+                '</td>\n' +
+                '</tr>';
+
+            // 将构造的 HTML 内容插入到表格中（这里表格的 ID 为 "userTable"）
+            $('#userTable').append(htmlContent);
+        },
+        error: function () {
+            errorInf();
+        }
+    });
+}
+
+getAllUserInfo();
+
+/**
+ * 初始化滑动开关(必须在getAllUserInfo方法后面,要不然没办法渲染到)
  */
 $(".state").bootstrapSwitch({
     onText: "启用",      // 设置ON文本
@@ -10,18 +55,13 @@ $(".state").bootstrapSwitch({
     // 当开关状态改变时触发
     onSwitchChange: function (event, state) {
         if (state == true) {
-
+            //触发事件的用户id
+            let userId = splitWithUnderline(event.target.id);
         } else {
 
         }
     }
 });
-/**
- 这个是设置模态框的账号
- */
-let username = document.querySelector("#username");
-console.dir(username);
-username.value = "账号";
 
 // 获取元素引用
 const checkAll = document.getElementById('checkAll');
@@ -67,55 +107,113 @@ checkboxes.forEach(checkbox => {
     checkbox.addEventListener('change', updateButtonStates); // 当任何一个多选框状态改变时，更新按钮状态。
 });
 
+
 /**
- * 按钮功能
+ * 新增用户按钮点击事件处理函数
  */
+function handleAddUserClick() {
+    modalSubmitBtnClick();
+}
 
-// 编辑 上部 按钮的点击事件处理函数
-function handleEditClick() {
-    checkboxes.forEach(checkbox => {
-        if (checkbox.checked) {
-            //发送ajax请求
-            let editLineId = splitWithUnderline(checkbox.id);
-            console.log(editLineId);
+/**
+ * 点击修改提交按钮
+ */
+function modalSubmitBtnClick() {
+    $('#modalSubmitBtn').off('click.submitData').on('click.submitData', function (e) {
+        e.preventDefault(); // 阻止表单原有的提交功能
 
-            $.ajax({
-                url: 'url',
-                method: 'POST',
-                data: {"editLineId": editLineId},
-                success: function (body) {
+        let formData = {
+            username: $('#username_0').val(),
+            password: $('#password_0').val(),
+            nickname: $('#nickname_0').val(),
+            authority: $('#authority_0').val()
+        };
 
-                },
-                error: function (body) {
+        console.log(formData);
+        $.ajax({
+            url: '/update',
+            type: 'POST',
+            data: formData,
+            success: function (body) {
 
-                }
-            });
-        }
+            },
+            error: function () {
+                errorInf();
+            }
+        });
     });
 }
 
-// 编辑 行 按钮的点击事件处理函数
-function handleEditClickOnline(event) {
-    //发送ajax请求
-    let editLineId = splitWithUnderline(event.target.id);
+/**
+ * 编辑 上部 按钮的点击事件处理函数
+ */
+function handleEditClick() {
+    let editLineId;
+    checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+            //获取要修改的列id
+            editLineId = splitWithUnderline(checkbox.id);
+        }
+    });
     console.log(editLineId);
 
-
+    //请求对应用户信息
     $.ajax({
         url: 'url',
         method: 'POST',
         data: {"editLineId": editLineId},
         success: function (body) {
-
+            //设置用户信息
+            $('#username_0').val();
+            $('#password_0').val();
+            $('#nickname_0').val();
+            let character = "admin";// 假设后端传过来的是user
+            $('#authority_0 option[value="' + character + '"]').prop('selected', true);
         },
         error: function (body) {
-
+            errorInf();
         }
     });
+
+    modalSubmitBtnClick();
 }
 
-// 删除 总 按钮的点击事件处理函数
+/**
+ * 编辑 行 按钮的点击事件处理函数
+ */
+function handleEditClickOnline(event) {
+    //获取要修改的列id
+
+    let editLineId = splitWithUnderline(event.target.id);
+    console.log(editLineId);
+
+
+    //请求对应用户信息
+    $.ajax({
+        url: 'url',
+        method: 'POST',
+        data: {"editLineId": editLineId},
+        success: function (body) {
+            //设置用户信息
+            $('#username_0').val();
+            $('#password_0').val();
+            $('#nickname_0').val();
+            let character = "admin";// 假设后端传过来的是user
+            $('#authority_0 option[value="' + character + '"]').prop('selected', true);
+        },
+        error: function (body) {
+            errorInf();
+        }
+    });
+
+    modalSubmitBtnClick();
+}
+
+/**
+ *删除 总 按钮的点击事件处理函数
+ */
 function handleDeleteClick() {
+    //获取要删除的序号组
     let arr = [];
     checkboxes.forEach(checkbox => {
         if (checkbox.checked) {
@@ -141,9 +239,11 @@ function handleDeleteClick() {
     });
 }
 
-// 删除 行 按钮的点击事件处理函数
+/**
+ * 删除 行 按钮的点击事件处理函数
+ */
 function handleDeleteClickOnline(event) {
-    //发送ajax请求
+    //获取要删除的列id
     let editLineId = splitWithUnderline(event.target.id);
     console.log(editLineId);
 

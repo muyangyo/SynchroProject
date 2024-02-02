@@ -12,8 +12,10 @@
 
     <script src="js/jquery.min.js"></script>
     <script src="js/bootstrap.js"></script>
+    <script src="js/common.js"></script>
 </head>
 <body>
+
 <!--顶部导航栏-->
 <nav class="navbar navbar-default navbar-fixed-top">
     <div class="container-fluid">
@@ -34,20 +36,21 @@
 
             <ul class="nav nav-pills navbar-nav navbar-right">
                 <!--<li class="active"><a href="#">你好!</a></li>  加个.active是默认选中的-->
-                <li><a href="#" data-toggle="modal" data-target="#accountModal">您好!管理员: xx </a></li>
+                <li><a href="#" id="welcomeInfo" data-toggle="modal" data-target="#accountModal">你好!</a>
+                </li>
                 <li><a href="#" data-toggle="modal" data-target="#accountModal">账户设置</a></li>
 
 
-                <li><a href="login.html">登出</a></li>
+                <li><a href="login.html" onclick="logout()">登出</a></li>
             </ul>
 
             <!--搜索-->
             <div>
-                <form class="navbar-form navbar-right" role="search" action="https://www.baidu.com/">
+                <form class="navbar-form navbar-right" role="search">
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="搜索...">
+                        <input id="searchInfo" type="text" class="form-control" placeholder="搜索...">
                     </div>
-                    <button type="submit" class="btn btn-default">搜索</button>
+                    <button id="searchBtn" type="submit" class="btn btn-default">搜索</button>
                 </form>
             </div>
 
@@ -56,7 +59,6 @@
 
     </div>
 </nav>
-
 <!--用户模态框-->
 <div class="modal fade" id="accountModal" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel"
      aria-hidden="true" data-keyboard="true" data-backdrop="true">
@@ -66,51 +68,65 @@
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h4 class="modal-title" id="accountModalLabel">账户管理</h4>
             </div>
-            <div class="modal-body"><!--模态框主体-->
-
+            <div class="modal-body">
+                <!-- 模态框主体 -->
                 <div class="row">
-                    <div class="col-sm-4  col-sm-offset-col-md-4 col-md-offset-4 placeholder">
-                        <img src="images/HeadImage.png" width="200" height="200" class="img-responsive" alt="头像">
-                        <input type="file" id="fileInput" style="display: none;">
+                    <div class="col-sm-4 col-sm-offset-2 col-md-4 col-md-offset-4 placeholder">
+                        <img id="userHead" src="images/HeadImage.png" width="200" height="200" class="img-responsive"
+                             alt="头像">
+                        <input type="file" id="fileInput" style="display:none;">
                     </div>
                 </div>
+                <form id="accountForm">
 
-                <form>
-                    <div class="form-group">
-                        <label for="nickname">用户名</label>
-                        <input type="text" class="form-control" id="nickname" placeholder="用户名">
-                    </div>
                     <div class="form-group">
                         <label for="username">账号</label>
                         <input type="text" class="form-control" id="username" disabled>
                     </div>
+
                     <div class="form-group">
                         <label for="password">密码</label>
                         <input type="text" class="form-control" id="password" placeholder="密码">
                     </div>
 
+                    <div class="form-group">
+                        <label for="nickname">昵称</label>
+                        <input type="text" class="form-control" id="nickname" placeholder="昵称">
+                    </div>
 
                     <div class="form-group">
                         <label>性别选择</label>
                         <br>
                         <div class="row">
                             <label class="radio-inline col-md-4 col-md-offset-1 col-sm-offset-1">
-                                <input type="radio" name="genderSelection" id="male" value="option1">男
-                            </label>
+                                <input type="radio" name="genderSelection" id="male" value="male">男</label>
                             <label class="radio-inline col-md-4">
-                                <input type="radio" name="genderSelection" id="secret" value="option2" checked>秘密
-                            </label>
+                                <input type="radio" name="genderSelection" id="secret" value="secret"
+                                       checked>秘密</label>
                             <label class="radio-inline">
-                                <input type="radio" name="genderSelection" id="female" value="option3">女
-                            </label>
+                                <input type="radio" name="genderSelection" id="female" value="female">女</label>
                         </div>
                     </div>
                 </form>
-
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary">提交更改</button>
+                <button id="userInfoEdit" type="button" data-dismiss="modal" class="btn btn-primary">提交更改</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--统用操作通知模态框-->
+<div class="modal fade" id="noticeModal" tabindex="-1" role="dialog" aria-labelledby="noticeModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <!-- 模态框主体 -->
+            <div class="modal-body">
+                <div style="height: 10px"></div><!--占位用的-->
+                <strong>
+                    <p id="Msg" class="text-center"></p>
+                </strong>
             </div>
         </div>
     </div>
@@ -136,10 +152,10 @@
             <div class="row">
                 <div class="col-xs-6 col-sm-3 col-md-2 placeholder">
                     <img src="images/HeadImage.png"
-                         width="200" height="200" class="img-responsive" alt="沐阳">
-                    <h4>沐阳</h4>
-                    <span class="text-muted">前后端开发者,熟悉 Java Spring</span><br>
-                    <a href="#">GitHub地址</a>
+                         width="200" height="200" class="img" alt="沐阳Yo">
+                    <h4>沐阳Yo</h4>
+                    <span class="text-muted">后端开发者,熟悉 Java SpringBoot</span><br>
+                    <a href="https://github.com/muyangyo">GitHub地址</a>
                 </div>
             </div>
 
@@ -148,18 +164,24 @@
                 <div class="col-xs-12 col-sm-9 col-md-10">
                     <div class=".text-justify">
                         <p>
-                            <strong>后端：</strong>
+                            <strong>
+                                用途：用来对个人项目进行管理,汇总管理项目中的数据,提供高视化项目管理
+                            </strong>
                         </p>
                         <p>
-                            <strong>前端：</strong>
-                        </p>
-                        <p><strong>部署：可以使用云服务器进行部署，如AWS、阿里云等，也可以使用Docker进行容器化部署。</strong>
-                        </p>
-                        <p>
-                            <strong>安全：对用户密码进行加密存储，防止数据泄露；对敏感操作进行身份验证和授权控制；防范常见的网络攻击，如SQL注入、XSS攻击等。</strong>
+                            <strong>
+                                后端：采用 SpringBoot 开发,使用 MD5 进行密码加密验证,并且使用 RabbitMQ 和 Redis
+                                作为缓存,token进行免密登录
+                            </strong>
                         </p>
                         <p>
-                            <strong>性能优化：采用缓存策略，如Redis缓存数据和模板；优化数据库查询语句；使用负载均衡提高系统吞吐量。</strong>
+                            <strong>前端：使用BootStrapV3 和 jQuery 进行开发</strong>
+                        </p>
+                        <p>
+                            <strong>安全：对用户密码进行加密存储，防止数据泄露；对敏感操作进行身份验证和授权控制；防范常见的网络攻击，如SQL注入</strong>
+                        </p>
+                        <p>
+                            <strong>性能优化：采用缓存策略，如Redis缓存数据</strong>
                         </p>
                     </div>
                 </div>
@@ -178,6 +200,11 @@
                     </thead>
                     <tbody>
                     <tr>
+                        <td>2024-02-02</td>
+                        <td>完成基础功能和前端页面的增加</td>
+                        <td>0.0.2</td>
+                    </tr>
+                    <tr>
                         <td>2023-12-31</td>
                         <td>创建了前端页面</td>
                         <td>0.0.1</td>
@@ -188,35 +215,8 @@
         </div>
     </div>
 </div>
+
 </body>
-<script>
-    let username = document.querySelector("#username");
-    console.dir(username);
-    username.value = "账号";
-
-    //点击头像
-    $('.img-responsive').click(function () {
-        $('#fileInput').click();  // 触发文件选择对话框
-        // 绑定文件选择后的上传事件
-        $('#fileInput').on('change', function () {
-            let file = this.files[0]; // 获取选中的文件
-            let formData = new FormData(); // 创建一个FormData对象
-            formData.append('file', file); // 将文件添加到FormData对象中
-
-            $.ajax({
-                url: 'upload.php', // 你的上传处理页面的URL
-                type: 'POST', // 使用POST方法上传数据
-                data: formData, // 将FormData对象作为数据源发送
-                processData: false, // 不处理数据，直接发送原始数据
-                contentType: false, // 不设置内容类型，让浏览器自动处理
-                success: function (bdoy) {
-
-                },
-                error: function (body) {
-
-                }
-            });
-        });
-    });
-</script>
+<script src="js/navCommon.js"></script>
+<script src="js/path/index.js"></script>
 </html>

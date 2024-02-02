@@ -10,6 +10,7 @@
 
     <script src="js/jquery.min.js"></script>
     <script src="js/bootstrap.js"></script>
+    <script src="js/common.js"></script>
 </head>
 <body>
 <!--导航栏-->
@@ -28,7 +29,7 @@
 
         <div class="col-md-8 column">
             <h3 class="text-center">
-                注册账号
+                注册
             </h3>
             <hr>
             <div class="alert alert-success alert-dismissable">
@@ -87,61 +88,21 @@
         <div class="col-md-2 column"></div>
     </div>
 </div>
+<!--统用操作通知模态框-->
+<div class="modal fade" id="noticeModal" tabindex="-1" role="dialog" aria-labelledby="noticeModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <!-- 模态框主体 -->
+            <div class="modal-body">
+                <div style="height: 10px"></div><!--占位用的-->
+                <strong>
+                    <p id="Msg" class="text-center"></p>
+                </strong>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
-<script>
-    $(document).ready(function () {
-        //点击注册按钮触发
-        $('#registerBtn').click(function (e) {
-            e.preventDefault();//阻止 表单原有的提交功能
-            let username = $('#inputUsername').val();
-            let mail = $('#inputMail').val();
-            let nickName = $('#inputNickname').val();
-            let password = $('#inputPassword').val();
-            let rePassword = $('#inputREPassword').val();
-
-            /*这个是复选框的选中判断*/
-            /*            let checkBox = $('#agreeCheckBox');
-                        if (checkBox.is(':unchecked')) {
-                            checkBox.addClass("text-danger");
-                            return;
-                        }*/
-
-
-            let reDiv = $('#reInputDiv');
-            if (password !== rePassword) {
-                // 如果两次不一致则标红
-                $('#reInputLab').text("两次输入不同!");
-                reDiv.addClass("has-error");
-                return;
-            } else {
-                $('#reInputLab').text("请再确定密码");
-                reDiv.removeClass("has-error");
-            }
-
-
-            //正确则发送请求
-            let data = {
-                "username": username,
-                "mail": mail,
-                "nickName": nickName,
-                "password": password
-            };
-            $.ajax({
-                url: 'url',
-                type: 'POST',
-                data: data,
-                success: function (body) {
-                    if (body) {
-                        location.assign("index.html")
-                    } else {
-
-                    }
-                },
-                error: function () {
-
-                }
-            });
-        });
-    });
-</script>
+<script src="js/path/register.js"></script>
 </html>
