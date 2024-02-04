@@ -15,7 +15,7 @@ $('#registerBtn').click(function (e) {
     // 这个是复选框的选中判断
     let checkBox = $('#agreeCheckBox');
     if (checkBox.is(':not(:checked)')) {
-        notice("请选勾选用户协议", "danger");
+        notice("请勾选用户协议", "danger");
         return;
     }
 

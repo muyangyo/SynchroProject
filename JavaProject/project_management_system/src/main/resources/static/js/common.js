@@ -41,9 +41,11 @@ function notice(msg, level, showTime) {
     }
     $('#Msg').addClass(grade).text(msg);
     $('#noticeModal').modal('show');//显示模态框
-    if (showTime === null) {
+
+    if (showTime === undefined) {
         showTime = 2000;
     }
+
     setTimeout(function () {
         $('#noticeModal').modal('hide');
     }, showTime);

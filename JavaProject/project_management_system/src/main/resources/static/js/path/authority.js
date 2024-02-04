@@ -1,6 +1,96 @@
 getUserInfo();
 
 /**
+ * 初始化滑动开关(必须在每次获取完用户信息后面调用,要不然没办法渲染到)
+ */
+function renderedSwitch() {
+    $(".state").bootstrapSwitch({
+        onText: "启用",      // 设置ON文本
+        offText: "停用",    // 设置OFF文本
+        onColor: "success",// 设置ON文本颜色     (info/success/warning/danger/primary)
+        offColor: "warning",  // 设置OFF文本颜色        (info/success/warning/danger/primary)
+        size: "mini",    // 设置控件大小,从小到大  (mini/small/normal/large)
+        // 当开关状态改变时触发
+        onSwitchChange: function (event, state) {
+            if (state == true) {
+                //触发事件的用户id
+                let userId = splitWithUnderline(event.target.id);
+                console.log(userId);
+            } else {
+
+            }
+        }
+    });
+}
+
+// 搜索按钮的点击事件
+$('#searchButton').click(function (e) {
+    e.preventDefault(); // 阻止表单提交的默认行为
+    // 获取昵称、账号和账号状态的值
+    let nickname = $('#SearchNickname').val();
+    let username = $('#SearchUsername').val();
+    let status = $('#SearchOptions').val();
+
+    // 发送AJAX请求到后端
+    $.ajax({
+        url: '/your-backend-url',
+        type: 'POST',
+        data: {
+            nickname: nickname,
+            username: username,
+            status: status
+        },
+        success: function (body) {
+
+            // 清空用户数据表格
+            let userTable = $("#userTable");
+            userTable.empty();
+
+            //重新构造
+            let userId = '2';
+            let username1 = '123123';
+            let password = '******';
+            let nickname1 = 'demo';
+            let authority = '管理员';
+            let userState = 'checked';
+
+            //重新追加
+            let htmlContent = createUserLine(userId, username1, password, nickname1, authority, userState);
+            $('#userTable').append(htmlContent);
+
+            //重新渲染滑动开关
+            renderedSwitch();
+
+        },
+        error: function () {
+
+        }
+    });
+});
+
+/**
+ * 创建用户数据行
+ * @returns {string} html结构的字符串
+ */
+function createUserLine(userId, username, password, nickname, authority, userState) {
+    return '<!--这是一个用户的数据-->\n' +
+        '<tr>\n' +
+        '<!--以id作为行标识符-->\n' +
+        '<td><input type="checkbox" value="" class="checkboxItem" id="checkBox_' + userId + '"></td>\n' +
+        '<td id="userId_' + userId + '">' + userId + '</td>\n' +
+        '<td id="username_' + userId + '">' + username + '</td>\n' +
+        '<td id="password_' + userId + '">' + password + '</td>\n' +
+        '<td id="nickname_' + userId + '">' + nickname + '</td>\n' +
+        '<td id="authority_' + userId + '">' + authority + '</td>\n' +
+        '<td><input type="checkbox" class="state" id="userState_' + userId + '" ' + userState + '/></td>\n' +
+        '<td>\n' +
+        '  <button id="editBtn_' + userId + '" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#userInfo" onclick="handleEditClickOnline(event)">编辑</button>\n' +
+        '  <button id="deleteBtn_' + userId + '" class="btn btn-danger btn-sm" onclick="handleDeleteClickOnline(event)">删除</button>\n' +
+        '</td>\n' +
+        '</tr>';
+}
+
+/**
  * 获取所有用户的信息(小于用户权限的)
  */
 function getAllUserInfo() {
@@ -16,24 +106,11 @@ function getAllUserInfo() {
             let userState = 'checked';
 
             // 构造 HTML 内容
-            let htmlContent = '<!--这是一个用户的数据-->\n' +
-                '<tr>\n' +
-                '<!--以id作为行标识符-->\n' +
-                '<td><input type="checkbox" value="" class="checkboxItem" id="checkBox_' + userId + '"></td>\n' +
-                '<td id="userId_' + userId + '">' + userId + '</td>\n' +
-                '<td id="username_' + userId + '">' + username + '</td>\n' +
-                '<td id="password_' + userId + '">' + password + '</td>\n' +
-                '<td id="nickname_' + userId + '">' + nickname + '</td>\n' +
-                '<td id="authority_' + userId + '">' + authority + '</td>\n' +
-                '<td><input type="checkbox" class="state" id="userState_' + userId + '" ' + userState + '/></td>\n' +
-                '<td>\n' +
-                '  <button id="editBtn_' + userId + '" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#userInfo" onclick="handleEditClickOnline(event)">编辑</button>\n' +
-                '  <button id="deleteBtn_' + userId + '" class="btn btn-danger btn-sm" onclick="handleDeleteClickOnline(event)">删除</button>\n' +
-                '</td>\n' +
-                '</tr>';
-
+            let htmlContent = createUserLine(userId, username, password, nickname, authority, userState);
             // 将构造的 HTML 内容插入到表格中（这里表格的 ID 为 "userTable"）
             $('#userTable').append(htmlContent);
+            //重新渲染
+            renderedSwitch();
         },
         error: function () {
             errorInf();
@@ -41,27 +118,18 @@ function getAllUserInfo() {
     });
 }
 
+// 重置按钮的点击事件
+$('#resetButton').click(function () {
+    // 清空所有输入框
+    $('#SearchNickname').val('');
+    $('#SearchUsername').val('');
+    $('#SearchOptions').val('all'); // 默认选择全部状态
+    getAllUserInfo();
+    renderedSwitch();
+});
+
 getAllUserInfo();
 
-/**
- * 初始化滑动开关(必须在getAllUserInfo方法后面,要不然没办法渲染到)
- */
-$(".state").bootstrapSwitch({
-    onText: "启用",      // 设置ON文本
-    offText: "停用",    // 设置OFF文本
-    onColor: "success",// 设置ON文本颜色     (info/success/warning/danger/primary)
-    offColor: "warning",  // 设置OFF文本颜色        (info/success/warning/danger/primary)
-    size: "mini",    // 设置控件大小,从小到大  (mini/small/normal/large)
-    // 当开关状态改变时触发
-    onSwitchChange: function (event, state) {
-        if (state == true) {
-            //触发事件的用户id
-            let userId = splitWithUnderline(event.target.id);
-        } else {
-
-        }
-    }
-});
 
 // 获取元素引用
 const checkAll = document.getElementById('checkAll');
@@ -109,17 +177,10 @@ checkboxes.forEach(checkbox => {
 
 
 /**
- * 新增用户按钮点击事件处理函数
- */
-function handleAddUserClick() {
-    modalSubmitBtnClick();
-}
-
-/**
  * 点击修改提交按钮
  */
 function modalSubmitBtnClick() {
-    $('#modalSubmitBtn').off('click.submitData').on('click.submitData', function (e) {
+    $('#modalSubmitBtn').click(function (e) {
         e.preventDefault(); // 阻止表单原有的提交功能
 
         let formData = {
@@ -143,6 +204,8 @@ function modalSubmitBtnClick() {
         });
     });
 }
+
+modalSubmitBtnClick();
 
 /**
  * 编辑 上部 按钮的点击事件处理函数
@@ -175,7 +238,6 @@ function handleEditClick() {
         }
     });
 
-    modalSubmitBtnClick();
 }
 
 /**
@@ -206,7 +268,6 @@ function handleEditClickOnline(event) {
         }
     });
 
-    modalSubmitBtnClick();
 }
 
 /**

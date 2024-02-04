@@ -153,7 +153,6 @@
             <!--搜索条件-->
             <div class="row">
                 <form class="form-inline">
-
                     <div class="form-group">
                         <label for="SearchNickname" class="control-label">昵称</label>
                         <input type="text" class="form-control" id="SearchNickname" placeholder="昵称">
@@ -165,14 +164,14 @@
                     <div class="form-group">
                         <label for="SearchOptions" class="control-label">账号状态</label>
                         <select class="form-control" id="SearchOptions">
-                            <option>全部</option>
-                            <option>正常</option>
-                            <option>停用</option>
+                            <option value="all">全部</option>
+                            <option value="active">正常</option>
+                            <option value="deactivate">停用</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <button type="submit" class="btn btn-primary text-right">搜索</button>
-                        <button type="button" class="btn btn-warning text-right">重置</button>
+                        <button id="searchButton" type="button" class="btn btn-primary text-right">搜索</button>
+                        <button id="resetButton" type="button" class="btn btn-warning text-right">重置</button>
                     </div>
                 </form>
             </div>
@@ -212,6 +211,7 @@
                     </tr>
                     </thead>
                     <tbody id="userTable">
+
                     <!--这是一个用户的数据-->
                     <tr>
                         <!--以id作为行标识符-->
