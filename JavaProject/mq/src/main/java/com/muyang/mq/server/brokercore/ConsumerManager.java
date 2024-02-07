@@ -9,7 +9,7 @@ package com.muyang.mq.server.brokercore;
  */
 
 import com.muyang.mq.common.ConsumerBehavior;
-import com.muyang.mq.common.ConsumerEnv;
+import com.muyang.mq.common.Consumer;
 import com.muyang.mq.common.MqException;
 import com.muyang.mq.server.VirtualHost;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ public class ConsumerManager {
     private VirtualHost virtualHostParent;
     // 指定一个线程池, 负责去执行具体的回调任务(不管扫描)
     private ExecutorService workPlace = Executors.newFixedThreadPool(4);
-    // 存放令牌的队列(不限制大小)
+    // 新信息通知 阻塞队列(可感知 所有 的队列的新信息)
     private BlockingQueue<String> tokenQueue = new LinkedBlockingQueue<>();
     // 扫描线程
     private Thread scannerThread = null;
@@ -78,9 +78,9 @@ public class ConsumerManager {
         if (queue == null) {
             throw new MqException(queueName + " 队列不存在!");
         }
-        ConsumerEnv consumerEnv = new ConsumerEnv(consumerTag, queueName, autoAck, consumerBehavior);
+        Consumer consumer = new Consumer(consumerTag, queueName, autoAck, consumerBehavior);
         synchronized (queue) {
-            queue.addConsumerEnv(consumerEnv);
+            queue.addConsumerEnv(consumer);
             // 如果当前队列中已经有了一些消息了, 需要立即就消费掉.
             int n = virtualHostParent.getMemoryManager().getMsgCount(queueName);
             for (int i = 0; i < n; i++) {
@@ -93,8 +93,8 @@ public class ConsumerManager {
 
     private void consumeMessage(QueueCore queue) {
         // 1. 按照轮询的方式, 找个消费者出来.
-        ConsumerEnv consumerEnv = queue.chooseConsumer();
-        if (consumerEnv == null) {
+        Consumer consumer = queue.chooseConsumer();
+        if (consumer == null) {
             log.warn("当前队列{}没有消费者,无法消费!", queue.getName());
             return;
         }
@@ -113,11 +113,11 @@ public class ConsumerManager {
                     // 1. 把消息放到待确认的集合中. 这个操作势必在执行回调之前.
                     virtualHostParent.getMemoryManager().addMsgWaitAck(queue.getName(), msg);
                     // 2. 真正执行回调操作
-                    consumerEnv.getConsumerBehavior().handleDelivery(consumerEnv.getConsumerTag(), msg
+                    consumer.getConsumerBehavior().handleDelivery(consumer.getConsumerTag(), msg
                             .getBasicProperties(), msg.getBody());
                     // 3. 如果当前是 "自动应答" , 就可以直接把消息删除了.
                     //如果当前是 "手动应答" , 则先不处理, 交给后续消费者调用 basicAck 方法来处理.
-                    if (consumerEnv.isAutoAck()) {
+                    if (consumer.isAutoAck()) {
                         // 1) 删除硬盘上的消息
                         if (msg.getBasicProperties().getDeliverMode() == 2) {
                             virtualHostParent.getDiskDataManager().deleteMsg(queue, msg);

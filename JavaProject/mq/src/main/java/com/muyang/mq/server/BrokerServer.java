@@ -58,26 +58,6 @@ public class BrokerServer {
         executorService = Executors.newCachedThreadPool();//弄一个可变的线程池来处理请求
         try {
             while (runnable) {
-                //扫描线程,监管socket失效,失效立刻清除数据
-                Thread thread = new Thread(() -> {
-                    while (true) {
-
-                        List<String> toDeleteChannelId = new ArrayList<>();
-                        for (Map.Entry<String, Socket> entry : sessions.entrySet()) {
-                            if (entry.getValue().isClosed()) {
-                                toDeleteChannelId.add(entry.getKey());
-                            }
-                        }
-                        for (String s : toDeleteChannelId) {
-                            sessions.remove(s);
-//                            log.info("成功清除无效socket!");
-                        }
-
-                    }
-                });
-                thread.setDaemon(true);
-                thread.start();
-
                 Socket clientSocket = serverSocket.accept();
                 // 把处理连接的逻辑丢给这个线程池,主线程继续等其他连接
                 executorService.submit(() -> {
