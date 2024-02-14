@@ -27,7 +27,7 @@ public class FanoutConsumer01 {
         };//正常得到消息时执行
 
         CancelCallback cancelCallback = s -> System.out.println("消费消息中断!");//没有成功消费消息时执行
-        channel.basicConsume("queueName1", false, deliverCallback, cancelCallback);//订阅消息
+        channel.basicConsume("queueName3", false, deliverCallback, cancelCallback);//订阅消息
 
         // 这里不用关闭资源,因为要一直等消息
     }
