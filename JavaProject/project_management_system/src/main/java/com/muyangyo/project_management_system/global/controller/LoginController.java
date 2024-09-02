@@ -32,6 +32,7 @@ public class LoginController {
         user.setUsername(forLogin.getUsername());
         user.setPassword(forLogin.getPassword());
         log.info(user + "登录中...");
+
         return loginServer.check(user);
     }
 }

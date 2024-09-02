@@ -51,7 +51,8 @@ $(document).ready(function () {
         $.ajax({
             url: 'global/login',
             type: 'POST',
-            data: data,
+            contentType: 'application/json',
+            data: JSON.stringify(data),
             success: function (body) {
                 if (body) {
                     location.assign("index.html")
