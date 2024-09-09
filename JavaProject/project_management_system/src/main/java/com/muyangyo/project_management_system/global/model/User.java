@@ -18,6 +18,7 @@ public class User {
     private String password;
     private String nickname;
     private int gender;// 0为女  1为男  2为秘密
+    private Role role;
     private Date createTime;
     private Date updateTime;
 }

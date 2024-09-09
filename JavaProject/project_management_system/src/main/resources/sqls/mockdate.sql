@@ -1,1 +1,1 @@
-insert into users values (1,"admin","admin","admin",2,default,default);
+insert into users values (1,"admin","admin","admin",2,0,default,default);

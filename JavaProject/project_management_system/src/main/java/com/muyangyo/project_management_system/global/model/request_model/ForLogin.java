@@ -1,4 +1,4 @@
-package com.muyangyo.project_management_system.global.model.requestmodel;
+package com.muyangyo.project_management_system.global.model.request_model;
 
 import lombok.Data;
 
@@ -13,4 +13,5 @@ import lombok.Data;
 public class ForLogin {
     private String username;
     private String password;
+    private Boolean rememberMe;
 }

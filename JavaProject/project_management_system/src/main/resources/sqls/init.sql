@@ -12,6 +12,7 @@ CREATE TABLE users (
     password VARCHAR(50) NOT NULL,
     nickname VARCHAR(50) NOT NULL,
     gender INT default 2,
+    role INT default 2, -- 0 为root 1为普通用户 2为游客模式
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

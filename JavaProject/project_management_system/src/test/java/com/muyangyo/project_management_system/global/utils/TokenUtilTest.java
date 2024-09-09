@@ -1,6 +1,8 @@
 package com.muyangyo.project_management_system.global.utils;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -35,5 +37,27 @@ class TokenUtilTest {
         map.put("username", "123");
         String token = TokenUtil.getToken(map);
         log.info(token);
+    }
+
+    @Test
+    void getTokenLoad() {
+        Map<String, String> map = new HashMap<>(1);
+        map.put("username", "123");
+        map.put("gen", "男");
+        String token = TokenUtil.getToken(map);
+        log.info("已生成Token: " + token);
+        Map<String, String> tokenLoad = TokenUtil.getTokenLoad(token);
+        log.info("该Token的载荷部分为以下信息:\n");
+        for (Map.Entry<String, String> tmp : tokenLoad.entrySet()) {
+            System.out.println(tmp.getKey() + " : " + tmp.getValue());
+        }
+    }
+
+    @BeforeEach
+    void setUp() {
+    }
+
+    @AfterEach
+    void tearDown() {
     }
 }

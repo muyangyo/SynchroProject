@@ -1,7 +1,9 @@
+/*
 $(document).ajaxSend(function (e, xqr, op) {
     let token = localStorage.getItem("token");//不存在时返回null
-    xqr.setRequestHeader("token", token);
+    xqr.setRequestHeader("Authorization", token);
 });
+*/
 
 /**
  * 登出
@@ -11,7 +13,7 @@ function logout() {
         url: 'global/AutoLogin',
         method: 'POST',
         success: function () {
-            localStorage.removeItem("token");//移除token
+            document.cookie = 'Authorization=;'; //移除token
         }
     });
     location.assign("login.html");
