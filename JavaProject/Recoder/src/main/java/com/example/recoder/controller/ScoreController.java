@@ -2,6 +2,7 @@ package com.example.recoder.controller;
 
 import com.example.recoder.constant.Score;
 import com.example.recoder.service.ScoreService;
+import com.example.recoder.starter.GetStartPort;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -21,6 +22,8 @@ import java.util.List;
 public class ScoreController {
     @Autowired
     ScoreService scoreService;
+    @Autowired
+    GetStartPort getStartPort;
 
     @RequestMapping(value = "/addScore", method = RequestMethod.POST)
     Boolean addScore(Score score) {
@@ -31,5 +34,14 @@ public class ScoreController {
     @RequestMapping(value = "/getAllScores", method = RequestMethod.GET)
     List<Score> getAllScores() {
         return scoreService.getAllScores();
+    }
+
+    @RequestMapping(value = "/deleteAllScores")
+    String deleteAllScores(String token) {
+        if (token.equals(getStartPort.getToken()) && scoreService.deleteAllScores()) {
+            return "删除数据成功!";
+        } else {
+            return "token错误!删除数据失败!";
+        }
     }
 }

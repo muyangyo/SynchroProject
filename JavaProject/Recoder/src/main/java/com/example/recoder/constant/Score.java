@@ -12,6 +12,7 @@ public class Score {
     private Date createTime;
 
     public String getCreateTime() {
+        if (createTime == null) createTime = new Date();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return simpleDateFormat.format(createTime);
     }

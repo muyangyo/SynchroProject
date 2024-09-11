@@ -5,6 +5,7 @@ import com.example.recoder.mapper.ScoresMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -24,6 +25,14 @@ public class ScoreService {
     }
 
     public List<Score> getAllScores() {
-        return scoresMapper.selectAllScores();
+        LinkedList<Score> scores = scoresMapper.selectAllScores();
+        scores.sort(((o1, o2) -> {
+            return -(int) (o1.getScore() - o2.getScore());
+        }));
+        return scores;
+    }
+
+    public Boolean deleteAllScores() {
+        return scoresMapper.deleteAllScores() > 0;
     }
 }

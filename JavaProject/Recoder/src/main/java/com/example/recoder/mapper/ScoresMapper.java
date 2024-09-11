@@ -19,4 +19,6 @@ public interface ScoresMapper {
     LinkedList<Score> selectAllScores();
 
     Integer insertScore(Score score);
+
+    Integer deleteAllScores();
 }
