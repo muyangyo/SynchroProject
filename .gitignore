@@ -20,6 +20,7 @@ cmake-build-debug/
 *.filters
 *.user
 *.ipch
+*.csv
 
 
 CProject/TestForSchool/CMakeLists.txt
