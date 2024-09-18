@@ -3,10 +3,7 @@ package TestPackage;
 import Base.Meta;
 import Base.WaitStrategy;
 import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -17,6 +14,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
+
 /**
  * 创建于 IntelliJ IDEA.
  * 描述：
@@ -24,6 +22,7 @@ import java.util.Scanner;
  * Date: 2024/9/17
  * Time: 15:20
  */
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class HubSystemTest extends Meta {
     static int anInt = 0;
 
@@ -54,6 +53,7 @@ public class HubSystemTest extends Meta {
 
     @ParameterizedTest
     @CsvSource({"'user','user'"})
+    @Order(0)
     void registerTest(String newUsername, String newPassword) throws InterruptedException {
         newUsername = newUsername + anInt;
         newPassword = newPassword + anInt;
@@ -90,6 +90,7 @@ public class HubSystemTest extends Meta {
 
     @ParameterizedTest
     @CsvFileSource(resources = "login.csv")
+    @Order(1)
     void loginTest(String username, String password) throws InterruptedException {
         driver.get("http://127.0.0.1:8080/");
         WebElement usernameText = byCssGetElement("#username");
@@ -106,6 +107,7 @@ public class HubSystemTest extends Meta {
     }
 
     @Test
+    @Order(2)
     void publishBlogTest() throws InterruptedException {
         driver.get("http://127.0.0.1:8080/blog_list.html");
         WebElement a = byCssGetElement("body > div.nav > a:nth-child(5)");
@@ -124,21 +126,56 @@ public class HubSystemTest extends Meta {
     }
 
     @Test
+    @Order(3)
+    void commentTest() throws InterruptedException {
+        driver.get("http://127.0.0.1:8080/blog_list.html");
+        WebElement blog = byXpathGetElement("//div[text()='自动化测试生成文章']");
+        blog.click();
+        sleep.sleepNormalTime();
+        WebElement text = byCssGetElement("body > div.container > div.container-left > div.commentArea > div > input");
+        text.sendKeys("测试评论是否正常");
+        WebElement btn = byCssGetElement("body > div.container > div.container-left > div.commentArea > div > button");
+        btn.click();
+        sleep.sleepNormalTime();
+        Alert alert = driver.switchTo().alert();
+        Assertions.assertEquals("成功添加评论!", alert.getText());
+        alert.accept();
+        sleep.sleepNormalTime();
+        driver.navigate().refresh();
+        sleep.sleepNormalTime();
+        WebElement webElement = byXpathGetElement("//p[text()='测试评论是否正常']");
+    }
+
+    @Test
+    @Order(4)
     void editBlogTest() throws InterruptedException {
         driver.get("http://127.0.0.1:8080/blog_list.html");
-        WebElement blog = byXpathGetElement("//div[text()='自动化测试生成文章'");
+        WebElement blog = byXpathGetElement("//div[text()='自动化测试生成文章']");
         blog.click();
         sleep.sleepNormalTime();
         WebElement editBtn = byCssGetElement("body > div.container > div.container-left > div.card > button.edit-button");
         editBtn.click();
         sleep.sleepLongTime();
-        // TODO: 2024/9/17 待完成
+        WebElement title = byCssGetElement("#title-input");
+        String text = title.getAttribute("value") + "修改后的";
+        title.clear();
+        title.sendKeys(text);
+        WebElement submit = byCssGetElement("#submit");
+        submit.click();
+        sleep.sleepNormalTime();
+        Alert alert = driver.switchTo().alert();
+        Assertions.assertEquals("成功修改!", alert.getText());
+        alert.accept();
+        sleep.sleepNormalTime();
+        WebElement newTitle = byCssGetElement("body > div.container > div.container-right > h3");
+        Assertions.assertEquals(text, newTitle.getText());
     }
 
     @Test
+    @Order(5)
     void deleteBlogTest() throws InterruptedException {
         driver.get("http://127.0.0.1:8080/blog_list.html");
-        WebElement blog = byXpathGetElement("//div[text()='自动化测试生成文章']");
+        WebElement blog = byXpathGetElement("//div[text()='自动化测试生成文章修改后的']");
         blog.click();
         sleep.sleepNormalTime();
         WebElement deleteBtn = byCssGetElement("body > div.container > div.container-left > div.card > button.delete-button");
@@ -149,8 +186,25 @@ public class HubSystemTest extends Meta {
         alert.accept();
     }
 
+    @Test
+    @Order(6)
+    void logoutTest() throws InterruptedException {
+        driver.get("http://127.0.0.1:8080/blog_list.html");
+        WebElement logoutBtn = byCssGetElement("body > div.nav > a:nth-child(6)");
+        logoutBtn.click();
+        sleep.sleepNormalTime();
+        Assertions.assertEquals("http://127.0.0.1:8080/login.html", driver.getCurrentUrl());
+
+        //未登入状态下进入首页
+        driver.get("http://127.0.0.1:8080/blog_list.html");
+        Assertions.assertEquals("请先登录!", driver.switchTo().alert().getText());
+        driver.switchTo().alert().accept();
+        Assertions.assertEquals("http://127.0.0.1:8080/login.html", driver.getCurrentUrl());
+    }
+
     @ParameterizedTest
     @CsvSource({"'Demo','123'"})
+    @Order(7)
     void errorLoginTest(String username, String password) throws InterruptedException {
         driver.get("http://127.0.0.1:8080/");
         WebElement usernameText = byCssGetElement("#username");
