@@ -26,13 +26,19 @@ public class ScoreService {
 
     public List<Score> getAllScores() {
         LinkedList<Score> scores = scoresMapper.selectAllScores();
-        scores.sort(((o1, o2) -> {
-            return -(int) (o1.getScore() - o2.getScore());
-        }));
+
+/*        scores.sort(new Comparator<Score>() {
+            @Override
+            public int compare(Score o1, Score o2) {
+                return -(int) (o1.getScore() - o2.getScore());
+            }
+        });*/
+
+        scores.sort(((o1, o2) -> -(int) (o1.getScore() - o2.getScore())));
         return scores;
     }
 
     public Boolean deleteAllScores() {
-        return scoresMapper.deleteAllScores() > 0;
+        return scoresMapper.deleteAllScores() >= 0;
     }
 }

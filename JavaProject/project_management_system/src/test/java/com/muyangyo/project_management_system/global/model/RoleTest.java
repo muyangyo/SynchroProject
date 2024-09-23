@@ -21,7 +21,7 @@ class RoleTest {
     void setCode() {
         Role role = Role.ROOT;
         System.out.println(role.getCode());
-        role.setCode(1);
+//        role.setCode(1);
         System.out.println(role.getCode());
     }
 }
