@@ -15,16 +15,21 @@ public class MetaToVoConverter {
                 continue;
             }
 
-            // 检查是否有 @MetaField 注解,有则获取映射的字段,没有则获取同名的属性
-            MetaField metaFieldAnnotation = voField.getAnnotation(MetaField.class);
-            String metaFieldName = metaFieldAnnotation != null ? metaFieldAnnotation.value() : voField.getName();
+            String metaFieldName = "";
+            try {
+                // 检查是否有 @MetaField 注解,有则获取映射的字段,没有则获取同名的属性
+                MetaMapping metaMappingAnnotation = voField.getAnnotation(MetaMapping.class);
+                metaFieldName = metaMappingAnnotation != null ? metaMappingAnnotation.value() : voField.getName();
 
-            // 获取 Meta 对象中的对应字段
-            Field metaField = meta.getClass().getDeclaredField(metaFieldName);
-            metaField.setAccessible(true);
+                // 获取 Meta 对象中的对应字段
+                Field metaField = meta.getClass().getDeclaredField(metaFieldName);
+                metaField.setAccessible(true);
 
-            // 将 Meta 对象的字段值赋给 VO 对象
-            voField.set(voInstance, metaField.get(meta));
+                // 将 Meta 对象的字段值赋给 VO 对象
+                voField.set(voInstance, metaField.get(meta));
+            } catch (NoSuchFieldException e) {
+                throw new NoSuchFieldException("无法映射对应字段 {" + voClass + "." + metaFieldName + "} ,如果不需要映射,请使用 @NoNeedMetaMapping 注解");
+            }
         }
 
         return voInstance;
