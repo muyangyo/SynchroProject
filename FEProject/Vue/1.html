@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+
+        // let str1 = '<div class="hot-goods-box">
+        //     < h1 > 热门商品</>
+        //         <p>卖爆了卖爆了卖爆了</p>
+        //     </div > '
+
+        // let str2 = `<div class="hot-goods-box">
+        // <h1>热门商品</h1>
+        // <p>卖爆了卖爆了卖爆了</p>
+        // </div>`
+
+        // let name = 'Bit'
+        // let age = 9
+
+        // let str1 = 'My name is ' + name + ', I am ' + age + ' years old, I am ' + (age >= 18 ? '已成年' : '未成年')
+        // console.log(str1)
+
+        // let str2 = `My name is ${name}, I am ${age} years old, I am ${age >= 18 ? '已成年' : '未成年'}`
+        // console.log(str)
+
+        // //创建对象的两种方式(用变量去赋值时)
+        // let min = 1
+        // let max = 99
+
+        // //1.以前的写法(不简写)
+        // let obj1 = {
+        //     min: min,
+        //     max: max
+        // }
+
+        // //2. 简写
+        // let obj2 = {
+        //     min,
+        //     max
+        // }
+
+        // console.log(obj1);
+        // console.log(obj2);
+
+        // const obj = {
+        //     name: 'vue3',
+        //     age: 9
+        // }
+
+        // // 取值
+        // // 1.点
+        // console.log(obj.name)
+        // console.log(obj.age)
+
+        // // 2.中括号加属性字符串
+        // console.log(obj['name'])
+        // console.log(obj['age'])
+
+        // // 注意：当属性名是字符串的时候，只能用中括号取值
+        // let x = 'name'
+        // let y = 'age'
+        // console.log(obj[x])
+        // console.log(obj[y])
+
+        // console.log(obj.x)// undefined
+        // console.log(obj.y)// undefined
+
+
+        // 数组的解构
+        const arr1 = [11, 22, 33]
+        // eg1:把arr1中的三个元素分别赋值给变量 a, b, c
+
+        // 1. 普通写法
+        // let a = arr[0]
+        // let b = arr[1]
+        // let c = arr[2]
+
+        // // 2. 结构写法
+        // let [a, b, c] = arr1
+        // console.log(a, b, c)
+
+        // eg2: 把arr中的后两个元素分别赋值给变量 b, c
+        // let [, b, c] = arr
+        // console.log(b, c)
+
+        // // eg2: 把arr中的第一个元素赋值给变量 a, 第三个元素赋值给变量 c
+        // let [a, , c] = arr1
+        // console.log(a, c)
+
+        // eg3: 把arr的第一个元素赋值给变量 a, 剩余的全部给到另一个数组
+        // let [a, ...rest] = arr1
+        // console.log(a, rest)
+
+        //     // eg4: 练习
+        //     const arr = [2, [3, 4], 5]
+
+        // let [, [a, b]] = arr
+        // console.log(a, b)
+
+        const obj = {
+            name: '名字',
+            age: 9,
+            address: '地址'
+        }
+
+        // eg1: 把 obj 的3个属性值分别赋值给变量 name, age, address
+
+        // 1. 以前的写法
+        // let name = obj.name
+        // let age = obj.age
+        // let address = obj.address
+
+        // // 2. 解构的写法
+        // let { age, name, address } = obj // 是这个写法的简化版 let { age: age, name: name, address: address } = obj
+        // console.log(name, age, address)
+
+        // eg2: 把 obj 的 name, age 属性值赋值给变量 name, age
+        // let { age, name } = obj
+        // console.log(name, age)
+
+        // // eg2：把 obj 的 name 属性值赋值给变量 name, 剩余的赋值给变量 rest
+        // let { name, ...rest } = obj
+        // console.log(name, rest)
+
+        // eg3: 把 obj 的 name 属性值 赋值给变量 uname
+        let { name: uname } = obj
+
+
+
+
+        // eg5: 练习
+
+        // const obj = {
+        //   data: {
+        //     code: 10000,
+        //     message: '频道列表获取成功',
+        //     result: ['HTML', 'CSS', 'JavaScript', 'Vue', 'SpringBoot']
+        //   },
+        //   status: 200,
+        //   statusText: 'Ok'
+        // }
+        // // 解构拿到 data
+        // const { data } = obj
+        // // 再解构 data
+        // const { code, message, result: list } = data
+        // console.log(code, message, list)
+    </script>
+</body>
+
+</html>
