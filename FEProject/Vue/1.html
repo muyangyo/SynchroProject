@@ -153,9 +153,57 @@
     // console.log(fruits.includes('banana')); // true
     // console.log(fruits.includes('abc')); // false
 
-    const obj = {a: 1, b: 2, c: 3};
-    const keys = Object.keys(obj);
-    console.log(keys); // 输出: ['a', 'b', 'c']
+    // const obj = {a: 1, b: 2, c: 3};
+    // const keys = Object.keys(obj);
+    // console.log(keys); // 输出: ['a', 'b', 'c']
+
+    // localStorage.setItem("key", "value");
+    // localStorage.getItem("key");
+    // localStorage.removeItem("key");
+    //
+    //     sessionStorage.setItem("sessionKey", "value");
+    //     sessionStorage.getItem("sessionKey");
+    //     sessionStorage.removeItem("sessionKey");
+
+    // const p = new Promise((resolve, reject) => {
+    //     // 在这里进行包装异步代码：定时器、ajax请求
+    //     // 如果异步操作成功了，需要调用 resolve (成功的数据)
+    //     // 如果异步操作失败了，需要调用 reject (错误的原因)
+    //     setTimeout(() => {
+    //         resolve('ok');
+    //         // reject('error');
+    //     }, 2000)
+    // })
+    //
+    // p.then((msg) => {
+    //     console.log('成功了,信息为:', msg)
+    // }, (err) => {
+    //     console.log('失败了,原因为:', err)
+    // })
+
+
+    // // Promise封装延迟输出函数
+    // function delay (duration, n) {
+    //     return new Promise((resolve) => {
+    //         setTimeout(() => {
+    //             resolve(n)
+    //         }, duration)
+    //     })
+    // }
+    //
+    // async function log () {
+    //     // 1. 在 Promise 实例前添加 await 关键字，这样 await 的返回值就是 Promise 的 resolve 参数
+    //     // 2. await 所在的函数必须被 async 修饰
+    //     // 3. await 所在的函数会按照同步的方式进行代码的执行，也就是前面的 await 执行完毕了，才会执行后续的 await
+    //     const n1 = await delay(2000, 1)
+    //     console.log(n1)
+    //     const n2 = await delay(1000, 2)
+    //     console.log(n2)
+    //     const n3 = await delay(1000, 3)
+    //     console.log(n3)
+    // }
+    //
+    // log()
 </script>
 </body>
 

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Title</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+<div id="app">
+    <!-- 1. 变量名 -->
+    <h1>{{ msg }}</h1>
+    <!-- 2. 对象.属性 -->
+    <p>我叫 {{ obj.name }}, 今年 {{ obj.age }} 岁了</p>
+    <!-- 3. 三元表达式 -->
+    <p>{{ obj.age >= 18 ? '已成年' : '未成年' }}</p>
+    <!-- 3. 算数运算 -->
+    <p>来年我就 {{ obj.age + 1 }} 岁了</p>
+    <!-- 4. 函数或方法的调用 -->
+    <p>fn的返回值 = {{ fn() }}</p>
+    <!-- 4. 方法的调用 -->
+    <p>{{ msg }}由 {{ msg.split(' ').length }} 个单词组成</p>
+</div>
+</body>
+<script>
+    Vue.createApp({
+        setup() {
+            const msg = 'Hello World'
+            const obj = {
+                name: '小vue',
+                age: 9
+            }
+
+            const fn = () => {
+                return 666
+            }
+
+            return {
+                msg,
+                obj,
+                fn
+            }
+        }
+    }).mount('#app')
+</script>
+</html>
