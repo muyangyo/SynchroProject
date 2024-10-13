@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+<div id="app">
+    <h3>{{ msg }}</h3>
+    <p>我叫 {{ obj.name }}, 今年 {{ obj.age }} 岁了</p>
+    <button @click="onClick">修改ref数据</button>
+</div>
+</body>
+<script>
+    // 从 Vue 解构出 createApp, ref 函数
+    const {createApp, ref} = Vue
+
+    createApp({
+
+        setup() {
+
+            // ref 定义一个响应式字符串
+            const msg = ref('Hello world')
+            // ref 定义一个响应式对象
+            const obj = ref({
+                name: '小白',
+                age: 9
+            })
+
+            // 点击事件
+            const onClick = () => {
+                msg.value = '你好, Vue3'
+                obj.value.name = 'Vue3'
+                obj.value.age = 10
+            }
+
+            return {
+                msg,
+                obj,
+                onClick
+            }
+        }
+
+    }).mount('#app')
+</script>
+</html>
