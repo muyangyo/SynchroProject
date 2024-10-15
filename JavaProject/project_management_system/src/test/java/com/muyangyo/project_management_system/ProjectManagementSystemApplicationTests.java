@@ -20,6 +20,10 @@ class ProjectManagementSystemApplicationTests {
         user.setUsername("username");
         user.setPassword("password");
         user.setNickname("nickname");
+        //new出一个vo对象
+        ForLogin forLogin = new ForLogin();
+        forLogin.setUsername(user.getUsername());
+        forLogin.setPassword(user.getPassword());
 
         ForLogin convert = MetaToVoConverter.convert(user, ForLogin.class);
 
