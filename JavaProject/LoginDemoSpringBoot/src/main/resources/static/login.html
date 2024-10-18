@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ch">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>登录页</title>
+    <script>
+        function handleLoginResponse(response) {
+            if (response!=="登入失败") {
+                // 登录成功，跳转到 index.html
+                window.location.href = "index.html";
+            } else {
+                alert("登录失败，请检查账号和密码");
+            }
+        }
+
+        function submitForm(event) {
+            event.preventDefault(); // 阻止表单默认提交行为
+
+            const form = event.target;
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: form.method,
+                body: new URLSearchParams(formData)
+            })
+                .then(response => response.text())
+                .then(data => handleLoginResponse(data))
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+</head>
+<body>
+<form action="login" method="POST" onsubmit="submitForm(event)">
+    账号<input type="text" name="username">
+    <br>
+    密码<input type="password" name="password">
+    <br>
+    <input type="submit" value="提交">
+</form>
+</body>
+</html>

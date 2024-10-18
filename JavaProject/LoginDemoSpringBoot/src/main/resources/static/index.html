@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ch">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>首页</title>
+    <script>
+        // 发送 getUserInfo 请求获取用户信息
+        function getUserInfo() {
+            fetch('getUserInfo', {
+                method: 'GET'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data !== null) {
+                        document.getElementById('username').innerText = data.username;
+                        document.getElementById('password').innerText = data.password;
+                    } else {
+                        alert("获取用户信息失败，请重新登录");
+                        window.location.href = "login.html";
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("获取用户信息失败，请重新登录");
+                    window.location.href = "login.html";
+                });
+        }
+
+        // 页面加载完成后执行 getUserInfo 请求
+        window.onload = getUserInfo;
+    </script>
+</head>
+<body>
+<h1>欢迎回来</h1>
+<p>用户名: <span id="username"></span></p>
+<p>密码: <span id="password"></span></p>
+</body>
+</html>

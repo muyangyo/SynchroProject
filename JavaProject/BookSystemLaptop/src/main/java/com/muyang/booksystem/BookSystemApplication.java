@@ -13,7 +13,7 @@ import org.springframework.util.StringUtils;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-@SpringBootApplication
+//@SpringBootApplication
 public class BookSystemApplication {
 
     public static void main(String[] args) throws UnknownHostException {
