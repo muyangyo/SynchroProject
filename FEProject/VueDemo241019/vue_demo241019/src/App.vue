@@ -1,84 +1,62 @@
-<template>
-  <h3>可折叠面板</h3>
-
-  <!-- 面板区域 -->
-  <div class="panel">
-    <!-- 标题区域 -->
-    <div class="title">
-      <h4>自由与爱情</h4>
-      <span
-          class="btn"
-          @click="visible = !visible">
-				{{ visible ? '收起' : '展开' }}
-			</span>
-    </div>
-    <!-- 主体内容区域 -->
-    <div
-        class="container"
-        v-show="visible">
-      <p>生命诚可贵,</p>
-      <p>爱情价更高。</p>
-      <p>若为自由故,</p>
-      <p>两者皆可抛。</p>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import {ref} from "vue";
+import {ref} from 'vue'
 
-let visible = ref(false);
+// 图书列表
+const bookList = ref([
+  {id: 1, name: '《红楼梦》', author: '曹雪芹'},
+  {id: 2, name: '《西游记》', author: '吴承恩'},
+  {id: 3, name: '《三国演义》', author: '罗贯中'},
+  {id: 4, name: '《水浒传》', author: '施耐庵'}
+])
+// 删除
+const onDel = (i) => {
+  // i: 当前点击的下标
 
+  // 删除前先确认
+  if (window.confirm('确定删除么?')) {
+    // 调用 splice 进行删除
+    bookList.value.splice(i, 1)
+  }
+}
 </script>
 
-<!-- 注意这里使用了 scss 语言对 css 样式进行设置 -->
-<!-- scss支持嵌套选择器 -->
-<!-- 需要安装 sass 模块,在项目中运行 pnpm i sass -D 然后重新预运行-->
-<style lang="scss">
-body {
-  background: #ddd;
-}
+<template>
+  <h3>书架</h3>
+  <ul>
+    <!-- 无key -->
+    <li v-for="(item, index) in bookList">
+      <span>{{ item.name }}</span>
+      <span>{{ item.author }}</span>
+      <button @click="onDel(index)">删除</button>
+    </li>
+  </ul>
 
+  <ul>
+    <!-- 有key且为id -->
+    <li
+        v-for="(item, index) in bookList"
+        :key="item.id">
+      <span>{{ item.name }}</span>
+      <span>{{ item.author }}</span>
+      <button @click="onDel(index)">删除</button>
+    </li>
+  </ul>
+</template>
+
+<style>
 #app {
   width: 400px;
-  margin: 20px auto;
-  padding: 1em 2em 2em;
-  border: 4px solid green;
-  border-radius: 1em;
-  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.5);
-  background: #fff;
-
-  h3 {
-    text-align: center;
-  }
-
+  margin: 100px auto;
 }
 
-.panel {
+ul {
+  list-style: none;
+}
 
-  .title {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid #ccc;
-    padding: 0 1em;
-
-    h4 {
-      margin: 0;
-      line-height: 2;
-    }
-
-    .btn {
-      cursor: pointer;
-    }
-
-  }
-
-  .container {
-    border: 1px solid #ccc;
-    padding: 0 1em;
-    border-top-color: transparent;
-  }
-
+ul li {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  border-bottom: 1px solid #ccc;
 }
 </style>
