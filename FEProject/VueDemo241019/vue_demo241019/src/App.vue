@@ -1,24 +1,25 @@
 <template>
   <div>
-    账号:
-    <input
-        type="text"
-        v-model="loginForm.username"/><br/><br/>
-    密码:
-    <input
-        type="text"
-        v-model="loginForm.password"/><br/><br/>
+    <!-- 使用三元表达式动态赋予类 -->
+    <p :class="isStyle ?'staticDemo':'styleDemo'">样式绑定1</p>
+    <!-- 直接 类名: 是否使用来赋予类 -->
+    <p :class="{styleDemo: isStyle}">样式绑定2</p>
+    <!-- 静态类与动态类共存,二者合并 -->
+    <p class="staticDemo" :class="{styleDemo: isStyle,styleDemo: false}">样式绑定3</p>
   </div>
 </template>
 
 <script setup>
-import {ref} from 'vue'
-// 登录表单
-const loginForm = ref({
-  username: '',
-  password: ''
-})
+let isStyle = true;
 </script>
 
 <style scoped>
+.styleDemo {
+  color: red;
+  background: black;
+}
+
+.staticDemo {
+  font-size: 20px;
+}
 </style>
