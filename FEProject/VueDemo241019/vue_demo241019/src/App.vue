@@ -1,25 +1,30 @@
+<script setup>
+import {computed} from 'vue'
+
+// 简易写法：只能读取，不能修改
+// const uname = computed(() => {
+// 	return '姬霓太美'
+// })
+
+const uname = computed({
+  get() {
+    return '姬霓太美'
+  },
+
+  // val: 要给计算属性赋予的新值
+  // 只要给计算属性赋值，都会触发 set 函数的执行
+  set(val) {
+    console.log(val)
+  }
+})
+</script>
+
 <template>
   <div>
-    <!-- 使用三元表达式动态赋予类 -->
-    <p :class="isStyle ?'staticDemo':'styleDemo'">样式绑定1</p>
-    <!-- 直接 类名: 是否使用来赋予类 -->
-    <p :class="{styleDemo: isStyle}">样式绑定2</p>
-    <!-- 静态类与动态类共存,二者合并 -->
-    <p class="staticDemo" :class="{styleDemo: isStyle,styleDemo: false}">样式绑定3</p>
+    <input
+        type="text"
+        v-model="uname"/>
   </div>
 </template>
 
-<script setup>
-let isStyle = true;
-</script>
-
-<style scoped>
-.styleDemo {
-  color: red;
-  background: black;
-}
-
-.staticDemo {
-  font-size: 20px;
-}
-</style>
+<style scoped></style>
