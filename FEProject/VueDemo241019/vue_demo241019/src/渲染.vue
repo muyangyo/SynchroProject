@@ -1,3 +1,4 @@
+<!--suppress ES6CheckImport -->
 <script setup>
 import {ref} from 'vue'
 
