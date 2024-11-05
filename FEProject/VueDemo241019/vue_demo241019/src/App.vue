@@ -3,7 +3,7 @@
     <router-link to="/find">发现音乐</router-link>
     <router-link to="/friend">朋友</router-link>
   </nav>
-
+  <!-- 一级路由出口 -->
   <router-view/>
 </template>
 
