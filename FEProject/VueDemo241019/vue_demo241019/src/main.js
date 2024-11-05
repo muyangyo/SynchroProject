@@ -27,7 +27,17 @@ app.directive('color', (el, binding) => {
 })
 
 import router from "@/Router-Setting.js"
+// 导入
+import {createPinia} from 'pinia'
+// 创建
+const pinia = createPinia()
+// 注册
+app.use(pinia)
 
 app.use(router);
+
+import ElementPlus from 'element-plus'  // 导入element-plus
+import 'element-plus/dist/index.css'    // 导入element-plus样式
+app.use(ElementPlus);    // 使用element-plus
 
 app.mount('#app');
