@@ -8,9 +8,6 @@
       </el-select>
     </div>
   </div>
-
-  <el-button type="default" @click="toggleDark()">dark/light</el-button>
-
 </template>
 
 <script setup>
@@ -26,13 +23,6 @@ const options = ref([
   {label: '选项2', value: 'option2'},
   // 添加更多选项
 ]);
-
-// 使用 useDark 通过响应式变量管理暗黑模式状态
-const isDark = useDark()
-
-// 使用 useToggle 切换暗黑模式状态的函数
-const toggleDark = useToggle(isDark)
-
 </script>
 
 <style scoped>
