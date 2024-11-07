@@ -1,9 +1,14 @@
 import {createRouter, createWebHistory} from 'vue-router'
 import NotFound from '@/views/common/NotFound.vue';
 import {config} from '@/CustomizeGlobalConfigurations.js';
+import userCloudIndex from '@/views/user/UserCloudIndex.vue';
 import managerIndex from '@/views/manager/ManagerIndex.vue';
-import userDiskIndex from '@/views/user/UserDiskIndex.vue';
+import syncSettingManager from '@/views/manager/sync_manager/SettingManager.vue';
 import syncFileManager from '@/views/manager/sync_manager/FileManager.vue';
+
+import cloudSettingManager from '@/views/manager/cloud_manager/SettingManager.vue';
+import cloudFileManager from '@/views/manager/cloud_manager/FileManager.vue';
+
 
 /**
  * 创建路由数组
@@ -21,38 +26,45 @@ const createRoutes = (basePath, routes) => {
 };
 
 const mangerUrlBaseRoutes = [
-    // 路由配置
-    {
-        path: '/',
-        redirect: '/manager/sync_manager/sync_file_manager',
-        children: [
-            {
-                path: 'sync_manager',
-                component: managerIndex,
-                redirect: '/manager/sync_manager/sync_file_manager',
-                children: [
-                    {
-                        path: 'sync_file_manager',
-                        component: syncFileManager,
-                    },
-                ]
-            }
-        ]
-    }
-];
+        // 路由配置
+        {
+            path: config.managerBaseUrl,
+            component: managerIndex,
+            redirect: '/manager/sync_manager/sync_file_manager',
+            children: [
+                {
+                    path: 'sync_manager/sync_file_manager', //同步文件管理
+                    component: syncFileManager,
+                },
+                {
+                    path: 'sync_manager/sync_setting_manager', //同步设置管理
+                    component: syncSettingManager,
+                },
+                {
+                    path: 'cloud_manager/cloud_file_manager', //云端文件管理
+                    component: cloudFileManager,
+                }, {
+                    path: 'cloud_manager/cloud_setting_manager', //云端设置管理
+                    component: cloudSettingManager,
+                },
+            ]
+        }, {
+            path: config.managerBaseUrl + '/login',
+            component: () => import('@/views/manager/Login.vue'),
+        }
+
+    ]
+;
 
 const userUrlBaseRoutes = [
     // 路由配置
     {
-        path: '/',
-        component: userDiskIndex,
+        path: '/user',
+        component: userCloudIndex,
     }
 ];
 
-const mangerUrlRoutes = createRoutes(config.managerBaseUrl, mangerUrlBaseRoutes)
-const diskUrlRoutes = createRoutes(config.userBaseUrl, userUrlBaseRoutes)
-
-const routes = diskUrlRoutes.concat(mangerUrlRoutes); // 合并路由配置
+const routes = userUrlBaseRoutes.concat(mangerUrlBaseRoutes); // 合并路由配置
 routes.unshift({path: '/:pathMatch(.*)*', component: NotFound}) //单独添加 404
 console.log('routes', routes)
 

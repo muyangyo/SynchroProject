@@ -2,7 +2,7 @@ import {useDark, useToggle} from "@vueuse/core";
 
 const config = {
     theme: "system", // "system" 跟随系统主题, "dark" 黑色主题, "light" 白色主题
-    baseUrl: "https://example.com",
+    hostUrl: "https://example.com",
     userBaseUrl: "/user",
     managerBaseUrl: "/manager"
 }
@@ -43,5 +43,7 @@ const initTheme = () => {
     // 返回 toggleDark 以便在需要时控制暗黑模式
     return {toggleDark};
 }
+
+
 
 export {initTheme, config}

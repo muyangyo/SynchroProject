@@ -1,5 +1,5 @@
 <template>
-  同步设置
+云盘设置
 </template>
 
 <script setup>
