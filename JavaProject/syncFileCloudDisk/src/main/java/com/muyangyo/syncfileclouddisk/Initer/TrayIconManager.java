@@ -5,8 +5,6 @@ import com.muyangyo.syncfileclouddisk.config.Setting;
 import com.muyangyo.syncfileclouddisk.model.enumeration.SystemType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import javax.swing.*;
@@ -21,7 +19,6 @@ public class TrayIconManager {
     private Setting setting; // 注入配置设置
 
     // 应用启动时触发的事件
-    @EventListener(ApplicationReadyEvent.class)
     public void onApplicationReady() {
         // 检查系统是否支持托盘图标
         if (!SystemTray.isSupported()) {
@@ -42,7 +39,8 @@ public class TrayIconManager {
     // 创建托盘图标和右键菜单的方法
     private TrayIcon createTrayIcon() {
         // 托盘图标和菜单项
-        Image image = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/icon.jpg")); // 加载托盘图标
+        Image image = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/logo.jpg")); // 加载托盘图标
+
         PopupMenu popupMenu = new PopupMenu(); // 创建右键弹出菜单
 
         // 右键菜单项：打开项目网址
@@ -50,10 +48,17 @@ public class TrayIconManager {
         openUrlItem.addActionListener(e -> openUrl()); // 添加点击事件
         popupMenu.add(openUrlItem); // 将菜单项添加到弹出菜单
 
+        // TODO: 2024/11/12 等待验证：注册开机自启功能
         if (setting.getSystemType() == SystemType.WINDOWS) {
             // 右键菜单项：注册开机自启
-            MenuItem registerStartupItem = new MenuItem("开机自启");
-            registerStartupItem.addActionListener(e -> registerAutoStartup()); // 添加点击事件
+            CheckboxMenuItem registerStartupItem = new CheckboxMenuItem("开机自启", isAutoStartupRegistered()); // 创建带有勾选标记的菜单项
+            registerStartupItem.addItemListener(e -> {
+                if (registerStartupItem.getState()) {
+                    registerAutoStartup(); // 注册开机自启
+                } else {
+                    unregisterAutoStartup(); // 取消注册开机自启
+                }
+            });
             popupMenu.add(registerStartupItem); // 将菜单项添加到弹出菜单
         }
 
@@ -70,7 +75,7 @@ public class TrayIconManager {
 
         // 左键点击：打开项目网址
         trayIcon.addActionListener(e -> openUrl());
-
+        trayIcon.setImageAutoSize(true); // 自动调整图标大小以适应托盘
         return trayIcon; // 返回托盘图标
     }
 
@@ -88,6 +93,12 @@ public class TrayIconManager {
         SyncFileCloudDiskApplication.close(); // 调用应用的关闭方法
     }
 
+    // 检查开机自启是否已经注册
+    private boolean isAutoStartupRegistered() {
+        Preferences prefs = Preferences.userRoot().node(this.getClass().getName()); // 获取用户根节点的偏好设置
+        return prefs.get(setting.getApplicationName(), null) != null; // 检查是否存在注册信息
+    }
+
     // 注册开机自启方法
     private void registerAutoStartup() {
         // 仅支持 Windows 系统开机自启
@@ -99,11 +110,18 @@ public class TrayIconManager {
         }
     }
 
+    // 取消注册开机自启方法
+    private void unregisterAutoStartup() {
+        Preferences prefs = Preferences.userRoot().node(this.getClass().getName()); // 获取用户根节点的偏好设置
+        prefs.remove(setting.getApplicationName()); // 移除注册信息
+        JOptionPane.showMessageDialog(null, "Windows系统开机自启取消成功!"); // 弹出成功提示
+    }
+
     /**
      * 在 Windows 上注册开机自启
      */
     private void registerWindowsStartup() {
-        // TODO: 2024/11/11 注册开机自启功能验证
+        // TODO: 2024/11/12 注册开机自启功能(等待验证)
         String appPath = System.getProperty("user.dir") + "\\" + setting.getApplicationName() + ".exe"; // 获取应用路径（修改为 .exe 文件）
         Preferences prefs = Preferences.userRoot().node(this.getClass().getName()); // 获取用户根节点的偏好设置
         // 将应用路径添加到 Windows 注册表

@@ -28,6 +28,7 @@ import {ref} from 'vue';
 import {ElMessage} from 'element-plus';
 import {useRouter} from 'vue-router';
 import {easyRequest} from "@/utils/RequestTool.js";
+import {useKeyStore} from "@/stores/keyStore.js";
 
 const router = useRouter();
 const loginForm = ref(null);
@@ -48,12 +49,25 @@ const submitForm = () => {
   // 表单整体验证
   loginForm.value.validate(async (valid) => {
     if (valid) {
-      // todo: 记得删除
+
+      const keyStore = useKeyStore();
+      keyStore.setPublicKey("04157f76ddfbd1e7afe00077c816062ab7abcd30b7e86669a13c5251c90586838f0638be39f54cad61a2781e84a756707e812afefb03df81d64720d181d27259aa");
+      let encryptData = keyStore.encryptData(form.value.password);
+      console.log(encryptData);
+
       ElMessage({
         message: `欢迎回来, ${form.value.username}`,
         type: 'success',
       });
       await router.push('/manager/sync_manager/sync_file_manager');
+
+
+      /*  // todo: 记得删除
+        ElMessage({
+          message: `欢迎回来, ${form.value.username}`,
+          type: 'success',
+        });
+        await router.push('/manager/sync_manager/sync_file_manager');*/
 
       // try {
       //   // 使用 easyRequest 发送登录请求,返回响应

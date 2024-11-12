@@ -1,59 +1,72 @@
 <template>
-  <div>
-    <vue3-video-play
-        ref="videoPlayer"
-        :width="800"
-        :height="450"
-        :src="videoSrc"
-        :title="title"
-    />
-    <div v-if="isFastForwarding" class="fast-forward-text">快进中...</div>
-    <el-button @mousedown="startFastForward" @mouseup="stopFastForward" @mouseleave="stopFastForward">
-      长按快进
-    </el-button>
-  </div>
+  <div ref="videoDiv"></div>
 </template>
 
 <script setup>
-import {ref, onMounted} from 'vue';
-import Vue3VideoPlay from 'vue3-video-play';
-import 'vue3-video-play/dist/style.css';
-import {ElButton} from 'element-plus';
+import DPlayer from 'dplayer'
+import Hls from 'hls.js';
+import {ref, reactive, onBeforeUnmount, onMounted} from 'vue'
 
-const videoPlayer = ref(null);
-const isFastForwarding = ref(false);
-const videoSrc = 'https://media.w3.org/2010/05/sintel/trailer.mp4'; // 替换为你的视频URL
-const title = '视频标题'; // 替换为你的视频标题
+const videoDiv = ref(null);
+const player = reactive({
+  instance: null
+});
 
-let fastForwardInterval = null;
-
-const startFastForward = () => {
-  isFastForwarding.value = true;
-  fastForwardInterval = setInterval(() => {
-    if (videoPlayer.value) {
-      const currentTime = videoPlayer.value.currentTime;
-      videoPlayer.value.currentTime = currentTime + 1.5; // 快进1.5秒
-    }
-  }, 1000); // 每秒快进1.5秒
-};
-
-const stopFastForward = () => {
-  isFastForwarding.value = false;
-  clearInterval(fastForwardInterval);
-};
+const videoUrl = ref("https://api.dogecloud.com/player/get.m3u8?vcode=5ac682e6f8231991&userId=17&ext=.m3u8"); //视频地址
 
 onMounted(() => {
-  // 确保视频播放器已经挂载
-  if (videoPlayer.value) {
-    console.log('Video player is ready');
+  player.instance = new DPlayer({
+    // 容器
+    container: videoDiv.value,
+    // 是否自动播放
+    autoplay: true,
+    //是否直播
+    live: false,
+    // 主题色
+    theme: '#0093ff',
+    // 是否循环播放
+    loop: false,
+    // 语言(可选值: 'en', 'zh-cn', 'zh-tw')
+    lang: 'zh-cn',
+    // 是否开启截图(如果开启，视频和视频封面需要允许跨域)
+    screenshot: false,
+    // 是否开启热键
+    hotkey: true,
+    // 视频是否预加载(可选值: 'none', 'metadata', 'auto')
+    preload: 'auto',
+    // 默认音量
+    volume: navigator.userAgent.toLowerCase().includes('android') ? 1 : 0.3,
+    // 可选的播放速率，可以设置成自定义的数组
+    playbackSpeed: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3],
+    // 视频信息
+    video: {
+      url: videoUrl.value,
+      type: 'customHls',
+      customType: {
+        customHls: function (video, player) {
+          const hls = new Hls();
+          hls.loadSource(video.src);
+          hls.attachMedia(video);
+        },
+      },
+    },
+    // 自定义右键菜单
+    contextmenu: [],
+    // 自定义进度条提示点
+    highlight: [],
+    // 阻止多个播放器同时播放，当前播放器播放时暂停其他播放器
+    mutex: true
+  });
+})
+;
+
+onBeforeUnmount(() => {
+  if (player.instance) {
+    player.instance.destroy();
   }
 });
+
 </script>
 
-<style scoped>
-.fast-forward-text {
-  color: red;
-  font-weight: bold;
-  margin-top: 10px;
-}
+<style lang='scss' scoped>
 </style>
