@@ -1,24 +1,29 @@
 import {defineStore} from 'pinia';
 import {ref} from 'vue';
-import {sm2} from 'sm-crypto';
+import JSEncrypt from 'jsencrypt';
 
 export const useKeyStore = defineStore('keyStore', () => {
     const publicKey = ref("");
 
     const setPublicKey = (key) => {
+        if (!key || typeof key !== 'string') {
+            throw new Error("公钥应为有效的非空字符串");
+        }
         publicKey.value = key;
-    }
+    };
 
     const encryptData = (data) => {
         if (!publicKey.value) {
             throw new Error("请先设置公钥!");
         }
 
-        // 确保加密模式一致
-        return sm2.doEncrypt(data, publicKey.value, 1);
-    }
+        const encryptor = new JSEncrypt();
+        encryptor.setPublicKey(publicKey.value);
+        return encryptor.encrypt(data);
+    };
 
     return {
-        setPublicKey, encryptData,
-    }
+        setPublicKey,
+        encryptData,
+    };
 });

@@ -11,9 +11,9 @@
         <el-form-item label="密码" prop="password">
           <el-input type="password" v-model="form.password" placeholder="请输入密码"></el-input>
         </el-form-item>
-        <el-form-item label="密钥" prop="secretKey">
+<!--        <el-form-item label="密钥" prop="secretKey">
           <el-input v-model="form.secretKey" placeholder="请输入密钥（可选）"></el-input>
-        </el-form-item>
+        </el-form-item>-->
         <el-form-item>
           <el-button type="primary" @click="submitForm">登录</el-button>
           <el-button @click="resetForm">重置</el-button>
@@ -36,38 +36,25 @@ const loginForm = ref(null);
 const form = ref({
   username: '',
   password: '',
-  secretKey: '',
+  // secretKey: '',
 });
 
 const rules = {
   username: [{required: true, type: 'string', message: '请输入账号', trigger: 'blur'}],
   password: [{required: true, type: 'string', message: '请输入密码', trigger: 'blur'}],
-  secretKey: [{required: false, type: 'string'}],
+  // secretKey: [{required: false, type: 'string'}],
 };
 
 const submitForm = () => {
   // 表单整体验证
   loginForm.value.validate(async (valid) => {
     if (valid) {
-
-      const keyStore = useKeyStore();
-      keyStore.setPublicKey("04157f76ddfbd1e7afe00077c816062ab7abcd30b7e86669a13c5251c90586838f0638be39f54cad61a2781e84a756707e812afefb03df81d64720d181d27259aa");
-      let encryptData = keyStore.encryptData(form.value.password);
-      console.log(encryptData);
-
+      // todo: 记得删除
       ElMessage({
         message: `欢迎回来, ${form.value.username}`,
         type: 'success',
       });
       await router.push('/manager/sync_manager/sync_file_manager');
-
-
-      /*  // todo: 记得删除
-        ElMessage({
-          message: `欢迎回来, ${form.value.username}`,
-          type: 'success',
-        });
-        await router.push('/manager/sync_manager/sync_file_manager');*/
 
       // try {
       //   // 使用 easyRequest 发送登录请求,返回响应
