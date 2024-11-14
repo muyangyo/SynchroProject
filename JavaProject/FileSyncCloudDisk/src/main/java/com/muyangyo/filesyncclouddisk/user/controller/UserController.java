@@ -2,6 +2,7 @@ package com.muyangyo.filesyncclouddisk.user.controller;
 
 import com.muyangyo.filesyncclouddisk.common.model.dto.Login;
 import com.muyangyo.filesyncclouddisk.common.model.other.Result;
+import com.muyangyo.filesyncclouddisk.common.utils.NetworkUtils;
 import com.muyangyo.filesyncclouddisk.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
@@ -9,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 创建于 IntelliJ IDEA.
@@ -25,7 +28,9 @@ public class UserController {
     UserService userService;
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public Result login(@RequestBody Login login) {
+    public Result login(@RequestBody Login login, HttpServletRequest request) {
+//        userService.decryptLogin(login, NetworkUtils.getClientIp(request));// 解密登录信息 TODO: 记得释放
+
         if (StringUtils.hasLength(login.getUsername()) && StringUtils.hasLength(login.getPassword())) {
             if (login.getUsername().length() > 30) {
                 return Result.fail("登录失败!用户名不能超过30个字符!", 401);
@@ -39,7 +44,9 @@ public class UserController {
     }
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public Result register(@RequestBody Login login) {
+    public Result register(@RequestBody Login login, HttpServletRequest request) {
+//        userService.decryptLogin(login, NetworkUtils.getClientIp(request));// 解密登录信息  TODO: 记得释放
+
         if (StringUtils.hasLength(login.getUsername()) && StringUtils.hasLength(login.getPassword()) && StringUtils.hasLength(login.getKey())) {
             if (login.getUsername().length() > 30) {
                 return Result.fail("创建新用户失败!用户名不能超过30个字符!", 401);
@@ -50,6 +57,11 @@ public class UserController {
             return userService.createUser(login.getUsername(), login.getPassword(), login.getKey());
         }
         return Result.fail("创建新用户失败!密钥有误或用户名或密码为空!", 401);
+    }
+
+    @RequestMapping("/getPublicKey")
+    public Result getPublicKey(HttpServletRequest request) {
+        return userService.getPublicKey(NetworkUtils.getClientIp(request));
     }
 
     @RequestMapping("/logout")

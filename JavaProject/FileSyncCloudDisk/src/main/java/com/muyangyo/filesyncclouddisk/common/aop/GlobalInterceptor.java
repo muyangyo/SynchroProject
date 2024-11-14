@@ -5,10 +5,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-
 /**
  * 创建于 IntelliJ IDEA.
  * 描述：
@@ -21,11 +17,11 @@ public class GlobalInterceptor implements WebMvcConfigurer {
     @Autowired
     VerifyLogin verifyLogin;
 
-    List<String> EXCLUDE_URL = new LinkedList<>(Arrays.asList("/user/login", "/user/register")); //注意: 不需要加 context-path
+//    List<String> EXCLUDE_URL = new LinkedList<>(Arrays.asList("/user/login", "/user/register")); //注意: 不需要加 context-path
 
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(verifyLogin).addPathPatterns("/**").excludePathPatterns(EXCLUDE_URL);
+        registry.addInterceptor(verifyLogin).addPathPatterns("/**"); //.excludePathPatterns(EXCLUDE_URL);
     }
 }

@@ -48,7 +48,7 @@ public class TrayIconManager {
         openUrlItem.addActionListener(e -> openUrl()); // 添加点击事件
         popupMenu.add(openUrlItem); // 将菜单项添加到弹出菜单
 
-        // TODO: 2024/11/12 等待验证：注册开机自启功能
+        // TODO:  等待验证：注册开机自启功能
         if (setting.getSystemType() == SystemType.WINDOWS) {
             // 右键菜单项：注册开机自启
             CheckboxMenuItem registerStartupItem = new CheckboxMenuItem("开机自启", isAutoStartupRegistered()); // 创建带有勾选标记的菜单项
@@ -121,7 +121,7 @@ public class TrayIconManager {
      * 在 Windows 上注册开机自启
      */
     private void registerWindowsStartup() {
-        // TODO: 2024/11/12 注册开机自启功能(等待验证)
+        // TODO: 注册开机自启功能(等待验证)
         String appPath = System.getProperty("user.dir") + "\\" + setting.getApplicationName() + ".exe"; // 获取应用路径（修改为 .exe 文件）
         Preferences prefs = Preferences.userRoot().node(this.getClass().getName()); // 获取用户根节点的偏好设置
         // 将应用路径添加到 Windows 注册表

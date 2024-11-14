@@ -2,6 +2,7 @@ package com.muyangyo.filesyncclouddisk.common.utils;
 
 import com.muyangyo.filesyncclouddisk.common.exception.CanNotGetLocalIP;
 
+import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -41,6 +42,30 @@ public class NetworkUtils {
         }
         // 如果没有找到合适的IP地址，返回null
         throw new CanNotGetLocalIP("获取服务器的局域网IP地址失败");
+    }
+
+    /**
+     * 获取客户端的真实IP地址
+     *
+     * @param request HTTP请求
+     * @return 客户端的真实IP地址
+     */
+    public static String getClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        // 如果通过了多级代理，X-Forwarded-For的值会是多个IP地址，第一个为真实IP地址
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0];
+        }
+        return ip;
     }
 }
 

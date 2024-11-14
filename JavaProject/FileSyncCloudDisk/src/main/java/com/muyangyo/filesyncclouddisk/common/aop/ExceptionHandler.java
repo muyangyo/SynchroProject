@@ -20,6 +20,6 @@ public class ExceptionHandler {
     public Result exception(Exception e) {
         log.error("发生未指定捕获异常");
         e.printStackTrace();
-        return Result.fail("服务器发生未知异常!");
+        return Result.error("服务器发生未知异常!");
     }
 }

@@ -8,6 +8,17 @@ package com.muyangyo.filesyncclouddisk.common.model.enumeration;
  * Time: 19:03
  */
 public enum StatusCode {
-    SUCCESS,
-    ERROR
+    SUCCESS(200),
+    FAILURE(400),
+    ERROR(500);
+
+    private int code;
+
+    StatusCode(int code) {
+        this.code = code;
+    }
+
+    public int getCode() {
+        return code;
+    }
 }
