@@ -1,6 +1,6 @@
 package com.muyangyo.filesyncclouddisk;
 
-import com.muyangyo.filesyncclouddisk.common.initializer.StartManager;
+import com.muyangyo.filesyncclouddisk.common.initializer.ConfigManager;
 import com.muyangyo.filesyncclouddisk.common.initializer.TrayIconManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
@@ -17,7 +17,7 @@ public class FileSyncCloudDiskApplication {
     private static ConfigurableApplicationContext context;
 
     public static void main(String[] args) throws IOException {
-        StartManager.init();// 初始化外部yml文件
+        ConfigManager.init();// 初始化外部yml文件
 
         // 设置 headless 模式为 false 以显示 GUI
         context = new SpringApplicationBuilder(FileSyncCloudDiskApplication.class)

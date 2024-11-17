@@ -28,7 +28,7 @@ import java.net.URL;
 @Configuration
 @Data
 @Slf4j
-public class StartManager {
+public class ConfigManager {
 
     @Autowired
     private Setting setting;//postStruct时就有
@@ -39,7 +39,7 @@ public class StartManager {
     }
 
     @EventListener(ApplicationReadyEvent.class)
-    public void start() {
+    public void printSystemInfo() {
         SystemType systemType = setting.getSystemType();
         if (systemType.equals(SystemType.OTHER)) {
             log.error("系统类型不受支持,目前只支持Windows、Linux系统");
