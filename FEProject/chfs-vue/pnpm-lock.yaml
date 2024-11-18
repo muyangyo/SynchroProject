@@ -17,9 +17,15 @@ importers:
       element-plus:
         specifier: ^2.8.8
         version: 2.8.8(vue@3.5.13)
+      spark-md5:
+        specifier: ^3.0.2
+        version: 3.0.2
       vue:
         specifier: ^3.5.12
         version: 3.5.13
+      vue-upload-component:
+        specifier: ^2.8.23
+        version: 2.8.23
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: ^5.1.4
@@ -882,6 +888,9 @@ packages:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
 
+  spark-md5@3.0.2:
+    resolution: {integrity: sha512-wcFzz9cDfbuqe0FZzfi2or1sgyIrsDwmPwfZC4hiNidPdPINjeUwNfv5kldczoEAcjl9Y1L3SM7Uz2PUEQzxQw==}
+
   speakingurl@14.0.1:
     resolution: {integrity: sha512-1POYv7uv2gXoyGFpBCmpDVSNV74IfsWlDW216UPjbWufNf+bSU6GdbDsxdcxtfwb4xlI3yxzOTKClUosxARYrQ==}
     engines: {node: '>=0.10.0'}
@@ -978,6 +987,9 @@ packages:
     peerDependenciesMeta:
       '@vue/composition-api':
         optional: true
+
+  vue-upload-component@2.8.23:
+    resolution: {integrity: sha512-diy7wOROLmfUj3zBYZ6HwqX7K4P0nmFKguhXTHA2pU2SrxTbUQc/eaOGnJJ6D75vexrvG8x7OPtSBLw9RUYbEQ==}
 
   vue@3.5.13:
     resolution: {integrity: sha512-wmeiSMxkZCSc+PM2w2VRsOYAZC8GdipNFRTsLSfodVqI9mbejKeXEGr8SckuLnrQPGe3oJN5c3K0vpoU9q/wCQ==}
@@ -1829,6 +1841,8 @@ snapshots:
 
   source-map-js@1.2.1: {}
 
+  spark-md5@3.0.2: {}
+
   speakingurl@14.0.1: {}
 
   strip-final-newline@3.0.0: {}
@@ -1911,6 +1925,8 @@ snapshots:
   vue-demi@0.14.10(vue@3.5.13):
     dependencies:
       vue: 3.5.13
+
+  vue-upload-component@2.8.23: {}
 
   vue@3.5.13:
     dependencies:
