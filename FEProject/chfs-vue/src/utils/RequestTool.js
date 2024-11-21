@@ -1,14 +1,12 @@
 import axios from 'axios';
-import {config} from "@/CustomizeGlobalConfigurations.js";
 // 请求方法
 const RequestMethods = {
     GET: 'GET', POST: 'POST', PUT: 'PUT', DELETE: 'DELETE',
 };
 
-
 // 创建axios实例并设置基础URL和请求超时
 const requestTool = axios.create({
-    baseURL: config.hostUrl, timeout: 5000
+    baseURL: "http://127.0.0.1:8080/", timeout: 5000
 });
 
 // 请求拦截器
@@ -76,9 +74,9 @@ const optionalRequest = (options) => {
     const {
         method, // 请求方法
         url: relativeURL, // 请求URL
+        dataType = 'json', // 默认请求数据类型
         data, // 请求数据
         params, // 请求参数
-        dataType = 'json', // 默认请求数据类型
         showError = true, // 是否显示错误信息
         errorCallback, // 错误回调函数
         checkDataFormat = false, // 是否检查data数据的格式

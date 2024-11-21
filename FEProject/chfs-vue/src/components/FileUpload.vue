@@ -1,138 +1,166 @@
 <template>
-  <div class="file-upload">
+  <div class="upload-container">
     <el-upload
-        class="upload-demo"
+        ref="uploadRef"
         drag
-        :action="uploadUrl"
-        :before-upload="beforeUpload"
-        :on-progress="handleProgress"
-        :on-success="handleSuccess"
-        :on-error="handleError"
-        :on-remove="handleRemove"
-        :file-list="fileList"
-        :http-request="customUpload"
-        :limit="1"
-        :on-exceed="handleExceed"
+        multiple
+        :http-request="handleCustomUpload"
+        :show-file-list="false"
+        :auto-upload="false"
+        :on-remove="handleRemoveFile"
+        class="upload-area"
     >
       <i class="el-icon-upload"></i>
       <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-      <template #tip>
-        <div class="el-upload__tip">只能上传一个文件，且不超过500MB</div>
-      </template>
     </el-upload>
-    <el-button type="primary" @click="uploadFile">上传文件</el-button>
-    <el-button type="danger" @click="cancelUpload">取消上传</el-button>
-    <el-button type="warning" @click="pauseUpload">暂停上传</el-button>
+
+    <div v-for="(file, index) in uploadList" :key="index" class="file-item">
+      <div class="file-info">
+        <span>{{ file.file.name }}</span>
+        <el-progress :percentage="file.progress" style="width: 200px"/>
+      </div>
+      <div class="file-actions">
+        <el-button size="small" @click="pauseUpload(file)">暂停</el-button>
+        <el-button size="small" type="danger" @click="cancelUpload(file)">取消</el-button>
+      </div>
+    </div>
   </div>
 </template>
 
-<script setup>
-import {ref} from 'vue';
-import axios from 'axios';
-import SparkMD5 from 'spark-md5';
+<script>
+import SparkMD5 from "spark-md5";
 
-const uploadUrl = 'http://localhost:8080/upload/chunk'; // 后端上传接口
-const file = ref(null);
-const fileList = ref([]);
-const CHUNK_SIZE = 1024 * 1024; // 每个分块的大小为1MB
-const chunks = ref([]);
-const currentChunk = ref(0);
-const uploadRequest = ref(null);
-const isUploading = ref(false);
+export default {
+  data() {
+    return {
+      uploadList: [], // 保存上传中的文件信息
+    };
+  },
+  methods: {
+    async handleCustomUpload(options) {
+      const file = options.file;
 
-const beforeUpload = (file) => {
-  file.value = file;
-  chunks.value = Math.ceil(file.size / CHUNK_SIZE);
-  return true;
-};
+      // 计算文件 MD5
+      const md5 = await this.calculateFileMD5(file);
+      const chunkSize = 8 * 1024 * 1024; // 每块大小 8MB
+      const totalChunks = Math.ceil(file.size / chunkSize);
+      const uploadItem = {
+        file,
+        md5,
+        chunkSize,
+        totalChunks,
+        currentChunk: 0,
+        progress: 0,
+        isPaused: false,
+        cancelToken: false,
+      };
 
-const handleProgress = (event, file, fileList) => {
-  console.log('Upload progress:', event);
-};
+      this.uploadList.push(uploadItem);
 
-const handleSuccess = (response, file, fileList) => {
-  console.log('Upload success:', response);
-  isUploading.value = false;
-};
+      // 开始上传
+      await this.uploadChunks(uploadItem);
+    },
+    async calculateFileMD5(file) {
+      const spark = new SparkMD5.ArrayBuffer();
+      const chunkSize = 8 * 1024 * 1024; // 每块大小 8 MB
+      const totalChunks = Math.ceil(file.size / chunkSize);
 
-const handleError = (err, file, fileList) => {
-  console.error('Upload error:', err);
-  isUploading.value = false;
-};
+      const fileReader = new FileReader();
+      let currentChunk = 0;
 
-const handleRemove = (file, fileList) => {
-  console.log('File removed:', file);
-};
+      return new Promise((resolve, reject) => {
+        fileReader.onload = (e) => {
+          spark.append(e.target.result);
+          currentChunk++;
 
-const handleExceed = (files, fileList) => {
-  console.warn('只能上传一个文件');
-};
+          if (currentChunk < totalChunks) {
+            loadNext();
+          } else {
+            resolve(spark.end());
+          }
+        };
 
-const customUpload = async (options) => {
-  const file = options.file;
-  const chunks = Math.ceil(file.size / CHUNK_SIZE);
-  const spark = new SparkMD5.ArrayBuffer();
-  const fileReader = new FileReader();
+        fileReader.onerror = (e) => reject(e);
 
-  fileReader.onload = async (e) => {
-    spark.append(e.target.result);
-    const md5 = spark.end();
+        function loadNext() {
+          const start = currentChunk * chunkSize;
+          const end = Math.min(file.size, start + chunkSize);
+          fileReader.readAsArrayBuffer(file.slice(start, end));
+        }
 
-    for (let i = 0; i < chunks; i++) {
-      if (isUploading.value) {
-        const start = i * CHUNK_SIZE;
-        const end = Math.min(file.size, start + CHUNK_SIZE);
+        loadNext();
+      });
+    },
+    async uploadChunks(uploadItem) {
+      const {file, chunkSize, totalChunks, md5} = uploadItem;
+
+      while (uploadItem.currentChunk < totalChunks) {
+        if (uploadItem.isPaused || uploadItem.cancelToken) break;
+
+        const start = uploadItem.currentChunk * chunkSize;
+        const end = Math.min(file.size, start + chunkSize);
         const chunk = file.slice(start, end);
 
         const formData = new FormData();
-        formData.append('file', chunk);
-        formData.append('chunk', i);
-        formData.append('totalChunks', chunks);
-        formData.append('fileName', file.name);
-        formData.append('md5', md5);
+        formData.append("file", chunk);
+        formData.append("chunk", uploadItem.currentChunk);
+        formData.append("totalChunks", totalChunks);
+        formData.append("fileName", file.name);
+        formData.append("md5", md5);
 
         try {
-          await axios.post(uploadUrl, formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          });
+          await this.$axios.post("/upload/chunk", formData);
+          uploadItem.currentChunk++;
+          uploadItem.progress = Math.ceil(
+              (uploadItem.currentChunk / totalChunks) * 100
+          );
         } catch (error) {
-          console.error('Upload chunk failed:', error);
+          console.error("上传失败", error);
+          break;
         }
       }
-    }
-  };
-
-  fileReader.readAsArrayBuffer(file);
-};
-
-const uploadFile = () => {
-  if (file.value) {
-    isUploading.value = true;
-    customUpload({file: file.value});
-  }
-};
-
-const cancelUpload = () => {
-  isUploading.value = false;
-  if (uploadRequest.value) {
-    uploadRequest.value.abort();
-    uploadRequest.value = null;
-  }
-};
-
-const pauseUpload = () => {
-  isUploading.value = false;
-  if (uploadRequest.value) {
-    uploadRequest.value.abort();
-    uploadRequest.value = null;
-  }
+    },
+    pauseUpload(uploadItem) {
+      uploadItem.isPaused = true;
+    },
+    cancelUpload(uploadItem) {
+      uploadItem.cancelToken = true;
+      this.uploadList = this.uploadList.filter((item) => item !== uploadItem);
+    },
+    handleRemoveFile(file) {
+      this.uploadList = this.uploadList.filter(
+          (item) => item.file.name !== file.name
+      );
+    },
+  },
 };
 </script>
 
 <style scoped>
-.file-upload {
+.upload-container {
   margin: 20px;
+}
+
+.upload-area {
+  border: 2px dashed #d9d9d9;
+  padding: 20px;
+  text-align: center;
+}
+
+.file-item {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+}
+
+.file-actions {
+  display: flex;
+  gap: 10px;
 }
 </style>

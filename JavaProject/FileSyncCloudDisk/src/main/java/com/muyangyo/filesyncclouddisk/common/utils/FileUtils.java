@@ -1,4 +1,4 @@
-package com.example.chfs.utils;
+package com.muyangyo.filesyncclouddisk.common.utils;
 
 import java.io.BufferedWriter;
 import java.io.File;

@@ -12,7 +12,7 @@ const player = reactive({
   instance: null
 });
 
-const videoUrl = ref("https://api.dogecloud.com/player/get.m3u8?vcode=5ac682e6f8231991&userId=17&ext=.m3u8"); //视频地址
+const videoUrl = ref("http://localhost:80/files/video"); //视频地址
 
 onMounted(() => {
   player.instance = new DPlayer({
@@ -41,14 +41,14 @@ onMounted(() => {
     // 视频信息
     video: {
       url: videoUrl.value,
-      type: 'customHls',
-      customType: {
-        customHls: function (video, player) {
-          const hls = new Hls();
-          hls.loadSource(video.src);
-          hls.attachMedia(video);
-        },
-      },
+      type: 'auto',
+      // customType: {
+      //   customHls: function (video, player) {
+      //     const hls = new Hls();
+      //     hls.loadSource(video.src);
+      //     hls.attachMedia(video);
+      //   },
+      // },
     },
     // 自定义右键菜单
     contextmenu: [],
