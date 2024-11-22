@@ -23,7 +23,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/files")
-@CrossOrigin(origins = "http://localhost:*")
+//@CrossOrigin(origins = "http://localhost:*")
 public class FileController {
 
     @Autowired

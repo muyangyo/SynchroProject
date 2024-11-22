@@ -117,14 +117,11 @@ const copy = async () => {
     padding: 15px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    background-color: rgb(41, 42, 48);
+    background-color: #f9f9f9;
     white-space: pre-wrap;
     word-wrap: break-word;
-    font-family: 'microsoft yahei', Courier, monospace;
-    font-size: 18px;
-    //字体颜色
-    color: #ffffff;
-    font-weight: 800;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
     line-height: 1.5;
   }
 

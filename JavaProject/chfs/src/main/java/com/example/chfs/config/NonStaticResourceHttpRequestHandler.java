@@ -5,14 +5,12 @@ package com.example.chfs.config;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 import javax.servlet.http.HttpServletRequest;
 
 // 标记该类为Spring组件
 @Component
-@CrossOrigin(origins = "http://localhost:*  ")
 public class NonStaticResourceHttpRequestHandler extends ResourceHttpRequestHandler {
 
     // 定义常量，用于存储非静态文件的属性名称

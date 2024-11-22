@@ -80,7 +80,7 @@ public class UploadController {
             // 遍历每个块文件并将其写入合并文件
             for (File partFile : partFiles) {
                 try (BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(partFile.toPath()))) {
-                    byte[] buffer = new byte[1024]; // 定义缓冲区
+                    byte[] buffer = new byte[10240]; // 定义缓冲区
                     int bytesRead;
                     while ((bytesRead = inputStream.read(buffer)) != -1) {
                         outputStream.write(buffer, 0, bytesRead); // 写入合并文件
