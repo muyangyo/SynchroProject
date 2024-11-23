@@ -1,0 +1,28 @@
+{
+  "name": "file-cloud-disk-fe",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "@vueuse/core": "^11.3.0",
+    "axios": "^1.7.7",
+    "element-plus": "^2.8.8",
+    "jsencrypt": "3.3.2",
+    "pinia": "^2.2.6",
+    "spark-md5": "3.0.2",
+    "vue": "^3.5.12",
+    "vue-router": "^4.4.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.4",
+    "sass": "^1.81.0",
+    "vite": "^5.4.10",
+    "vite-plugin-vue-devtools": "^7.5.4"
+  }
+}
