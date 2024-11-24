@@ -116,7 +116,7 @@ const toggleMenu = () => {
 // 用户登录状态
 const userStore = useUserStore();
 
-const isLoggedIn = userStore.getIsLoggedIn();
+const isLoggedIn = userStore.IsLoggedIn();
 const userName = userStore.getUserName();
 
 const confirmLogout = () => {

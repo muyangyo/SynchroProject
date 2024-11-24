@@ -2,7 +2,7 @@ import {useDark, useToggle} from "@vueuse/core";
 
 const config = {
     theme: "system", // "system" 跟随系统主题, "dark" 黑色主题, "light" 白色主题
-    hostUrl: "http://192.168.124.14:80/api",
+    hostUrl: "/api",
     userBaseUrl: "/user",
     managerBaseUrl: "/manager"
 }

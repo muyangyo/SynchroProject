@@ -1,135 +1,89 @@
 <template>
-  <div class="file-preview">
-    <div class="top-op">
-      <div class="encode-select">
-        <el-select
-            placeholder="选择编码"
-            v-model="selectedEncode"
-            @change="changeEncode"
-            class="select-box"
-        >
-          <el-option value="utf8" label="UTF-8 编码"></el-option>
-          <el-option value="gbk" label="GBK 编码"></el-option>
-        </el-select>
-        <div class="tips">遇到乱码？尝试切换编码</div>
-      </div>
-      <div class="copy-btn">
-        <el-button type="primary" @click="copy">复制内容</el-button>
-      </div>
+  <div class="music">
+    <div class="body-content">
+      <div ref="playerRef" class="music-player"></div>
     </div>
-    <div class="file-content">
-      <pre>{{ fileContent }}</pre>
-    </div>
+    <el-button @click="previewAudio">预览音频</el-button>
   </div>
 </template>
 
 <script setup>
-import {ref, onMounted} from 'vue';
+import {ref, onMounted, onUnmounted} from 'vue';
 import {optionalRequest} from '@/utils/RequestTool.js';
-import useClipboard from 'vue-clipboard3';
+import APlayer from 'aplayer';
+import 'aplayer/dist/APlayer.min.css';
 
-const {toClipboard} = useClipboard();
+const playerRef = ref();
+const player = ref(null);
+const audioUrl = ref('');
 
-const selectedEncode = ref('utf8');
-const fileContent = ref('');
-const blobResult = ref(null);
-
-const readFile = async () => {
-  try {
-    const result = await optionalRequest({
-      method: 'GET',
-      url: '/previewTxt',
-      responseType: 'blob',
-    });
-    if (!result) throw new Error('Failed to fetch file content.');
-
-    blobResult.value = result.data;
-    showFileContent();
-  } catch (error) {
-    console.error('文件读取失败:', error);
+const initPlayer = () => {
+  if (player.value) {
+    player.value.destroy();
   }
+  player.value = new APlayer({
+    container: playerRef.value,
+    audio: [{
+      url: audioUrl.value,
+      name: 'temp',
+      artist: '',
+      mini: true,
+      cover: new URL(`@/assets/music_cover.png`, import.meta.url).href,
+    }]
+  });
 };
 
-const changeEncode = (e) => {
-  selectedEncode.value = e;
-  showFileContent();
-};
-
-const showFileContent = () => {
-  if (!(blobResult.value instanceof Blob)) {
-    console.error('无效的 Blob 对象:', blobResult.value);
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    fileContent.value = reader.result;
-  };
-  reader.readAsText(blobResult.value, selectedEncode.value);
+const previewAudio = () => {
+  optionalRequest({
+    method: 'GET',
+    url: '/previewAudio',
+    responseType: 'blob' // 设置响应类型为blob
+  }).then(response => {
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    audioUrl.value = url;
+    initPlayer();
+  }).catch(error => {
+    console.error('预览音频失败:', error);
+  });
 };
 
 onMounted(() => {
-  readFile();
+  if (audioUrl.value) {
+    initPlayer();
+  }
 });
 
-const copy = async () => {
-  try {
-    await toClipboard(fileContent.value);
-    console.log('文本已成功复制到剪贴板');
-  } catch (error) {
-    console.error('复制失败:', error);
+onUnmounted(() => {
+  if (player.value) {
+    player.value.destroy();
   }
-};
+});
 </script>
 
 <style lang="scss" scoped>
-.file-preview {
+.music {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  padding: 20px;
-  box-sizing: border-box;
 
-  .top-op {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
+  .body-content {
+    text-align: center;
+    width: 80%;
 
-    .encode-select {
-      display: flex;
-      align-items: center;
+    .cover {
+      margin: 0px auto;
+      width: 200px;
+      text-align: center;
 
-      .select-box {
-        margin-right: 10px;
-      }
-
-      .tips {
-        color: #828282;
-        font-size: 14px;
+      img {
+        width: 100%;
       }
     }
 
-    .copy-btn {
-      margin-left: 20px;
+    .music-player {
+      margin-top: 20px;
     }
-  }
-
-  .file-content {
-    padding: 15px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: rgb(41, 42, 48);
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    font-family: 'microsoft yahei', Courier, monospace;
-    font-size: 18px;
-    //字体颜色
-    color: #ffffff;
-    font-weight: 800;
-    line-height: 1.5;
-  }
-
-  pre {
-    margin: 0;
   }
 }
 </style>

@@ -43,7 +43,7 @@ public class VerifyLogin implements HandlerInterceptor {
         //持有token
         Cookie[] requestCookies = request.getCookies();
         for (Cookie tmp : requestCookies) {
-            if (tmp.getName().equals("Authorization")) {
+            if (tmp.getName().equals(Setting.TOKEN_HEADER_NAME)) {
                 return TokenUtils.checkToken(tmp.getValue(), clientIp);
             }
         }

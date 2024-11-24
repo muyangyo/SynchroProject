@@ -28,7 +28,7 @@ public class TokenUtils {
 
     public static void init(Setting setting) {
         KEY = Keys.hmacShaKeyFor(Decoders.BASE64.decode(setting.getSignature()));
-        LIFETIME = setting.getLifeTime() * 1000;
+        LIFETIME = setting.getTokenLifeTime() * 1000L;
     }
 
     /**

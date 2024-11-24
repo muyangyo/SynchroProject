@@ -36,7 +36,7 @@ public class Setting {
     private String invitationCode;
 
     @Value("${token.lifeTime}")
-    private long lifeTime;
+    private int tokenLifeTime;
     @Value("${token.signature}")
     private String signature;
 
@@ -69,7 +69,7 @@ public class Setting {
     private boolean isConfigInvalid() {
         return Stream.of(
                 port, applicationName, systemType, serverIP, absoluteUrl, invitationCode,
-                loginAndRegisterTimeCache, rasCache, maxNumberOfAttempts, signature, lifeTime
+                loginAndRegisterTimeCache, rasCache, maxNumberOfAttempts, signature, tokenLifeTime
         ).anyMatch(value -> {
             if (value == null) {
                 return true;
@@ -91,4 +91,8 @@ public class Setting {
         rasCache.shutdown();
         log.info("缓存释放完毕!");
     }
+
+
+    public static final String TOKEN_HEADER_NAME = "Authorization";
+    public static final String TOKEN_NAME_FOR_FE = "Token";
 }

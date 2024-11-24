@@ -63,10 +63,17 @@ public class UserService {
             tokenMap.put("loginTime", String.valueOf(new Date())); // 登录时间
 
             String token = TokenUtils.getToken(tokenMap);
-            Cookie jwtCookie = new Cookie("AuthToken", token);
+            Cookie jwtCookie = new Cookie(Setting.TOKEN_HEADER_NAME, token);
             jwtCookie.setHttpOnly(true); // 防止JavaScript访问此Cookie
-            jwtCookie.setPath("/"); // 设置Cookie的路径
+            jwtCookie.setPath("/"); // 设置Cookie的路径 表示根路径，意味着这个 Cookie 会在整个域名下的所有路径中被发送
             response.addCookie(jwtCookie);
+
+
+            Cookie cookie = new Cookie(Setting.TOKEN_NAME_FOR_FE, System.currentTimeMillis() + "");
+            cookie.setPath("/");
+            cookie.setHttpOnly(false);
+            cookie.setMaxAge(setting.getTokenLifeTime());
+            response.addCookie(cookie);// 给前端验证token是否存在的
 
             return Result.success(true);
         } else {

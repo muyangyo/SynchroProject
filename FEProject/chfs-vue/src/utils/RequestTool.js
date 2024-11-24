@@ -7,7 +7,7 @@ const RequestMethods = {
 
 // 创建axios实例并设置基础URL和请求超时
 const requestTool = axios.create({
-    baseURL: "http://192.168.124.14:80",
+    baseURL: "/api",
     timeout: 5000,
     headers: { // 设置默认请求头
         'Content-Type': 'application/json;charset=UTF-8',
@@ -18,25 +18,27 @@ const requestTool = axios.create({
 // 请求拦截器
 requestTool.interceptors.request.use(config => {
     // 在请求发送前处理请求配置
-    console.log('Request Config:', config);
+    console.log('发出的请求为:', config);
     return config;
 }, error => {
     // 处理请求错误
-    console.error('Request Error:', error);
+    console.error('请求发出时错误:', error);
     return Promise.reject(error);
 });
 
 // 响应拦截器
 requestTool.interceptors.response.use(response => {
     // 处理响应数据
-    console.log('Response Data:', response.data);
-    return response;
+    console.log('收到的响应为:', response.data);
+    // const parse = JSON.parse(response.data);
+    // console.log('解析后的响应为:', parse);
+    return response.data;
 }, error => {
     // 处理响应错误
     if (error.response) {
-        console.error('Response Error:', error.response.status, error.response.data);
+        console.error('请求返回时错误:', error.response.status, error.response.data);
     } else {
-        console.error('Network Error:', error.message);
+        console.error('网络错误:', error.message);
     }
     return Promise.reject(error);
 });
@@ -67,8 +69,8 @@ const validateRequestParams = ({method, relativeURL, data, checkDataFormat = tru
 };
 
 // 封装通用请求方法
-const easyRequest = (method, relativeURL, data) => {
-    validateRequestParams({method, relativeURL, data});
+const easyRequest = (method, relativeURL, data, checkDataFormat = true) => {
+    validateRequestParams({method, relativeURL, data, checkDataFormat});
 
     // 发送请求并返回结果
     return requestTool({
