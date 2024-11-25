@@ -1,6 +1,7 @@
 package com.muyangyo.fileclouddisk.user.controller;
 
 
+import com.muyangyo.fileclouddisk.common.config.Setting;
 import com.muyangyo.fileclouddisk.common.model.dto.Login;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
 import com.muyangyo.fileclouddisk.common.utils.NetworkUtils;
@@ -29,9 +30,14 @@ public class UserController {
     @Resource
     UserService userService;
 
+    @Resource
+    Setting setting;
+
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public Result login(@RequestBody Login login, HttpServletRequest request, HttpServletResponse response) {
-        userService.decryptLogin(login, NetworkUtils.getClientIp(request));// 解密登录信息 TODO: 记得释放
+        if (setting.isLoginAndRegisterUseEncrypt()) {
+            userService.decryptLogin(login, NetworkUtils.getClientIp(request));// 解密登录信息
+        }
 
         if (StringUtils.hasLength(login.getUsername()) && StringUtils.hasLength(login.getPassword())) {
             if (login.getUsername().length() > 30) {
@@ -45,26 +51,29 @@ public class UserController {
         return Result.fail("登录失败!用户名或密码为空!", 401);
     }
 
-//    @RequestMapping(value = "/register", method = RequestMethod.POST)
-//    public Result register(@RequestBody Login login, HttpServletRequest request) {
-////        userService.decryptLogin(login, NetworkUtils.getClientIp(request));// 解密登录信息  TODO: 记得释放
-//
-//        if (StringUtils.hasLength(login.getUsername()) && StringUtils.hasLength(login.getPassword()) && StringUtils.hasLength(login.getKey())) {
-//            if (login.getUsername().length() > 30) {
-//                return Result.fail("创建新用户失败!用户名不能超过30个字符!", 401);
-//            }
-//            if (login.getPassword().length() > 32) {
-//                return Result.fail("创建新用户失败!密码不能超过32个字符!", 401);
-//            }
-//            return userService.createUser(login.getUsername(), login.getPassword(), login.getKey());
-//        }
-//        return Result.fail("创建新用户失败!密钥有误或用户名或密码为空!", 401);
-//    }
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
+    public Result register(@RequestBody Login login, HttpServletRequest request) {
+//        userService.decryptLogin(login, NetworkUtils.getClientIp(request));// 解密登录信息  TODO: 记得释放
+
+        if (StringUtils.hasLength(login.getUsername()) && StringUtils.hasLength(login.getPassword()) && StringUtils.hasLength(login.getKey())) {
+            if (login.getUsername().length() > 30) {
+                return Result.fail("创建新用户失败!用户名不能超过30个字符!", 401);
+            }
+            if (login.getPassword().length() > 32) {
+                return Result.fail("创建新用户失败!密码不能超过32个字符!", 401);
+            }
+            return userService.createUser(login.getUsername(), login.getPassword(), login.getKey());
+        }
+        return Result.fail("创建新用户失败!密钥有误或用户名或密码为空!", 401);
+    }
 
 
     @RequestMapping(value = "/getPublicKey", method = RequestMethod.GET)
     public Result getPublicKey(HttpServletRequest request) {
-        return userService.getPublicKey(NetworkUtils.getClientIp(request));
+        if (setting.isLoginAndRegisterUseEncrypt())
+            return userService.getPublicKey(NetworkUtils.getClientIp(request));
+        else
+            return Result.success("NONE");
     }
 
     @RequestMapping("/logout")

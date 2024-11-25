@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface CreateTablesMapper {
-    Integer createSharedDirectoryTable(); // 创建共享目录表
+    Integer createMountDirsTable(); // 创建挂载目录表
 
     Integer CreateAdminTable(); // 创建管理员表
 

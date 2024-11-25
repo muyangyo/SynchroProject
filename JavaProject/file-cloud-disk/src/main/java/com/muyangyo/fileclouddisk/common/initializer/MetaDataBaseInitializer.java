@@ -47,7 +47,7 @@ public class MetaDataBaseInitializer {
 
     private Boolean createTables() {
         try {
-            createTablesMapper.createSharedDirectoryTable();
+            createTablesMapper.createMountDirsTable();
             createTablesMapper.CreateAdminTable();
             createTablesMapper.CreateUserTable();
             return true;

@@ -1,5 +1,5 @@
 <template>
-  <el-popover placement='top-start' :width="playerWidth" :visible="visible" :show-arrow="false"
+  <el-popover placement='top-end' :width="playerWidth" :visible="visible" :show-arrow="false"
               popper-style="padding: 0; border: 0;">
     <template #reference>
       <div class="music-player-trigger"></div>
@@ -16,10 +16,10 @@
 </template>
 
 <script setup>
-import {ref, onMounted, onUnmounted} from 'vue';
-import {optionalRequest} from '@/utils/RequestTool.js';
+import {ref, onMounted, onBeforeUnmount} from 'vue';
 import APlayer from 'aplayer';
 import 'aplayer/dist/APlayer.min.css';
+import getBlobData from "@/utils/getBLOBData.js";
 
 const playerDiv = ref(null); // 音乐播放器容器
 const player = ref(null); // 音乐播放器实例
@@ -66,17 +66,11 @@ const initPlayer = () => {
   });
 };
 
+
 const getFileAndInitPlayer = () => {
-  optionalRequest({
-    method: 'GET',
-    url: props.sourceFileURL,
-    responseType: 'blob' // 设置响应类型为blob
-  }).then(response => {
-    file.value.realFile = window.URL.createObjectURL(new Blob([response.data]));
-    initPlayer();
-  }).catch(error => {
-    console.error('预览音频失败:', error);
-  });
+  const response = getBlobData(props.sourceFileURL);
+  file.value.realFile = window.URL.createObjectURL(new Blob([response.data]));
+  initPlayer();
 };
 
 const closePlayer = () => {
@@ -91,12 +85,13 @@ const emit = defineEmits(['close']);
 
 onMounted(() => {
   console.log('musicPreview组件挂载');
-  // getFileAndInitPlayer(); todo: 预览音频功能暂时关闭
-  initPlayer();
+  getFileAndInitPlayer();
 });
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
   console.log('musicPreview组件销毁');
+  window.URL.revokeObjectURL(file.value.realFile)
+  file.value = null;
   if (player.value) {
     player.value.destroy();
     player.value = null;

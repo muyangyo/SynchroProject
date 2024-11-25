@@ -91,9 +91,8 @@ public class UserService {
      * @param key      邀请码
      * @return 创建结果
      */
-    public Result createUser(String username, String password, String key) {
+    public Result createUser(String username, String password, String key) { //TODO 这个方法以后只能由管理员调用，需要权限控制
         if (!key.equals("123456")) {
-            // TODO 这里应该调用邀请码服务，验证邀请码是否有效
             return Result.fail("邀请码错误");
         }
 

@@ -40,6 +40,12 @@ public class Setting {
     @Value("${token.signature}")
     private String signature;
 
+    @Value("${securityOptions.userComponent}")
+    private boolean loginAndRegisterUseEncrypt;
+
+    @Value("${securityOptions.dataComponent}")
+    private boolean dataUseEncrypt;
+
     private EasyTimedCache<String, Integer> loginAndRegisterTimeCache; // 登录和注册时间缓存
     private EasyTimedCache<String, PrivateKey> rasCache; // RSA密钥缓存
     @Value("${maxNumberOfAttempts}")
@@ -64,6 +70,11 @@ public class Setting {
             throw new InitFailedException("初始化项目配置失败，请检查配置!");
         }
         TokenUtils.init(this);
+        if (loginAndRegisterUseEncrypt) {
+            log.info("登入注册模块使用加密");
+        } else {
+            log.warn("登入注册模块未使用加密");
+        }
     }
 
     private boolean isConfigInvalid() {
@@ -95,4 +106,6 @@ public class Setting {
 
     public static final String TOKEN_HEADER_NAME = "Authorization";
     public static final String TOKEN_NAME_FOR_FE = "Token";
+
+    public static final Integer BYTE_CACHE_SIZE = 65536;// 缓存大小
 }

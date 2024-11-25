@@ -22,7 +22,11 @@
 
             <el-table-column prop="fileName" label="文件名" sortable min-width="100px" :show-overflow-tooltip="true">
               <template #default="scope" style="color: white">
-                {{ scope.row.fileName }}
+                <div class="cell-content" @click="handleFirstCellClick(scope.$index,scope.row)">
+                  <IconFromDIY v-if="scope.row.fileType.category"
+                               :name="getIconNameFromCategory(scope.row.fileType.category)"/>
+                  {{ scope.row.fileName }}
+                </div>
               </template>
             </el-table-column>
 
@@ -30,7 +34,9 @@
             <el-table-column prop="modifiedTime" label="修改时间" sortable/>
             <el-table-column prop="operation" label="操作">
               <template #default="scope">
-                <el-tooltip content="预览" placement="top" :show-arrow="false">
+                <el-tooltip
+                    v-if="scope.row.fileType.category !== FILE_CATEGORY.FOLDER && scope.row.fileType.category !== FILE_CATEGORY.UNKNOWN"
+                    content="预览" placement="top" :show-arrow="false">
                   <el-button type="primary" size="small" :icon="DataAnalysis"
                              @click="handlePreview(scope.$index, scope.row)"/>
                 </el-tooltip>
@@ -79,10 +85,19 @@
     </template>
 
     <div class="dialog-body">
-      <div v-if="dialogState.contentType === 'preview' && dialogState.visible" :key="file.filePath">
-        <video-preview v-if="file.fileType === 'video' " :sourceFileURL="file.filePath" :key="file.filePath"/>
-      </div>
-      <div v-else-if="dialogState.contentType === 'download'">
+      <!-- 预览 -->
+      <div v-if="dialogState.contentType === 'preview' && dialogState.visible" :key="file.filePath +Math.random">
+        <VideoPreview v-if="file.fileType.category === FILE_CATEGORY.VIDEO " :sourceFileURL="file.filePath"
+                      :key="file.filePath +Math.random"/>
+
+        <TextPreview v-if="file.fileType.category === FILE_CATEGORY.TEXT " :sourceFileURL=" file.filePath"
+                     :key="file.filePath +Math.random"/>
+
+        <DocxPreview v-if="file.fileType.category === FILE_CATEGORY.DOCX " :sourceFileURL=" file.filePath"
+                     :key="file.filePath +Math.random"/>
+
+        <PdfPreview v-if="file.fileType.category === FILE_CATEGORY.PDF " :sourceFileURL=" file.filePath"
+                    :key="file.filePath +Math.random"/>
       </div>
     </div>
 
@@ -92,16 +107,22 @@
   </el-dialog>
 
   <!-- 音乐悬浮窗  TODO: 测试是否能正常销毁和播放-->
-  <MusicPreview
-      v-if="musicPopover.visible && file.fileType ==='AUDIO' "
+  <AudioPreview
+      v-if="musicPopover.visible && file.fileType.category === FILE_CATEGORY.AUDIO "
       :sourceFileURL="file.filePath"
       @close="musicPopover.visible = false"
   />
 
+  <!-- 图片预览 -->
+  <ImagePreview v-if="file.fileType.category === FILE_CATEGORY.IMAGE && imagePreview.visible"
+                :sourceFileURL="file.filePath"
+                @close="imagePreview.visible = false"
+                :key="file.filePath +Math.random"/>
+
 </template>
 
 <script setup>
-import {ref} from 'vue';
+import {onMounted, ref} from 'vue';
 import {
   UploadFilled,
   FolderAdd,
@@ -113,7 +134,74 @@ import {
   Close
 } from '@element-plus/icons-vue';
 import VideoPreview from "@/components/user/videoPreview.vue";
-import MusicPreview from "@/components/user/musicPreview.vue";
+import AudioPreview from "@/components/user/audioPreview.vue";
+import TextPreview from "@/components/user/textPreview.vue";
+import ImagePreview from "@/components/user/imagePreview.vue";
+import DocxPreview from "@/components/user/docxPreview.vue";
+import PdfPreview from "@/components/user/pdfPreview.vue";
+import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
+import IconFromDIY from "@/components/common/iconFromDIY.vue";
+
+
+const FILE_CATEGORY = {
+  IMAGE: 'IMAGE',
+  VIDEO: 'VIDEO',
+  AUDIO: 'AUDIO',
+  TEXT: 'TEXT',
+  PDF: 'PDF',
+  DOCX: 'DOCX',
+  FOLDER: 'FOLDER',
+  UNKNOWN: 'UNKNOWN',
+};
+
+//文件类型实例
+const file = ref({
+  fileName: '',
+  fileSize: '',
+  modifiedTime: '',
+  filePath: '',
+  fileType: {
+    category: FILE_CATEGORY.UNKNOWN,
+    typeName: '',
+    mimeType: ''
+  },
+});
+
+const tableData = ref([]);
+
+onMounted(() => {
+  easyRequest(RequestMethods.POST, "/file/getFileList", 'root', false).then(
+      (response) => {
+        response.data.forEach((item) => {
+          if (item.fileType.category === FILE_CATEGORY.FOLDER) {
+            item.fileSize = ''; // 目录不显示大小
+          }
+        });
+        tableData.value = response.data;
+      }
+  );
+})
+
+// 根据文件类型获取icon名称
+const getIconNameFromCategory = (category) => {
+  if (category === FILE_CATEGORY.VIDEO) {
+    return '#icon-shipin';
+  } else if (category === FILE_CATEGORY.IMAGE) {
+    return '#icon-tupian';
+  } else if (category === FILE_CATEGORY.AUDIO) {
+    return '#icon-yinle';
+  } else if (category === FILE_CATEGORY.TEXT) {
+    return '#icon-a-035_wenben';
+  } else if (category === FILE_CATEGORY.PDF) {
+    return '#icon-PDF';
+  } else if (category === FILE_CATEGORY.DOCX) {
+    return '#icon-word';
+  } else if (category === FILE_CATEGORY.FOLDER) {
+    return '#icon-wenjianjia1';
+  } else {
+    return '#icon-wenjian';
+  }
+};
 
 //music弹窗配置
 const musicPopover = ref({
@@ -121,13 +209,9 @@ const musicPopover = ref({
   width: '50%',
 });
 
-//文件
-const file = ref({
-  fileName: '',
-  fileSize: '',
-  modifiedTime: '',
-  filePath: '',
-  fileType: 'AUDIO',
+//图片预览配置
+const imagePreview = ref({
+  visible: false,
 });
 
 //dialog弹窗配置
@@ -139,8 +223,10 @@ const dialogState = ref({
 });
 
 const handlePreview = (index, row) => {
-  if (file.value.fileType === 'AUDIO') {
+  if (row.fileType.category === FILE_CATEGORY.AUDIO) {
     musicPopover.value.visible = true;
+  } else if (row.fileType.category === FILE_CATEGORY.IMAGE) {
+    imagePreview.value.visible = true;
   } else {
     dialogState.value.visible = true;
     dialogState.value.title = "预览";
@@ -176,16 +262,24 @@ const handleDelete = (index, row) => {
   dialogState.value.width = "50%";
   dialogState.value.contentType = 'delete';
 };
-// 假数据
-const tableData = ref([
-  {fileName: '123.txt', fileSize: '10 KB', modifiedTime: '2023-10-01 12:00'},
-  {fileName: '文件2.docx', fileSize: '200 KB', modifiedTime: '2023-10-02 14:30'},
-  {fileName: '文件3.pdf', fileSize: '500 KB', modifiedTime: '2023-10-03 09:15'},
-  {fileName: '文件4.jpg', fileSize: '1 MB', modifiedTime: '2023-10-04 16:45'},
-  {fileName: '文件5.mp4', fileSize: '5 MB', modifiedTime: '2023-10-05 10:20'},
-]);
-
-
+// 点击第一列触发的事件
+const handleFirstCellClick = (index, row) => {
+  if (row.fileType.category === FILE_CATEGORY.FOLDER) {
+    const path = row.filePath.replace(/\\/g, '/');
+    console.log(path);
+    // 进入文件夹
+    easyRequest(RequestMethods.POST, "/file/getFileList", path, false).then(
+        (response) => {
+          response.data.forEach((item) => {
+            if (item.fileType.category === FILE_CATEGORY.FOLDER) {
+              item.fileSize = ''; // 目录不显示大小
+            }
+          });
+          tableData.value = response.data;
+        }
+    );
+  }
+};
 </script>
 
 <style scoped>
@@ -287,5 +381,15 @@ const tableData = ref([
 
 .full-width-table td {
   color: #fff;
+}
+
+
+.cell-content {
+  display: flex;
+  align-items: center;
+}
+
+.cell-content .svg-icon {
+  margin-right: 8px;
 }
 </style>

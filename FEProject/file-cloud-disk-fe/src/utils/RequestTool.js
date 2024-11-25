@@ -82,7 +82,7 @@ const easyRequest = (method, relativeURL, data, checkDataFormat = true) => {
 };
 
 // 封装支持自定义选项的请求方法
-const optionalRequest = (options) => {
+const optionalRequest = async (options) => {
     const {
         method, // 请求方法
         url: relativeURL, // 请求URL

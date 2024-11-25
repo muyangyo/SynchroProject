@@ -1,7 +1,7 @@
 <template>
   <div>
     <video ref="playerDiv" class="plyr__video-embed" controls>
-      <source :src="file.realFile ? file.realFile : props.sourceFileURL" :type="file.mime"/>
+      <source :src="props.sourceFileURL" :type="file.mime"/>
     </video>
   </div>
 </template>
@@ -23,7 +23,6 @@ const props = defineProps({
 // 视频文件信息(请求后端接口获取)
 const file = ref({
   mime: 'video/mp4',
-  realFile: null,
 });
 
 
@@ -83,6 +82,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   console.log("plyr 销毁中...");
+  file.value = null;
   if (playerDiv.value) {
     playerDiv.value.destroy(); // 销毁 Plyr
   }

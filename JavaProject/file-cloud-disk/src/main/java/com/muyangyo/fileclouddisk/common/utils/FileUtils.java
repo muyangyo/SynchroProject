@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,6 +34,18 @@ public class FileUtils {
     }
 
     /**
+     * 读取文件内容
+     *
+     * @param file 文件对象
+     * @return 文件内容
+     * @throws IOException           如果读取过程中发生错误
+     * @throws FileNotFoundException 如果文件不存在
+     */
+    public static String readFileToStr(File file) throws IOException {
+        return readFileToStr(file.getPath());
+    }
+
+    /**
      * 写入内容到文件
      *
      * @param filePath 文件路径 (如果文件或者文件夹不存在，则会自动创建)
@@ -50,6 +64,18 @@ public class FileUtils {
                 append ? StandardOpenOption.APPEND : StandardOpenOption.TRUNCATE_EXISTING)) {
             writer.write(content);
         }
+    }
+
+    /**
+     * 写入内容到文件
+     *
+     * @param file    文件对象
+     * @param content 写入内容 (默认写入为UTF-8编码)
+     * @param append  是否追加内容，true: 追加，false: 覆盖
+     * @throws IOException 如果写入过程中发生错误
+     */
+    public static void writeFileFromStr(File file, String content, boolean append) throws IOException {
+        writeFileFromStr(file.getPath(), content, append);
     }
 
     /**
@@ -87,6 +113,17 @@ public class FileUtils {
     }
 
     /**
+     * 删除文件或目录（递归删除文件夹及其内容）
+     *
+     * @param file 文件或目录对象
+     * @return 删除成功或失败
+     * @throws IOException 如果删除过程中发生错误
+     */
+    public static boolean delete(File file) throws IOException {
+        return delete(file.getPath());
+    }
+
+    /**
      * 复制文件
      *
      * @param sourcePath 源文件路径
@@ -104,6 +141,17 @@ public class FileUtils {
     }
 
     /**
+     * 复制文件
+     *
+     * @param sourceFile 源文件对象
+     * @param targetFile 目标文件对象
+     * @throws IOException 如果复制过程中发生错误
+     */
+    public static void copyFile(File sourceFile, File targetFile) throws IOException {
+        copyFile(sourceFile.getPath(), targetFile.getPath());
+    }
+
+    /**
      * 创建文件夹(可多级创建)
      *
      * @param dirPath 文件夹路径
@@ -114,6 +162,16 @@ public class FileUtils {
         if (!Files.exists(path)) {
             Files.createDirectories(path);
         }
+    }
+
+    /**
+     * 创建文件夹(可多级创建)
+     *
+     * @param dir 文件夹对象
+     * @throws IOException 如果创建过程中发生错误
+     */
+    public static void createDirectory(File dir) throws IOException {
+        createDirectory(dir.getPath());
     }
 
     /**
@@ -129,6 +187,16 @@ public class FileUtils {
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
             Files.setAttribute(path, "dos:hidden", true);
         }
+    }
+
+    /**
+     * 创建隐藏文件夹
+     *
+     * @param dir 隐藏文件夹对象
+     * @throws IOException 如果创建过程中发生错误
+     */
+    public static void createHiddenDirectory(File dir) throws IOException {
+        createHiddenDirectory(dir.getPath());
     }
 
     /**
@@ -151,6 +219,17 @@ public class FileUtils {
             }
         }
         return fileList;
+    }
+
+    /**
+     * 列出当前目录下所有文件和文件夹(不含子文件夹的文件)
+     *
+     * @param dir 目录对象
+     * @return 文件列表
+     * @throws IOException 如果获取文件列表过程中发生错误
+     */
+    public static List<String> listFilesInDirectory(File dir) throws IOException {
+        return listFilesInDirectory(dir.getPath());
     }
 
     /**
@@ -180,6 +259,16 @@ public class FileUtils {
         return fileList;
     }
 
+    /**
+     * 列出当前目录及其子目录下所有文件和文件夹
+     *
+     * @param dir 目录对象
+     * @return 文件列表
+     * @throws IOException 如果获取文件列表过程中发生错误
+     */
+    public static List<String> listAllFilesInDirectory(File dir) throws IOException {
+        return listAllFilesInDirectory(dir.getPath());
+    }
 
     /**
      * 检查文件或文件夹是否存在
@@ -189,6 +278,16 @@ public class FileUtils {
      */
     public static boolean exists(String path) {
         return Files.exists(Paths.get(path));
+    }
+
+    /**
+     * 检查文件或文件夹是否存在
+     *
+     * @param file 文件或文件夹对象
+     * @return 是否存在
+     */
+    public static boolean exists(File file) {
+        return exists(file.getPath());
     }
 
     /**
@@ -207,6 +306,16 @@ public class FileUtils {
     }
 
     /**
+     * 获取文件的扩展名
+     *
+     * @param file 文件对象
+     * @return 文件扩展名
+     */
+    public static String getFileExtension(File file) {
+        return getFileExtension(file.getPath());
+    }
+
+    /**
      * 获取文件名（含扩展名）
      *
      * @param filePath 文件路径
@@ -214,6 +323,16 @@ public class FileUtils {
      */
     public static String getFileName(String filePath) {
         return Paths.get(filePath).getFileName().toString();
+    }
+
+    /**
+     * 获取文件名（含扩展名）
+     *
+     * @param file 文件对象
+     * @return 文件名
+     */
+    public static String getFileName(File file) {
+        return getFileName(file.getPath());
     }
 
     /**
@@ -229,6 +348,16 @@ public class FileUtils {
             return fileName.substring(0, lastDotIndex); // 返回文件名（不含扩展名）
         }
         return fileName;
+    }
+
+    /**
+     * 获取文件名（不含扩展名）
+     *
+     * @param file 文件对象
+     * @return 文件名
+     */
+    public static String getFileNameWithoutExtension(File file) {
+        return getFileNameWithoutExtension(file.getPath());
     }
 
     /**
@@ -290,5 +419,45 @@ public class FileUtils {
         }
 
         return uniquePath;
+    }
+
+    /**
+     * 获取文件的修改时间
+     *
+     * @param filePath 文件路径
+     * @return 文件的修改时间
+     * @throws IOException 如果获取过程中发生错误
+     */
+    public static String getFileModifiedTime(String filePath) throws IOException {
+        Path path = Paths.get(filePath);
+        BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
+        Date modifiedTime = new Date(attrs.lastModifiedTime().toMillis());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return simpleDateFormat.format(modifiedTime);
+    }
+
+    /**
+     * 获取文件的修改时间
+     *
+     * @param file 文件对象
+     * @return 文件的修改时间
+     * @throws IOException 如果获取过程中发生错误
+     */
+    public static String getFileModifiedTime(File file) throws IOException {
+        return getFileModifiedTime(file.getPath());
+    }
+
+    /**
+     * 将文件路径中的反斜杠 \ 替换为正斜杠 /
+     *
+     * @param path 文件路径
+     * @return 替换后的路径
+     */
+    public static String normalizePath(String path) {
+        // 先将反斜杠替换为正斜杠
+        String normalizedPath = path.replace("\\", "/");
+        // 删除重复的斜杠
+        normalizedPath = normalizedPath.replaceAll("/+", "/");
+        return normalizedPath;
     }
 }

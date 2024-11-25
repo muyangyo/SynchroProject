@@ -1,6 +1,7 @@
 package com.muyangyo.fileclouddisk.common.aspect;
 
 import com.muyangyo.fileclouddisk.common.exception.IllegalLoginWithoutRSA;
+import com.muyangyo.fileclouddisk.common.exception.IllegalPath;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.UncategorizedSQLException;
@@ -34,9 +35,16 @@ public class ExceptionHandler {
 
     @org.springframework.web.bind.annotation.ExceptionHandler
     public Result exception(IllegalLoginWithoutRSA e) {
-        log.warn("非正常登入!");
+        log.error("非正常登入!");
         e.printStackTrace();
-        return Result.error("请使用客户端的登入!");
+        return Result.error("请使用客户端登入!");
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler
+    public Result exception(IllegalPath e) {
+        log.error("路径非法!");
+        e.printStackTrace();
+        return Result.error("请使用客户端操作!");
     }
 
 

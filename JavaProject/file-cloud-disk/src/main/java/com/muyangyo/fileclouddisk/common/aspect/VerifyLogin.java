@@ -40,13 +40,20 @@ public class VerifyLogin implements HandlerInterceptor {
             return limitLoginAndRegister(request, clientIp);
         }
 
-        //持有token
-        Cookie[] requestCookies = request.getCookies();
-        for (Cookie tmp : requestCookies) {
-            if (tmp.getName().equals(Setting.TOKEN_HEADER_NAME)) {
-                return TokenUtils.checkToken(tmp.getValue(), clientIp);
+
+        try {
+            //持有token
+            Cookie[] requestCookies = request.getCookies();
+            for (Cookie tmp : requestCookies) {
+                if (tmp.getName().equals(Setting.TOKEN_HEADER_NAME)) {
+                    return TokenUtils.checkToken(tmp.getValue(), clientIp);
+                }
             }
+        } catch (Exception e) {
+            log.error("获取Cookie失败", e);
+            return false;
         }
+
 
         //如果都没有则返回401状态码
         response.setStatus(401);
