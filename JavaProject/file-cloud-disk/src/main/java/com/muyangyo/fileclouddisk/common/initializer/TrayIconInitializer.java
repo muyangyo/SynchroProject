@@ -83,7 +83,7 @@ public class TrayIconInitializer {
     // 打开项目网址的方法
     private void openUrl() {
         try {
-            Desktop.getDesktop().browse(java.net.URI.create(setting.getAbsoluteUrl())); // 使用系统浏览器打开网址
+            Desktop.getDesktop().browse(java.net.URI.create(setting.getCompleteServerURL())); // 使用系统浏览器打开网址
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

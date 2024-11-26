@@ -460,4 +460,24 @@ public class FileUtils {
         normalizedPath = normalizedPath.replaceAll("/+", "/");
         return normalizedPath;
     }
+
+    /**
+     * 获取绝对路径(分割符统一为 "/",避免了与不同操作系统的路径分割符不同导致的路径错误)
+     *
+     * @param path 文件路径
+     * @return 绝对路径
+     */
+    public static String getAbsolutePath(String path) {
+        return normalizePath(Paths.get(path).toAbsolutePath().toString());
+    }
+
+    /**
+     * 获取绝对路径(分割符统一为 "/",避免了与不同操作系统的路径分割符不同导致的路径错误)
+     *
+     * @param file 文件对象
+     * @return 绝对路径
+     */
+    public static String getAbsolutePath(File file) {
+        return getAbsolutePath(file.getPath());
+    }
 }

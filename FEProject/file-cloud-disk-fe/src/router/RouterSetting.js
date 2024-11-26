@@ -56,7 +56,7 @@ const mangerUrlBaseRoutes = [
     ]
 ;
 
-// 用户端路由配置
+
 const userUrlBaseRoutes = [
     // 路由配置
     {
@@ -65,11 +65,15 @@ const userUrlBaseRoutes = [
     }, {
         path: config.userBaseUrl + '/login',
         component: () => import('@/views/user/Login.vue'),
+    },
+    {
+        path: config.userBaseUrl + '/:pathMatch(.*)*'
+        , component: userCloudIndex
     }
 ];
 
 const routes = userUrlBaseRoutes.concat(mangerUrlBaseRoutes); // 合并路由配置
-routes.unshift({path: '/:pathMatch(.*)*', component: NotFound}) //单独添加 404
+routes.push({path: '/:pathMatch(.*)*', component: NotFound}) //单独添加 404
 
 const router = createRouter({
     history: createWebHistory(),
@@ -84,7 +88,7 @@ router.beforeEach((to, from) => {
         // 管理端登入验证
         // if (token == null) {
         //     // 未登录
-        //     console.log('未登录')
+        //     console.warn('未登录')
         //     if (to.path !== config.managerBaseUrl + '/login') {
         //         // 跳转至登录页面
         //         return {path: config.managerBaseUrl + '/login'}
@@ -94,7 +98,7 @@ router.beforeEach((to, from) => {
         // 用户端登入验证
         if (token == null) {
             // 未登录
-            console.log('未登录')
+            console.warn('未登录')
             if (to.path !== config.userBaseUrl + '/login') {
                 // 跳转至登录页面
                 return {path: config.userBaseUrl + '/login'}

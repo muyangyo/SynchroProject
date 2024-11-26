@@ -8,7 +8,7 @@ export const useKeyStore = defineStore('keyStore', () => {
 
     const setPublicKey = (key) => {
         if (key === "NONE") {
-            console.warn("不开启加密功能");
+            console.warn("未开启加密功能,请注意网络环境");
             openEncrypt.value = false;
             return;
         }

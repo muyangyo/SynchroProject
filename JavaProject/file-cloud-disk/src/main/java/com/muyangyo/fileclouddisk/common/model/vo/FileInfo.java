@@ -20,5 +20,6 @@ public class FileInfo {
     private long fileSize;
     private String modifiedTime;
     private String filePath;
+    private String mountRootPath; // 属于哪个挂载路径
     private FileType fileType;
 }

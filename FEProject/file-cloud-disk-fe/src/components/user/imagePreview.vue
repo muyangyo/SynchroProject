@@ -13,7 +13,7 @@ const initialIndex = ref(0);
 
 // 定义 props
 const props = defineProps({
-  sourceFileURL: {
+  sourceFilePath: {
     type: String,
     required: true,
   }
@@ -23,10 +23,12 @@ const props = defineProps({
 // 预览图片的方法
 const previewImage = async () => {
   try {
-    const response = getBlobData(props.sourceFileURL);
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    imageUrls.value = [url];
-    initialIndex.value = 0;
+    const response = getBlobData(props.sourceFilePath).then(response => {
+      response.data
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      imageUrls.value = [url];
+      initialIndex.value = 0;
+    })
   } catch (error) {
     console.error('预览图片失败:', error);
   }

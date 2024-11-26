@@ -1,20 +1,37 @@
 <template>
+  <!-- 页面主体(不会隐藏的) -->
   <el-row :gutter="20" class="cloud-index-container">
     <el-col :span="3"/>
     <el-col :span="18">
       <!-- 页面主体 -->
       <div class="cloud-index-wrapper">
+
         <!-- 头部 -->
         <div class="cloud-index-header">
           <h2 class="cloud-index-title">我的云盘</h2>
           <div class="cloud-index-actions">
-            <el-button type="primary" :icon="UploadFilled">
+            <el-button type="primary" :icon="UploadFilled" v-if="route.fullPath!==config.userBaseUrl">
               上传文件
             </el-button>
-            <el-button type="primary" :icon="FolderAdd">创建文件夹</el-button>
+            <el-button type="primary" :icon="FolderAdd" v-if="route.fullPath!==config.userBaseUrl">创建文件夹
+            </el-button>
             <el-button type="primary" :icon="Share">我的分享</el-button>
           </div>
         </div>
+
+        <!-- 面包屑 -->
+        <div class="cloud-index-breadcrumb">
+          <el-breadcrumb separator="/">
+            <el-breadcrumb-item :to="toThePathBreadCrumb(-1)">根目录</el-breadcrumb-item>
+            <el-breadcrumb-item
+                v-for="(part, index) in pathPartsForBreadCrumb"
+                :key="index"
+                @click="toThePathBreadCrumb(index)">
+              {{ part }}
+            </el-breadcrumb-item>
+          </el-breadcrumb>
+        </div>
+
         <!-- 内容 -->
         <div class="cloud-index-content">
           <el-table :data="tableData" :default-sort="{ prop: '文件名', order: 'descending' }"
@@ -35,7 +52,10 @@
             <el-table-column prop="operation" label="操作">
               <template #default="scope">
                 <el-tooltip
-                    v-if="scope.row.fileType.category !== FILE_CATEGORY.FOLDER && scope.row.fileType.category !== FILE_CATEGORY.UNKNOWN"
+                    v-if="scope.row.fileType.category !== FILE_CATEGORY.FOLDER &&
+                    scope.row.fileType.category !== FILE_CATEGORY.UNKNOWN&&
+scope.row.fileType.category !== FILE_CATEGORY.COMPRESSED && scope.row.fileType.category !== FILE_CATEGORY.EXCEL
+&& scope.row.fileType.category !== FILE_CATEGORY.PPT"
                     content="预览" placement="top" :show-arrow="false">
                   <el-button type="primary" size="small" :icon="DataAnalysis"
                              @click="handlePreview(scope.$index, scope.row)"/>
@@ -69,6 +89,7 @@
     <el-col :span="3"/>
   </el-row>
 
+  <!-- 弹窗 -->
   <el-dialog
       v-model="dialogState.visible" :title="dialogState.title" :show-close="false" :width="dialogState.width" draggable
       class="custom-dialog" :key="'userCloudIndexDialogCommon'+Math.random()">
@@ -87,16 +108,16 @@
     <div class="dialog-body">
       <!-- 预览 -->
       <div v-if="dialogState.contentType === 'preview' && dialogState.visible" :key="file.filePath +Math.random">
-        <VideoPreview v-if="file.fileType.category === FILE_CATEGORY.VIDEO " :sourceFileURL="file.filePath"
+        <VideoPreview v-if="file.fileType.category === FILE_CATEGORY.VIDEO " :sourceFilePath="file.filePath"
                       :key="file.filePath +Math.random"/>
 
-        <TextPreview v-if="file.fileType.category === FILE_CATEGORY.TEXT " :sourceFileURL=" file.filePath"
+        <TextPreview v-if="file.fileType.category === FILE_CATEGORY.TEXT " :sourceFilePath=" file.filePath"
                      :key="file.filePath +Math.random"/>
 
-        <DocxPreview v-if="file.fileType.category === FILE_CATEGORY.DOCX " :sourceFileURL=" file.filePath"
+        <DocxPreview v-if="file.fileType.category === FILE_CATEGORY.DOCX " :sourceFilePath=" file.filePath"
                      :key="file.filePath +Math.random"/>
 
-        <PdfPreview v-if="file.fileType.category === FILE_CATEGORY.PDF " :sourceFileURL=" file.filePath"
+        <PdfPreview v-if="file.fileType.category === FILE_CATEGORY.PDF " :sourceFilePath=" file.filePath"
                     :key="file.filePath +Math.random"/>
       </div>
     </div>
@@ -109,20 +130,19 @@
   <!-- 音乐悬浮窗  TODO: 测试是否能正常销毁和播放-->
   <AudioPreview
       v-if="musicPopover.visible && file.fileType.category === FILE_CATEGORY.AUDIO "
-      :sourceFileURL="file.filePath"
+      :sourceFilePath="file.filePath"
       @close="musicPopover.visible = false"
   />
 
   <!-- 图片预览 -->
   <ImagePreview v-if="file.fileType.category === FILE_CATEGORY.IMAGE && imagePreview.visible"
-                :sourceFileURL="file.filePath"
+                :sourceFilePath="file.filePath"
                 @close="imagePreview.visible = false"
                 :key="file.filePath +Math.random"/>
 
 </template>
-
 <script setup>
-import {onMounted, ref} from 'vue';
+import {onMounted, reactive, ref, watch} from 'vue';
 import {
   UploadFilled,
   FolderAdd,
@@ -139,10 +159,15 @@ import TextPreview from "@/components/user/textPreview.vue";
 import ImagePreview from "@/components/user/imagePreview.vue";
 import DocxPreview from "@/components/user/docxPreview.vue";
 import PdfPreview from "@/components/user/pdfPreview.vue";
-import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
 import IconFromDIY from "@/components/common/iconFromDIY.vue";
+import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
+import {useRoute} from "vue-router";
+import {config} from "@/GlobalConfig.js";
+import router from "@/router/RouterSetting.js";
+// 面包屑数据
+const pathPartsForBreadCrumb = ref([]);
 
-
+// 文件类型常量
 const FILE_CATEGORY = {
   IMAGE: 'IMAGE',
   VIDEO: 'VIDEO',
@@ -152,6 +177,10 @@ const FILE_CATEGORY = {
   DOCX: 'DOCX',
   FOLDER: 'FOLDER',
   UNKNOWN: 'UNKNOWN',
+  COMPRESSED: 'COMPRESSED', // 压缩文件
+  EXCEL: 'EXCEL',
+  PPT: 'PPT',
+  CODE: 'CODE', // 代码文件(从TEXT中分离出来)
 };
 
 //文件类型实例
@@ -160,6 +189,7 @@ const file = ref({
   fileSize: '',
   modifiedTime: '',
   filePath: '',
+  mountRootPath: '',
   fileType: {
     category: FILE_CATEGORY.UNKNOWN,
     typeName: '',
@@ -167,20 +197,92 @@ const file = ref({
   },
 });
 
+// 文件列表数据
 const tableData = ref([]);
 
+
+const route = useRoute();
+// 初次加载页面时，获取根目录即可
 onMounted(() => {
-  easyRequest(RequestMethods.POST, "/file/getFileList", 'root', false).then(
-      (response) => {
+      console.warn("用户首页挂载成功"); //TODO: 调试用
+
+      easyRequest(RequestMethods.POST, "/file/getFileList", config.userBaseUrl, false).then(response => {
         response.data.forEach((item) => {
           if (item.fileType.category === FILE_CATEGORY.FOLDER) {
             item.fileSize = ''; // 目录不显示大小
           }
-        });
+        }); // 先处理一下目录
         tableData.value = response.data;
-      }
-  );
-})
+
+
+        // 页面刷新直接强制跳回根目录
+        router.push(config.userBaseUrl)
+
+      })
+    }
+)
+
+watch(() => route.fullPath, () => {
+  //如果是根目录
+  if (route.fullPath === config.userBaseUrl) {
+    console.error("由于路由变化，根目录数据更新(bug)");//TODO: 调试用
+    // 非首次加载页面，更新数据
+    easyRequest(RequestMethods.POST, "/file/getFileList", route.fullPath, false).then((response) => {
+          handleResponseForWatch(response)
+        }
+    )
+  } else {
+    // 非根目录，更新数据
+    easyRequest(RequestMethods.POST, "/file/getFileList", route.fullPath, false).then((response) => {
+          handleResponseForWatch(response)
+        }
+    )
+  }
+  // 面包屑更新
+  let temp = config.userBaseUrl.substring(1, config.userBaseUrl.length);
+  pathPartsForBreadCrumb.value = (route.fullPath.split('/').filter((item) => item !== '' && item !== temp));
+});
+
+//watch方法抽离出来的请求处理方法
+const handleResponseForWatch = (response) => {
+  response.data.forEach((item) => {
+    if (item.fileType.category === FILE_CATEGORY.FOLDER) {
+      item.fileSize = ''; // 目录不显示大小
+    }
+  }); // 先处理一下目录
+  tableData.value = response.data;
+};
+
+const toThePathBreadCrumb = (index) => {
+  if (index === -1) {
+    return config.userBaseUrl;
+  } else {
+    let to = config.userBaseUrl
+    for (let i = 0; i <= index; i++) {
+      to = to + '/' + pathPartsForBreadCrumb.value[i];
+    }
+    router.push(to).then(() => {
+          // URL 驱动面包屑(但这个还不够)
+          // index+1 是相对根路径的距离
+          while (pathPartsForBreadCrumb.value.length > index + 1) {
+            pathPartsForBreadCrumb.value.pop();
+          }
+        }
+    );
+  }
+};
+
+const handleFirstCellClick = (index, row) => {
+  // URL 驱动 面包屑 后续因为 URL 变化驱动 watch 获取数据
+  if (row.fileType.category === FILE_CATEGORY.FOLDER) {
+    //先跳转
+    router.push(route.fullPath + '/' + row.fileName).then(() => {
+      //驱动面包屑
+      let temp = config.userBaseUrl.substring(1, config.userBaseUrl.length);
+      pathPartsForBreadCrumb.value = (route.fullPath.split('/').filter((item) => item !== '' && item !== temp));
+    })
+  }
+};
 
 // 根据文件类型获取icon名称
 const getIconNameFromCategory = (category) => {
@@ -189,17 +291,25 @@ const getIconNameFromCategory = (category) => {
   } else if (category === FILE_CATEGORY.IMAGE) {
     return '#icon-tupian';
   } else if (category === FILE_CATEGORY.AUDIO) {
-    return '#icon-yinle';
+    return '#icon-yinpin';
   } else if (category === FILE_CATEGORY.TEXT) {
-    return '#icon-a-035_wenben';
+    return '#icon-TXT';
   } else if (category === FILE_CATEGORY.PDF) {
     return '#icon-PDF';
   } else if (category === FILE_CATEGORY.DOCX) {
     return '#icon-word';
   } else if (category === FILE_CATEGORY.FOLDER) {
-    return '#icon-wenjianjia1';
+    return '#icon-wenjianjia';
+  } else if (category === FILE_CATEGORY.COMPRESSED) {
+    return '#icon-yasuobao';
+  } else if (category === FILE_CATEGORY.EXCEL) {
+    return '#icon-excel';
+  } else if (category === FILE_CATEGORY.PPT) {
+    return '#icon-ppt';
+  } else if (category === FILE_CATEGORY.CODE) {
+    return '#icon-jiaoben';
   } else {
-    return '#icon-wenjian';
+    return '#icon-weizhi';
   }
 };
 
@@ -262,26 +372,8 @@ const handleDelete = (index, row) => {
   dialogState.value.width = "50%";
   dialogState.value.contentType = 'delete';
 };
-// 点击第一列触发的事件
-const handleFirstCellClick = (index, row) => {
-  if (row.fileType.category === FILE_CATEGORY.FOLDER) {
-    const path = row.filePath.replace(/\\/g, '/');
-    console.log(path);
-    // 进入文件夹
-    easyRequest(RequestMethods.POST, "/file/getFileList", path, false).then(
-        (response) => {
-          response.data.forEach((item) => {
-            if (item.fileType.category === FILE_CATEGORY.FOLDER) {
-              item.fileSize = ''; // 目录不显示大小
-            }
-          });
-          tableData.value = response.data;
-        }
-    );
-  }
-};
-</script>
 
+</script>
 <style scoped>
 .custom-dialog {
   border-radius: 8px;
@@ -330,7 +422,7 @@ const handleFirstCellClick = (index, row) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 5px;
 }
 
 .cloud-index-title {
@@ -364,7 +456,33 @@ const handleFirstCellClick = (index, row) => {
   color: #ccc;
 }
 
+/* 面包屑样式 */
+.cloud-index-breadcrumb {
+  margin-bottom: 5px;
+  padding: 10px;
+  border-radius: 8px;
+}
 
+.cloud-index-breadcrumb .el-breadcrumb__inner {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.cloud-index-breadcrumb .el-breadcrumb__inner:hover {
+  color: #409EFF;
+  cursor: pointer; /* 确保悬停时显示箭头 */
+}
+
+.cloud-index-breadcrumb .el-breadcrumb__separator {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+/* 确保所有面包屑项都显示箭头 */
+.cloud-index-breadcrumb .el-breadcrumb__item {
+  cursor: pointer;
+}
 </style>
 <style>
 .full-width-table {

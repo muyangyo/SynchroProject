@@ -1,7 +1,7 @@
 <template>
   <div>
     <video ref="playerDiv" class="plyr__video-embed" controls>
-      <source :src="props.sourceFileURL" :type="file.mime"/>
+      <source :src="file.url ? file.url : props.sourceFilePath" :type="file.mime"/>
     </video>
   </div>
 </template>
@@ -9,12 +9,13 @@
 <script setup>
 import {ref, onMounted, onBeforeUnmount} from 'vue';
 import Plyr from 'plyr';
+import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
 
 const playerDiv = ref(null);
 
 // 调用组件时传入的视频地址
 const props = defineProps({
-  sourceFileURL: {
+  sourceFilePath: {
     type: String,
     default: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4'
   }
@@ -22,9 +23,19 @@ const props = defineProps({
 
 // 视频文件信息(请求后端接口获取)
 const file = ref({
-  mime: 'video/mp4',
+  url: '',
+  mime: '',
 });
 
+easyRequest({
+  method: RequestMethods.POST, url: '/file/preparingVideo',
+  data: props.sourceFilePath
+}).then(response => {
+  if (response.statusCode === "SUCCESS" && response.data && response.data.mountRootPath) {
+    file.value.mime = response.data.fileType.mimeType;
+    file.value.url = response.data.fileType.url;
+  }
+})
 
 onMounted(() => {
   console.log("plyr 初始化中...");
@@ -78,6 +89,7 @@ onMounted(() => {
     fullscreen: {enabled: true, fallback: true, iosNative: false}, // 全屏设置
     ads: {enabled: false}, // 广告设置
   }); // 初始化 Plyr
+
 });
 
 onBeforeUnmount(() => {

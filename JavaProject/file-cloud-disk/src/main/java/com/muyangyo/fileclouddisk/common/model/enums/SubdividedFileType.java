@@ -18,13 +18,15 @@ public enum SubdividedFileType {
 
     // 文本类型
     TEXT_PLAIN("Plain Text", "text/plain", Collections.singletonList("txt"), FileCategory.TEXT),
-    TEXT_HTML("HTML", "text/html", Arrays.asList("html", "htm"), FileCategory.TEXT),
-    TEXT_CSS("CSS", "text/css", Collections.singletonList("css"), FileCategory.TEXT),
-    TEXT_JAVASCRIPT("JavaScript", "application/javascript", Collections.singletonList("js"), FileCategory.TEXT),
     TEXT_CSV("CSV", "text/csv", Collections.singletonList("csv"), FileCategory.TEXT),
-    TEXT_JAVA("Java", "text/plain", Collections.singletonList("java"), FileCategory.TEXT),
-    TEXT_C("C", "text/plain", Collections.singletonList("c"), FileCategory.TEXT),
-    TEXT_PYTHON("Python", "text/plain", Collections.singletonList("py"), FileCategory.TEXT),
+
+    // 代码类型(文本类型分离出来的)
+    TEXT_HTML("HTML", "text/html", Arrays.asList("html", "htm"), FileCategory.CODE),
+    TEXT_CSS("CSS", "text/css", Collections.singletonList("css"), FileCategory.CODE),
+    TEXT_JAVASCRIPT("JavaScript", "application/javascript", Collections.singletonList("js"), FileCategory.CODE),
+    TEXT_JAVA("Java", "text/plain", Collections.singletonList("java"), FileCategory.CODE),
+    TEXT_C("C", "text/plain", Collections.singletonList("c"), FileCategory.CODE),
+    TEXT_PYTHON("Python", "text/plain", Collections.singletonList("py"), FileCategory.CODE),
 
     // PDF 类型
     PDF("PDF", "application/pdf", Collections.singletonList("pdf"), FileCategory.PDF),
@@ -48,6 +50,21 @@ public enum SubdividedFileType {
     IMAGE_ICO("ICO", "image/x-icon", Collections.singletonList("ico"), FileCategory.IMAGE),
     IMAGE_JFIF("JFIF", "image/jpeg", Collections.singletonList("jfif"), FileCategory.IMAGE),
     IMAGE_WEBP("WEBP", "image/webp", Collections.singletonList("webp"), FileCategory.IMAGE),
+
+    // 压缩包类型
+    COMPRESSED_ZIP("ZIP", "application/zip", Collections.singletonList("zip"), FileCategory.COMPRESSED),
+    COMPRESSED_RAR("RAR", "application/x-rar-compressed", Collections.singletonList("rar"), FileCategory.COMPRESSED),
+    COMPRESSED_7Z("7Z", "application/x-7z-compressed", Collections.singletonList("7z"), FileCategory.COMPRESSED),
+
+    // Excel 类型
+    EXCEL_XLS("XLS", "application/vnd.ms-excel", Collections.singletonList("xls"), FileCategory.EXCEL),
+    EXCEL_XLSX("XLSX", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            Collections.singletonList("xlsx"), FileCategory.EXCEL),
+
+    // PPT 类型
+    PPT_PPT("PPT", "application/vnd.ms-powerpoint", Collections.singletonList("ppt"), FileCategory.PPT),
+    PPT_PPTX("PPTX", "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            Collections.singletonList("pptx"), FileCategory.PPT),
 
     // 文件夹
     FOLDER("Folder", "inode/directory", Collections.singletonList("folder"), FileCategory.FOLDER),

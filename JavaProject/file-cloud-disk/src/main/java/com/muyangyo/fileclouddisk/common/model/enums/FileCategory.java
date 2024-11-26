@@ -11,10 +11,14 @@ package com.muyangyo.fileclouddisk.common.model.enums;
 public enum FileCategory {
     VIDEO,
     TEXT,
+    CODE,
     PDF,
     DOCX,
     AUDIO,
     IMAGE,
     FOLDER,
-    UNKNOWN;
+    UNKNOWN,
+    COMPRESSED, // 压缩文件
+    EXCEL,
+    PPT;
 }

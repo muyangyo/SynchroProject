@@ -31,7 +31,7 @@ public class Setting {
 
     private SystemType systemType;
     private String serverIP;
-    private String absoluteUrl;
+    private String completeServerURL;
     @Value("${invitationCode}")
     private String invitationCode;
 
@@ -59,7 +59,7 @@ public class Setting {
     public void init() {
         this.systemType = OSUtils.getSystemType();
         this.serverIP = NetworkUtils.getServerIP();
-        this.absoluteUrl = "http://" + serverIP + ":" + port;
+        this.completeServerURL = "http://" + serverIP + ":" + port;
         this.loginAndRegisterTimeCache = new EasyTimedCache<>(CACHE_SIZE, LIMIT_TIME, true);
         this.rasCache = new EasyTimedCache<>(CACHE_SIZE, RSA_USEFUL_TIME, true);
 
@@ -79,7 +79,7 @@ public class Setting {
 
     private boolean isConfigInvalid() {
         return Stream.of(
-                port, applicationName, systemType, serverIP, absoluteUrl, invitationCode,
+                port, applicationName, systemType, serverIP, completeServerURL, invitationCode,
                 loginAndRegisterTimeCache, rasCache, maxNumberOfAttempts, signature, tokenLifeTime
         ).anyMatch(value -> {
             if (value == null) {
@@ -108,4 +108,6 @@ public class Setting {
     public static final String TOKEN_NAME_FOR_FE = "Token";
 
     public static final Integer BYTE_CACHE_SIZE = 65536;// 缓存大小
+
+    public static final String FE_USER_BASE_URL = "/user";
 }
