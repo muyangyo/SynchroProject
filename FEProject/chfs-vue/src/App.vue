@@ -3,6 +3,7 @@
     <video ref="player" className="plyr__video-embed" controls>
       <source :src="videoUrl" type="video/mp4"/>
     </video>
+<!--    <video src="http://192.168.124.14:5173/api/file/previewVideo"></video>-->
   </div>
 </template>
 
@@ -12,7 +13,7 @@ import Plyr from 'plyr';
 
 const player = ref(null);
 // const videoUrl = ref('https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4'); // 替换为你的视频 URL
-const videoUrl = ref('http://192.168.124.14:10000/files/video'); // 替换为你的视频 URL
+const videoUrl = ref('http://192.168.124.14:5173/api/file/previewVideo'); // 替换为你的视频 URL
 
 onMounted(() => {
   player.value = new Plyr(player.value, {
@@ -72,6 +73,7 @@ onBeforeUnmount(() => {
     player.value.destroy();
   }
 });
+
 </script>
 
 <style src="plyr/dist/plyr.css"></style>

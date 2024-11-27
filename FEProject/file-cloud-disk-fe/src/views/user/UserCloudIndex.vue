@@ -47,7 +47,11 @@
               </template>
             </el-table-column>
 
-            <el-table-column prop="fileSize" label="大小" sortable/>
+            <el-table-column prop="fileSize" label="大小" sortable>
+              <template #default="scope">
+                {{ sizeTostr(scope.row.fileSize) }}
+              </template>
+            </el-table-column>
             <el-table-column prop="modifiedTime" label="修改时间" sortable/>
             <el-table-column prop="operation" label="操作">
               <template #default="scope">
@@ -164,6 +168,8 @@ import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
 import {useRoute} from "vue-router";
 import {config} from "@/GlobalConfig.js";
 import router from "@/router/RouterSetting.js";
+import {sizeTostr} from "@/utils/FileSizeConverter.js";
+
 // 面包屑数据
 const pathPartsForBreadCrumb = ref([]);
 
@@ -205,6 +211,9 @@ const route = useRoute();
 // 初次加载页面时，获取根目录即可
 onMounted(() => {
       console.warn("用户首页挂载成功"); //TODO: 调试用
+    if (location.pathname != config.userBaseUrl) {
+      return router.push(config.userBaseUrl)
+    }
 
       easyRequest(RequestMethods.POST, "/file/getFileList", config.userBaseUrl, false).then(response => {
         response.data.forEach((item) => {
@@ -338,6 +347,7 @@ const handlePreview = (index, row) => {
   } else if (row.fileType.category === FILE_CATEGORY.IMAGE) {
     imagePreview.value.visible = true;
   } else {
+    file.value = row;
     dialogState.value.visible = true;
     dialogState.value.title = "预览";
     dialogState.value.width = "80%";

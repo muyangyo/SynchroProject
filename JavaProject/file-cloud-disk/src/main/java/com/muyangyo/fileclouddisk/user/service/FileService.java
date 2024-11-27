@@ -67,7 +67,7 @@ public class FileService {
         String curRootPath = "";
         boolean ok = false;
         for (String dir : dirList) {
-            if (path.equals(dir) || path.equals(dir + "/")) {
+            if (path.equals(dir) || path.startsWith(dir + "/")) {
                 curRootPath = dir;
                 ok = true;
                 break;

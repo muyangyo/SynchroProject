@@ -10,10 +10,7 @@ import com.muyangyo.fileclouddisk.common.utils.FileUtils;
 import com.muyangyo.fileclouddisk.common.utils.NetworkUtils;
 import com.muyangyo.fileclouddisk.user.service.FileService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletException;
@@ -44,6 +41,12 @@ public class FileController {
     @Resource
     private FileService fileService;
 
+    /**
+     * 支持伪路径
+     *
+     * @param path 路径
+     * @return 文件列表
+     */
     @PostMapping(value = "/getFileList") // 不能改为get,因为有路径会导致问题
     public Result getFileList(@RequestBody String path) {
         path = normalizeParams(path); // 格式化参数
@@ -90,7 +93,8 @@ public class FileController {
             VideoCache.put(ip, file);
 
             VideoFileInfo videoFileInfo = new VideoFileInfo();
-            videoFileInfo.setUrl(setting.getCompleteServerURL() + "/file/previewVideo");
+//            videoFileInfo.setUrl(setting.getCompleteServerURL() + "/api/file/previewVideo");
+            videoFileInfo.setUrl("/api/file/previewVideo");
             videoFileInfo.setFileName(fileInfo.getFileName());
             videoFileInfo.setFileSize(fileInfo.getFileSize());
             videoFileInfo.setModifiedTime(fileInfo.getModifiedTime());
@@ -103,7 +107,7 @@ public class FileController {
     }
 
 
-    @RequestMapping("/previewVideo")
+    @RequestMapping(value = "/previewVideo", method = RequestMethod.GET)
     public void video(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         File file = VideoCache.get(NetworkUtils.getClientIp(request));
         if (file == null || !file.exists()) {
