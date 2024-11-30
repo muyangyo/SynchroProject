@@ -5,12 +5,12 @@
 <script setup>
 import * as docx from "docx-preview";
 import {ref, onMounted, onBeforeUnmount} from "vue";
-import getBlobData from "@/utils/getBLOBData.js";
+import getBlobData from "@/utils/getBlobData.js";
 
 const docDiv = ref(null);
 
 const props = defineProps({
-  sourceFileURL: { // 文件 URL
+  sourceFilePath: { // 文件 URL
     type: String,
     required: true,
   },
@@ -19,28 +19,29 @@ const props = defineProps({
 
 const initDoc = async () => {
   try {
-    const response = await getBlobData(props.sourceFileURL);
-    if (!response) {
-      throw new Error("Failed to load docx file");
-    }
+    getBlobData('/previewDocx',{path: props.sourceFilePath}).then(response => {
+      if (!response) {
+        throw new Error("Failed to load docx file");
+      }
 
-    const blob = new Blob([response.data], {
-      type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    });
-    // 使用 docx-preview 渲染文档
-    await docx.renderAsync(blob, docDiv.value);
+      const blob = new Blob([response], {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
+      // 使用 docx-preview 渲染文档
+      docx.renderAsync(blob, docDiv.value);
+    })
   } catch (error) {
     console.error("Failed to load docx file:", error);
   }
 };
 
 onMounted(() => {
-  console.log("docx preview mounted");
+  console.log("docx预览组件挂载");
   initDoc();
 });
 
 onBeforeUnmount(() => {
-  console.log("docx preview unmount");
+  console.log("docx预览组件卸载");
 });
 </script>
 

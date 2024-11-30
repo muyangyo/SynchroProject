@@ -1,8 +1,8 @@
 <template>
   <!-- 页面主体(不会隐藏的) -->
   <el-row :gutter="20" class="cloud-index-container">
-    <el-col :span="3"/>
-    <el-col :span="18">
+    <el-col :span="1"/>
+    <el-col :span="22">
       <!-- 页面主体 -->
       <div class="cloud-index-wrapper">
 
@@ -10,10 +10,10 @@
         <div class="cloud-index-header">
           <h2 class="cloud-index-title">我的云盘</h2>
           <div class="cloud-index-actions">
-            <el-button type="primary" :icon="UploadFilled" v-if="route.fullPath!==config.userBaseUrl">
+            <el-button type="primary" :icon="UploadFilled" v-if="route.fullPath !== config.userRouterBaseUrl">
               上传文件
             </el-button>
-            <el-button type="primary" :icon="FolderAdd" v-if="route.fullPath!==config.userBaseUrl">创建文件夹
+            <el-button type="primary" :icon="FolderAdd" v-if="route.fullPath !== config.userRouterBaseUrl">创建文件夹
             </el-button>
             <el-button type="primary" :icon="Share">我的分享</el-button>
           </div>
@@ -27,7 +27,7 @@
                 v-for="(part, index) in pathPartsForBreadCrumb"
                 :key="index"
                 @click="toThePathBreadCrumb(index)">
-              {{ part }}
+              {{ decodeURIComponent(part) }}
             </el-breadcrumb-item>
           </el-breadcrumb>
         </div>
@@ -35,14 +35,14 @@
         <!-- 内容 -->
         <div class="cloud-index-content">
           <el-table :data="tableData" :default-sort="{ prop: '文件名', order: 'descending' }"
-                    class="full-width-table" height="868px">
+                    class="full-width-table" height="600px">
 
             <el-table-column prop="fileName" label="文件名" sortable min-width="100px" :show-overflow-tooltip="true">
               <template #default="scope" style="color: white">
-                <div class="cell-content" @click="handleFirstCellClick(scope.$index,scope.row)">
+                <div class="cell-content" @click="handleFirstCellClick(scope.$index, scope.row)">
                   <IconFromDIY v-if="scope.row.fileType.category"
                                :name="getIconNameFromCategory(scope.row.fileType.category)"/>
-                  {{ scope.row.fileName }}
+                  <span class="file-name">{{ scope.row.fileName }}</span>
                 </div>
               </template>
             </el-table-column>
@@ -57,9 +57,10 @@
               <template #default="scope">
                 <el-tooltip
                     v-if="scope.row.fileType.category !== FILE_CATEGORY.FOLDER &&
-                    scope.row.fileType.category !== FILE_CATEGORY.UNKNOWN&&
-scope.row.fileType.category !== FILE_CATEGORY.COMPRESSED && scope.row.fileType.category !== FILE_CATEGORY.EXCEL
-&& scope.row.fileType.category !== FILE_CATEGORY.PPT"
+                    scope.row.fileType.category !== FILE_CATEGORY.UNKNOWN &&
+                    scope.row.fileType.category !== FILE_CATEGORY.COMPRESSED &&
+                    scope.row.fileType.category !== FILE_CATEGORY.EXCEL &&
+                    scope.row.fileType.category !== FILE_CATEGORY.PPT"
                     content="预览" placement="top" :show-arrow="false">
                   <el-button type="primary" size="small" :icon="DataAnalysis"
                              @click="handlePreview(scope.$index, scope.row)"/>
@@ -70,12 +71,12 @@ scope.row.fileType.category !== FILE_CATEGORY.COMPRESSED && scope.row.fileType.c
                              @click="handleDownload(scope.$index, scope.row)"/>
                 </el-tooltip>
 
-                <el-tooltip content="重命名" placement="top" :show-arrow="false">
+                <el-tooltip content="重命名" placement="top" :show-arrow="false" v-if=" route.fullPath !== config.userRouterBaseUrl">
                   <el-button type="warning" size="small" :icon="EditPen"
                              @click="handleRename(scope.$index, scope.row)"/>
                 </el-tooltip>
 
-                <el-tooltip content="删除" placement="top" :show-arrow="false">
+                <el-tooltip content="删除" placement="top" :show-arrow="false" v-if=" route.fullPath !== config.userRouterBaseUrl">
                   <el-button type="danger" size="small" :icon="DeleteFilled"
                              @click="handleDelete(scope.$index, scope.row)"/>
                 </el-tooltip>
@@ -90,7 +91,7 @@ scope.row.fileType.category !== FILE_CATEGORY.COMPRESSED && scope.row.fileType.c
         </div>
       </div>
     </el-col>
-    <el-col :span="3"/>
+    <el-col :span="1"/>
   </el-row>
 
   <!-- 弹窗 -->
@@ -115,8 +116,10 @@ scope.row.fileType.category !== FILE_CATEGORY.COMPRESSED && scope.row.fileType.c
         <VideoPreview v-if="file.fileType.category === FILE_CATEGORY.VIDEO " :sourceFilePath="file.filePath"
                       :key="file.filePath +Math.random"/>
 
-        <TextPreview v-if="file.fileType.category === FILE_CATEGORY.TEXT " :sourceFilePath=" file.filePath"
-                     :key="file.filePath +Math.random"/>
+        <TextPreview
+            v-if="file.fileType.category === FILE_CATEGORY.TEXT || file.fileType.category=== FILE_CATEGORY.CODE"
+            :sourceFilePath=" file.filePath "
+            :key="file.filePath +Math.random"/>
 
         <DocxPreview v-if="file.fileType.category === FILE_CATEGORY.DOCX " :sourceFilePath=" file.filePath"
                      :key="file.filePath +Math.random"/>
@@ -146,7 +149,7 @@ scope.row.fileType.category !== FILE_CATEGORY.COMPRESSED && scope.row.fileType.c
 
 </template>
 <script setup>
-import {onMounted, reactive, ref, watch} from 'vue';
+import {onMounted, reactive, ref, watch, computed} from 'vue';
 import {
   UploadFilled,
   FolderAdd,
@@ -164,17 +167,19 @@ import ImagePreview from "@/components/user/imagePreview.vue";
 import DocxPreview from "@/components/user/docxPreview.vue";
 import PdfPreview from "@/components/user/pdfPreview.vue";
 import IconFromDIY from "@/components/common/iconFromDIY.vue";
-import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
+import {easyRequest, optionalRequest, RequestMethods} from "@/utils/RequestTool.js";
 import {useRoute} from "vue-router";
 import {config} from "@/GlobalConfig.js";
 import router from "@/router/RouterSetting.js";
 import {sizeTostr} from "@/utils/FileSizeConverter.js";
+import {ElMessage, ElMessageBox} from 'element-plus';
+import getBlobData from "@/utils/getBlobData.js";
 
 // 面包屑数据
 const pathPartsForBreadCrumb = ref([]);
 
 // 文件类型常量
-const FILE_CATEGORY = {
+const FILE_CATEGORY = Object.freeze({
   IMAGE: 'IMAGE',
   VIDEO: 'VIDEO',
   AUDIO: 'AUDIO',
@@ -187,7 +192,8 @@ const FILE_CATEGORY = {
   EXCEL: 'EXCEL',
   PPT: 'PPT',
   CODE: 'CODE', // 代码文件(从TEXT中分离出来)
-};
+});
+
 
 //文件类型实例
 const file = ref({
@@ -206,49 +212,41 @@ const file = ref({
 // 文件列表数据
 const tableData = ref([]);
 
-
 const route = useRoute();
+
 // 初次加载页面时，获取根目录即可
 onMounted(() => {
-      console.warn("用户首页挂载成功"); //TODO: 调试用
-    if (location.pathname != config.userBaseUrl) {
-      return router.push(config.userBaseUrl)
-    }
+  if (location.pathname !== config.userRouterBaseUrl) {
+    router.push(config.userRouterBaseUrl);
+    return;
+  }
 
-      easyRequest(RequestMethods.POST, "/file/getFileList", config.userBaseUrl, false).then(response => {
-        response.data.forEach((item) => {
-          if (item.fileType.category === FILE_CATEGORY.FOLDER) {
-            item.fileSize = ''; // 目录不显示大小
-          }
-        }); // 先处理一下目录
-        tableData.value = response.data;
+  easyRequest(RequestMethods.POST, "/file/getFileList", {path: config.userRouterBaseUrl}, false, true).then(response => {
+    response.data.forEach((item) => {
+      if (item.fileType.category === FILE_CATEGORY.FOLDER) {
+        item.fileSize = ''; // 目录不显示大小
+      }
+    }); // 先处理一下目录
+    tableData.value = response.data;
+  });
+});
 
-
-        // 页面刷新直接强制跳回根目录
-        router.push(config.userBaseUrl)
-
-      })
-    }
-)
 
 watch(() => route.fullPath, () => {
   //如果是根目录
-  if (route.fullPath === config.userBaseUrl) {
-    console.error("由于路由变化，根目录数据更新(bug)");//TODO: 调试用
+  if (route.fullPath === config.userRouterBaseUrl) {
     // 非首次加载页面，更新数据
-    easyRequest(RequestMethods.POST, "/file/getFileList", route.fullPath, false).then((response) => {
-          handleResponseForWatch(response)
-        }
-    )
+    easyRequest(RequestMethods.POST, "/file/getFileList", {path: route.fullPath}, false, true).then((response) => {
+      handleResponseForWatch(response);
+    });
   } else {
     // 非根目录，更新数据
-    easyRequest(RequestMethods.POST, "/file/getFileList", route.fullPath, false).then((response) => {
-          handleResponseForWatch(response)
-        }
-    )
+    easyRequest(RequestMethods.POST, "/file/getFileList", {path: route.fullPath}, false, true).then((response) => {
+      handleResponseForWatch(response);
+    });
   }
   // 面包屑更新
-  let temp = config.userBaseUrl.substring(1, config.userBaseUrl.length);
+  let temp = config.userRouterBaseUrl.substring(1, config.userRouterBaseUrl.length);
   pathPartsForBreadCrumb.value = (route.fullPath.split('/').filter((item) => item !== '' && item !== temp));
 });
 
@@ -264,20 +262,19 @@ const handleResponseForWatch = (response) => {
 
 const toThePathBreadCrumb = (index) => {
   if (index === -1) {
-    return config.userBaseUrl;
+    return config.userRouterBaseUrl;
   } else {
-    let to = config.userBaseUrl
+    let to = config.userRouterBaseUrl;
     for (let i = 0; i <= index; i++) {
       to = to + '/' + pathPartsForBreadCrumb.value[i];
     }
     router.push(to).then(() => {
-          // URL 驱动面包屑(但这个还不够)
-          // index+1 是相对根路径的距离
-          while (pathPartsForBreadCrumb.value.length > index + 1) {
-            pathPartsForBreadCrumb.value.pop();
-          }
-        }
-    );
+      // URL 驱动面包屑(但这个还不够)
+      // index+1 是相对根路径的距离
+      while (pathPartsForBreadCrumb.value.length > index + 1) {
+        pathPartsForBreadCrumb.value.pop();
+      }
+    });
   }
 };
 
@@ -285,41 +282,31 @@ const handleFirstCellClick = (index, row) => {
   // URL 驱动 面包屑 后续因为 URL 变化驱动 watch 获取数据
   if (row.fileType.category === FILE_CATEGORY.FOLDER) {
     //先跳转
-    router.push(route.fullPath + '/' + row.fileName).then(() => {
+    router.push(`${route.fullPath}/${row.fileName}`).then(() => {
       //驱动面包屑
-      let temp = config.userBaseUrl.substring(1, config.userBaseUrl.length);
+      let temp = config.userRouterBaseUrl.substring(1, config.userRouterBaseUrl.length);
       pathPartsForBreadCrumb.value = (route.fullPath.split('/').filter((item) => item !== '' && item !== temp));
-    })
+    });
   }
 };
 
 // 根据文件类型获取icon名称
 const getIconNameFromCategory = (category) => {
-  if (category === FILE_CATEGORY.VIDEO) {
-    return '#icon-shipin';
-  } else if (category === FILE_CATEGORY.IMAGE) {
-    return '#icon-tupian';
-  } else if (category === FILE_CATEGORY.AUDIO) {
-    return '#icon-yinpin';
-  } else if (category === FILE_CATEGORY.TEXT) {
-    return '#icon-TXT';
-  } else if (category === FILE_CATEGORY.PDF) {
-    return '#icon-PDF';
-  } else if (category === FILE_CATEGORY.DOCX) {
-    return '#icon-word';
-  } else if (category === FILE_CATEGORY.FOLDER) {
-    return '#icon-wenjianjia';
-  } else if (category === FILE_CATEGORY.COMPRESSED) {
-    return '#icon-yasuobao';
-  } else if (category === FILE_CATEGORY.EXCEL) {
-    return '#icon-excel';
-  } else if (category === FILE_CATEGORY.PPT) {
-    return '#icon-ppt';
-  } else if (category === FILE_CATEGORY.CODE) {
-    return '#icon-jiaoben';
-  } else {
-    return '#icon-weizhi';
-  }
+  const icons = {
+    [FILE_CATEGORY.VIDEO]: '#icon-shipin',
+    [FILE_CATEGORY.IMAGE]: '#icon-tupian',
+    [FILE_CATEGORY.AUDIO]: '#icon-yinpin',
+    [FILE_CATEGORY.TEXT]: '#icon-TXT',
+    [FILE_CATEGORY.PDF]: '#icon-PDF',
+    [FILE_CATEGORY.DOCX]: '#icon-word',
+    [FILE_CATEGORY.FOLDER]: '#icon-wenjianjia',
+    [FILE_CATEGORY.COMPRESSED]: '#icon-yasuobao',
+    [FILE_CATEGORY.EXCEL]: '#icon-excel',
+    [FILE_CATEGORY.PPT]: '#icon-PPT',
+    [FILE_CATEGORY.CODE]: '#icon-jiaoben',
+    [FILE_CATEGORY.UNKNOWN]: '#icon-weizhi',
+  };
+  return icons[category] || '#icon-weizhi';
 };
 
 //music弹窗配置
@@ -341,13 +328,22 @@ const dialogState = ref({
   contentType: '',
 });
 
+const setFileProperties = (row) => {
+  file.value.fileName = row.fileName;
+  file.value.fileSize = row.fileSize;
+  file.value.modifiedTime = row.modifiedTime;
+  file.value.filePath = row.filePath;
+  file.value.mountRootPath = row.mountRootPath;
+  file.value.fileType = row.fileType;
+};
+
 const handlePreview = (index, row) => {
+  setFileProperties(row);
   if (row.fileType.category === FILE_CATEGORY.AUDIO) {
     musicPopover.value.visible = true;
   } else if (row.fileType.category === FILE_CATEGORY.IMAGE) {
     imagePreview.value.visible = true;
   } else {
-    file.value = row;
     dialogState.value.visible = true;
     dialogState.value.title = "预览";
     dialogState.value.width = "80%";
@@ -355,18 +351,105 @@ const handlePreview = (index, row) => {
   }
 };
 
+
 const handleDownload = (index, row) => {
-  dialogState.value.visible = true;
-  dialogState.value.title = "下载";
-  dialogState.value.width = "50%";
-  dialogState.value.contentType = 'download';
+  try {
+    let needSleep = false;
+    let messageBoxInstance = null;
+
+    if (row.fileType.category === FILE_CATEGORY.FOLDER) {
+      needSleep = true;
+      messageBoxInstance = ElMessageBox.alert('后端正在生成压缩包，请耐心等待!', '提示', {
+        confirmButtonText: '确定',
+        type: 'warning',
+        showClose: false,
+        closeOnClickModal: false,
+        closeOnPressEscape: false,
+        showCancelButton: false,
+        showConfirmButton: false,
+      });
+    } // 目录需要等待一会儿
+
+    easyRequest(RequestMethods.POST, "/file/preparingDownloadFile", {path: row.filePath}, false, true, 60000) // 设置较长的超时时间
+        .then(response => {
+          if (messageBoxInstance) {
+            ElMessageBox.close(); // 关闭提示框
+          }
+
+          if (response.statusCode === "SUCCESS" && response.data) {
+            const downloadUrl = response.data.url;
+            const fileName = response.data.fileName;
+
+            // 延迟执行下载请求
+            setTimeout(() => {
+              optionalRequest({
+                method: RequestMethods.GET,
+                responseType: 'blob',
+                url: downloadUrl,
+                dataTypes: 'blob',
+                timeout: 60000 // 设置较长的超时时间
+              }).then(response => {
+                const url = window.URL.createObjectURL(new Blob([response]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', fileName); // 设置下载文件的名称
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }).catch(error => {
+                console.error('文件下载失败', error);
+              });
+            }, needSleep ? 8000 : 500);
+          }
+        })
+        .catch(error => {
+          if (messageBoxInstance) {
+            ElMessageBox.close(); // 关闭提示框
+          }
+          console.error('文件下载失败', error);
+        });
+  } catch (error) {
+    console.error('文件下载失败', error);
+  }
 };
 
 const handleRename = (index, row) => {
-  dialogState.value.visible = true;
-  dialogState.value.title = "重命名";
-  dialogState.value.width = "50%";
-  dialogState.value.contentType = 'rename';
+  setFileProperties(row);
+
+  ElMessageBox.prompt('请输入新的文件名', '重命名', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    inputValue: row.fileName, // 默认值为当前文件名
+    inputPattern: /^[^\\/]+$/, // 只允许输入文件名，不允许输入路径
+    inputErrorMessage: '文件名不能包含路径信息'
+  }).then(({value}) => {
+    if (value) {
+      const renameFileDTO = {
+        oldPath: row.filePath,
+        newName: value
+      };
+
+      easyRequest(RequestMethods.POST, "/file/renameFile", renameFileDTO, false, true)
+          .then(response => {
+            if (response.statusCode === "SUCCESS") {
+              // 重新获取文件列表
+              easyRequest(RequestMethods.POST, "/file/getFileList", {path: route.fullPath}, false, true).then((response) => {
+                handleResponseForWatch(response);
+              });
+              ElMessage.success("文件重命名成功!");
+            } else {
+              ElMessage.error(response.errMsg);
+            }
+          })
+          .catch(error => {
+            console.error('文件重命名失败', error);
+            ElMessage.error('文件重命名失败');
+          });
+    }
+  }).catch(() => {
+    // 用户取消操作
+    ElMessage.info('取消重命名');
+  });
 };
 
 const handleShare = (index, row) => {
@@ -377,10 +460,25 @@ const handleShare = (index, row) => {
 };
 
 const handleDelete = (index, row) => {
-  dialogState.value.visible = true;
-  dialogState.value.title = "删除";
-  dialogState.value.width = "50%";
-  dialogState.value.contentType = 'delete';
+  setFileProperties(row);
+  const filePathDTO = {
+    path: row.filePath
+  };
+
+  easyRequest(RequestMethods.POST, "/file/deleteFile", filePathDTO, false)
+      .then(response => {
+        if (response.code === 200) {
+          // 删除成功，更新表格数据
+          tableData.value.splice(index, 1);
+          ElMessage.success(response.message);
+        } else {
+          ElMessage.error(response.message);
+        }
+      })
+      .catch(error => {
+        console.error('文件删除失败', error);
+        ElMessage.error('文件删除失败');
+      });
 };
 
 </script>
@@ -519,5 +617,12 @@ const handleDelete = (index, row) => {
 
 .cell-content .svg-icon {
   margin-right: 8px;
+}
+
+.file-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px; /* 根据需要调整最大宽度 */
 }
 </style>

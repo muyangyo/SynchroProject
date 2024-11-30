@@ -19,7 +19,8 @@
 import {ref, onMounted, onBeforeUnmount} from 'vue';
 import APlayer from 'aplayer';
 import 'aplayer/dist/APlayer.min.css';
-import getBlobData from "@/utils/getBLOBData.js";
+import getBlobData from "@/utils/getBlobData.js";
+import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
 
 const playerDiv = ref(null); // 音乐播放器容器
 const player = ref(null); // 音乐播放器实例
@@ -31,7 +32,7 @@ function isAndroidDevice() {
 
 // 外部传入的音频地址
 const props = defineProps({
-  sourceFileURL: { // 音频地址
+  sourceFilePath: { // 音频地址
     type: String,
     required: true,
   }
@@ -68,9 +69,15 @@ const initPlayer = () => {
 
 
 const getFileAndInitPlayer = () => {
-  const response = getBlobData(props.sourceFileURL);
-  file.value.realFile = window.URL.createObjectURL(new Blob([response.data]));
-  initPlayer();
+  easyRequest(RequestMethods.POST, "/file/getPreviewAudioInfo", {path: props.sourceFilePath}, false, true).then(response => {
+    file.value.name = response.data.fileName;
+    file.value.mime = response.data.mime;
+  });
+  getBlobData('/previewAudio', {path: props.sourceFilePath}).then(response => {
+    file.value.realFile = window.URL.createObjectURL(new Blob([response]));
+    initPlayer();
+  })
+
 };
 
 const closePlayer = () => {

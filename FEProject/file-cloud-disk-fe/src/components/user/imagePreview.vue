@@ -5,7 +5,7 @@
 <script setup>
 import {ref, onMounted, onUnmounted, onBeforeUnmount} from 'vue';
 import {ElImageViewer} from 'element-plus';
-import getBlobData from "@/utils/getBLOBData.js";
+import getBlobData from "@/utils/getBlobData.js";
 
 // 定义响应式变量
 const imageUrls = ref([]);
@@ -23,9 +23,9 @@ const props = defineProps({
 // 预览图片的方法
 const previewImage = async () => {
   try {
-    const response = getBlobData(props.sourceFilePath).then(response => {
+    const response = getBlobData('/previewImage', {path: props.sourceFilePath}).then(response => {
       response.data
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const url = window.URL.createObjectURL(new Blob([response]));
       imageUrls.value = [url];
       initialIndex.value = 0;
     })
@@ -43,13 +43,13 @@ const closeViewer = () => {
 
 // 挂载时预览图片
 onMounted(() => {
-  console.log('ImagePreview mounted');
+  console.log('图片预览组件挂载');
   previewImage();
 });
 
 // 销毁时释放资源
 onBeforeUnmount(() => {
-  console.log('ImagePreview unmounted');
+  console.log('图片预览组件销毁');
   closeViewer();
 });
 </script>

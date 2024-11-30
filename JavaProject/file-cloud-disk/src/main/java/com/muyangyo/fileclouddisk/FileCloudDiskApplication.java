@@ -18,7 +18,7 @@ public class FileCloudDiskApplication {
     private static ConfigurableApplicationContext context;
 
     public static void main(String[] args) throws IOException {
-        ConfigInitializer.init();// 初始化外部yml文件
+        ConfigInitializer.init();// 初始化外部文件
 
         // 设置 headless 模式为 false 以显示 GUI
         context = new SpringApplicationBuilder(FileCloudDiskApplication.class)
@@ -39,6 +39,7 @@ public class FileCloudDiskApplication {
             int exitCode = SpringApplication.exit(context);
             System.exit(exitCode); // 确保程序完全退出
         }
+        
     }
 
 }

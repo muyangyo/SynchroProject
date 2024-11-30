@@ -70,6 +70,12 @@ public class ConfigInitializer {
             copyResourceToConfigFolder("/setting-default.yml", "./config/setting.yml");
             writeSignatureToYml(configFile, generateRandomSignature());// 生成随机签名并写入配置文件
         }
+//         删除缓存文件夹
+        File downloadTempFolder = new File(Setting.USER_DOWNLOAD_TEMP_DIR_PATH);
+        if (downloadTempFolder.exists()) {
+            log.info("删除下载缓存文件夹: {}", downloadTempFolder.getPath());
+            com.muyangyo.fileclouddisk.common.utils.FileUtils.delete(downloadTempFolder);
+        }
     }
 
     private static void writeSignatureToYml(File configFile, String signature) throws IOException {

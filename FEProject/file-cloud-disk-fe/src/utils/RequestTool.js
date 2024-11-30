@@ -1,15 +1,15 @@
 import axios from 'axios';
-import {config} from "@/GlobalConfig.js";
+import { config } from "@/GlobalConfig.js";
+
 // 请求方法
 const RequestMethods = {
     GET: 'GET', POST: 'POST', PUT: 'PUT', DELETE: 'DELETE',
 };
 
-
 // 创建axios实例并设置基础URL和请求超时
 const requestTool = axios.create({
     baseURL: config.hostUrl,
-    timeout: 5000,
+    timeout: 5000, // 默认超时时间
     headers: { // 设置默认请求头
         'Content-Type': 'application/json;charset=UTF-8',
         'Accept': 'application/json;charset=UTF-8'
@@ -31,8 +31,6 @@ requestTool.interceptors.request.use(config => {
 requestTool.interceptors.response.use(response => {
     // 处理响应数据
     console.log('收到的响应为:', response.data);
-    // const parse = JSON.parse(response.data);
-    // console.log('解析后的响应为:', parse);
     return response.data;
 }, error => {
     // 处理响应错误
@@ -51,8 +49,7 @@ requestTool.interceptors.response.use(response => {
  * @param {object|string} data 请求数据
  * @param checkDataFormat 是否检查请求数据格式
  */
-const validateRequestParams = ({method, relativeURL, data, checkDataFormat = true}) => {
-
+const validateRequestParams = ({ method, relativeURL, data, checkDataFormat = true }) => {
     if (!Object.values(RequestMethods).includes(method)) {
         throw new Error(`无效的请求方法: ${method}. 只能是 ${Object.values(RequestMethods).join(', ')} 中的一种.`);
     }
@@ -70,14 +67,19 @@ const validateRequestParams = ({method, relativeURL, data, checkDataFormat = tru
 };
 
 // 封装通用请求方法
-const easyRequest = (method, relativeURL, data, checkDataFormat = true) => {
-    validateRequestParams({method, relativeURL, data, checkDataFormat});
+const easyRequest = (method, relativeURL, data, checkDataFormat = true, autoTransformToJSON = false, timeout = 5000) => {
+    // 自动转换请求数据为JSON字符串
+    if (autoTransformToJSON && typeof data !== 'string') {
+        data = JSON.stringify(data);
+    }
+    validateRequestParams({ method, relativeURL, data, checkDataFormat });
 
     // 发送请求并返回结果
     return requestTool({
         method,
         url: relativeURL,
-        data
+        data,
+        timeout // 设置超时时间
     });
 };
 
@@ -93,13 +95,14 @@ const optionalRequest = async (options) => {
         errorCallback, // 错误回调函数
         checkDataFormat = false, // 是否检查data数据的格式
         responseType = 'json', // 默认响应数据类型
+        timeout = 5000 // 默认超时时间
     } = options;
 
-    validateRequestParams({method, relativeURL, data, checkDataFormat});
+    validateRequestParams({ method, relativeURL, data, checkDataFormat });
 
     const headers = dataType === 'file'
-        ? {'Content-Type': 'multipart/form-data'}
-        : {'Content-Type': 'application/json;charset=UTF-8'};
+        ? { 'Content-Type': 'multipart/form-data' }
+        : { 'Content-Type': 'application/json;charset=UTF-8' };
 
     // 发送请求并返回结果
     return requestTool({
@@ -108,7 +111,8 @@ const optionalRequest = async (options) => {
         data,
         params,
         headers,
-        responseType
+        responseType,
+        timeout // 设置超时时间
     }).then(response => {
         return response;
     }).catch(error => {
@@ -141,5 +145,5 @@ const optionalRequest = async (options) => {
  * });
  */
 
-export {easyRequest, optionalRequest, RequestMethods}; // 导出请求方法
+export { easyRequest, optionalRequest, RequestMethods }; // 导出请求方法
 export default requestTool; // 导出axios请求对象

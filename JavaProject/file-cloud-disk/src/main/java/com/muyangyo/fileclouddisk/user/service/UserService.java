@@ -5,7 +5,7 @@ import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.crypto.asymmetric.RSA;
 import com.muyangyo.fileclouddisk.common.config.Setting;
 import com.muyangyo.fileclouddisk.common.exception.IllegalLoginWithoutRSA;
-import com.muyangyo.fileclouddisk.common.model.dto.Login;
+import com.muyangyo.fileclouddisk.common.model.dto.LoginDTO;
 import com.muyangyo.fileclouddisk.common.model.meta.User;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
 import com.muyangyo.fileclouddisk.common.utils.EasyTimedCache;
@@ -130,20 +130,20 @@ public class UserService {
     /**
      * 解密Login信息
      *
-     * @param login 登录信息
+     * @param loginDTO 登录信息
      * @param ip    登录IP
      */
-    public void decryptLogin(Login login, String ip) {
+    public void decryptLogin(LoginDTO loginDTO, String ip) {
         EasyTimedCache<String, PrivateKey> rasCache = setting.getRasCache();
         PrivateKey privateKey = rasCache.get(ip); // 根据IP获取私钥
         // 三次解密
         RSA rsa = SecureUtil.rsa();
         rsa.setPrivateKey(privateKey);
         try {
-            login.setUsername(rsa.decryptStr(login.getUsername(), KeyType.PrivateKey));
-            login.setPassword(rsa.decryptStr(login.getPassword(), KeyType.PrivateKey));
-            if (StringUtils.hasLength(login.getKey())) {
-                login.setKey(rsa.decryptStr(login.getKey(), KeyType.PrivateKey));
+            loginDTO.setUsername(rsa.decryptStr(loginDTO.getUsername(), KeyType.PrivateKey));
+            loginDTO.setPassword(rsa.decryptStr(loginDTO.getPassword(), KeyType.PrivateKey));
+            if (StringUtils.hasLength(loginDTO.getKey())) {
+                loginDTO.setKey(rsa.decryptStr(loginDTO.getKey(), KeyType.PrivateKey));
             }
         } catch (Exception e) {
             throw new IllegalLoginWithoutRSA("登录信息解密失败，请检查RSA私钥是否正确！");

@@ -1,9 +1,6 @@
 package com.muyangyo.fileclouddisk.common.utils;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -13,6 +10,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class FileUtils {
 
@@ -29,7 +28,6 @@ public class FileUtils {
         if (!Files.exists(path)) {
             throw new FileNotFoundException("文件不存在: " + filePath);
         }
-        // 这里使用指定编码读取文件内容
         return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
     }
 
@@ -297,10 +295,9 @@ public class FileUtils {
      * @return 文件扩展名
      */
     public static String getFileExtension(String filePath) {
-        String fileName = Paths.get(filePath).getFileName().toString();
-        int lastDotIndex = fileName.lastIndexOf('.');
-        if (lastDotIndex > 0) {
-            return fileName.substring(lastDotIndex + 1).toLowerCase();
+        int lastDotIndex = filePath.lastIndexOf('.');
+        if (lastDotIndex > 0 && lastDotIndex < filePath.length() - 1) {
+            return filePath.substring(lastDotIndex + 1).toLowerCase();
         }
         return "";
     }
@@ -457,8 +454,7 @@ public class FileUtils {
         // 先将反斜杠替换为正斜杠
         String normalizedPath = path.replace("\\", "/");
         // 删除重复的斜杠
-        normalizedPath = normalizedPath.replaceAll("/+", "/");
-        return normalizedPath;
+        return normalizedPath.replaceAll("/+", "/");
     }
 
     /**
@@ -479,5 +475,173 @@ public class FileUtils {
      */
     public static String getAbsolutePath(File file) {
         return getAbsolutePath(file.getPath());
+    }
+
+    /**
+     * 对文件路径列表进行排序，文件夹排在前面，然后根据文件扩展名排序
+     *
+     * @param filePaths 文件路径列表
+     */
+    public static void sortFilePaths(List<String> filePaths) {
+        filePaths.sort((path1, path2) -> {
+            boolean isDir1 = new File(path1).isDirectory();
+            boolean isDir2 = new File(path2).isDirectory();
+
+            // 文件夹排在前面
+            if (isDir1 && !isDir2) {
+                return -1;
+            } else if (!isDir1 && isDir2) {
+                return 1;
+            }
+
+            // 如果都是文件夹或都是文件，则根据文件扩展名排序
+            String ext1 = getFileExtension(path1);
+            String ext2 = getFileExtension(path2);
+
+            return ext1.compareTo(ext2);
+        });
+    }
+
+    /**
+     * 对文件对象列表进行排序，文件夹排在前面，然后根据文件扩展名排序
+     *
+     * @param files 文件对象列表
+     */
+    public static void sortFiles(List<File> files) {
+        files.sort((file1, file2) -> {
+            boolean isDir1 = file1.isDirectory();
+            boolean isDir2 = file2.isDirectory();
+
+            // 文件夹排在前面
+            if (isDir1 && !isDir2) {
+                return -1;
+            } else if (!isDir1 && isDir2) {
+                return 1;
+            }
+
+            // 如果都是文件夹或都是文件，则根据文件扩展名排序
+            String ext1 = getFileExtension(file1);
+            String ext2 = getFileExtension(file2);
+
+            return ext1.compareTo(ext2);
+        });
+    }
+
+    /**
+     * 重命名文件或目录(只能在同一目录下重命名)
+     *
+     * @param oldPath 原文件或目录路径
+     * @param newName 新文件或目录名称
+     * @return 重命名成功或失败
+     * @throws IOException 如果重命名过程中发生错误
+     */
+    public static boolean rename(String oldPath, String newName) throws IOException {
+        Path oldFilePath = Paths.get(oldPath);
+        if (!Files.exists(oldFilePath)) {
+            throw new FileNotFoundException("文件或目录不存在: " + oldPath);
+        }
+
+        // 获取父目录路径
+        Path parentDir = oldFilePath.getParent();
+        if (parentDir == null) {
+            throw new IllegalArgumentException("无法获取父目录路径: " + oldPath);
+        }
+
+        // 构建新的文件路径
+        Path newFilePath = parentDir.resolve(newName);
+
+        // 检查新路径是否与原路径相同
+        if (oldFilePath.equals(newFilePath)) {
+            return true; // 如果新旧路径相同，直接返回成功
+        }
+
+        // 检查新路径是否已经存在，如果存在则获取唯一的文件名
+        if (Files.exists(newFilePath)) {
+            newFilePath = getUniqueFileName(newFilePath);
+        }
+
+        // 确保新路径与原路径在同一个目录下
+        if (!parentDir.equals(newFilePath.getParent())) {
+            throw new IllegalArgumentException("新文件路径不能在不同的目录下: " + newFilePath);
+        }
+
+        // 执行重命名操作
+        Files.move(oldFilePath, newFilePath);
+        return true;
+    }
+
+    /**
+     * 重命名文件或目录(只能在同一目录下重命名)
+     *
+     * @param oldFile 原文件或目录对象
+     * @param newName 新文件或目录名称
+     * @return 重命名成功或失败
+     * @throws IOException 如果重命名过程中发生错误
+     */
+    public static boolean rename(File oldFile, String newName) throws IOException {
+        return rename(oldFile.getPath(), newName);
+    }
+
+    /**
+     * 压缩文件或目录
+     *
+     * @param sourceDirPath 源文件或目录路径
+     * @param destZipFile   目标 ZIP 文件对象（必须不存在）
+     * @throws IOException 如果压缩过程中发生错误
+     */
+    public static void zip(String sourceDirPath, File destZipFile) throws IOException {
+        File sourceDir = new File(sourceDirPath);
+
+        // 检查源文件或目录是否存在
+        if (!sourceDir.exists() || !sourceDir.isDirectory()) {
+            throw new IOException("源文件或目录不存在: " + sourceDirPath);
+        }
+
+        // 检查目标 ZIP 文件是否存在
+        if (destZipFile.exists()) {
+            throw new IOException("目标 ZIP 文件已存在: " + destZipFile.getPath());
+        }
+
+        try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(destZipFile))) {
+            compress(sourceDir, zos, sourceDir.getName());
+        }
+    }
+
+    private static final int BUFFER_SIZE = 1024;
+    /**
+     * 递归压缩方法
+     *
+     * @param sourceFile 源文件
+     * @param zos        zip输出流
+     * @param name       压缩后的名称
+     * @throws IOException 如果压缩过程中发生错误
+     */
+    private static void compress(File sourceFile, ZipOutputStream zos, String name) throws IOException {
+        byte[] buf = new byte[BUFFER_SIZE];
+        if (sourceFile.isFile()) {
+            // 向zip输出流中添加一个zip实体，构造器中name为zip实体的文件的名字
+            zos.putNextEntry(new ZipEntry(name));
+            // copy文件到zip输出流中
+            try (FileInputStream in = new FileInputStream(sourceFile)) {
+                int len;
+                while ((len = in.read(buf)) != -1) {
+                    zos.write(buf, 0, len);
+                }
+            }
+            // Complete the entry
+            zos.closeEntry();
+        } else {
+            File[] listFiles = sourceFile.listFiles();
+            if (listFiles == null || listFiles.length == 0) {
+                // 空文件夹的处理
+                zos.putNextEntry(new ZipEntry(name + "/"));
+                zos.closeEntry();
+            } else {
+                for (File file : listFiles) {
+                    // 递归压缩子文件或子目录
+                    compress(file, zos, name + "/" + file.getName());
+                }
+            }
+        }
     }
 }

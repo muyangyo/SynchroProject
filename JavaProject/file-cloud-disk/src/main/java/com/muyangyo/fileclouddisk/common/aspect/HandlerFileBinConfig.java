@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletRequest;
  * Desc: 为了支持range请求，需要自定义一个Handler，用于处理视频文件的二进制流。
  */
 @Component
-public class HandlerVideoBinConfig extends ResourceHttpRequestHandler {
+public class HandlerFileBinConfig extends ResourceHttpRequestHandler {
 
     public final static String ATTR_FILE = "NON-STATIC-FILE";    // 定义常量，用于存储非静态文件的属性名称
 

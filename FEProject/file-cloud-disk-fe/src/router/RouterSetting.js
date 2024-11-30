@@ -28,7 +28,7 @@ import cloudFileManager from '@/views/manager/cloud_manager/FileManager.vue';
 const mangerUrlBaseRoutes = [
         // 路由配置
         {
-            path: config.managerBaseUrl,
+            path: config.managerRouterBaseUrl,
             component: managerIndex,
             redirect: '/manager/sync_manager/sync_file_manager',
             children: [
@@ -49,7 +49,7 @@ const mangerUrlBaseRoutes = [
                 },
             ]
         }, {
-            path: config.managerBaseUrl + '/login',
+            path: config.managerRouterBaseUrl + '/login',
             component: () => import('@/views/manager/Login.vue'),
         }
 
@@ -60,14 +60,14 @@ const mangerUrlBaseRoutes = [
 const userUrlBaseRoutes = [
     // 路由配置
     {
-        path: config.userBaseUrl,
+        path: config.userRouterBaseUrl,
         component: userCloudIndex,
     }, {
-        path: config.userBaseUrl + '/login',
+        path: config.userRouterBaseUrl + '/login',
         component: () => import('@/views/user/Login.vue'),
     },
     {
-        path: config.userBaseUrl + '/:pathMatch(.*)*'
+        path: config.userRouterBaseUrl + '/:pathMatch(.*)*'
         , component: userCloudIndex
     }
 ];
@@ -84,7 +84,7 @@ const router = createRouter({
 router.beforeEach((to, from) => {
     const token = getCookie('Token');
     // 管理端
-    if (to.path.startsWith(config.managerBaseUrl)) {
+    if (to.path.startsWith(config.managerRouterBaseUrl)) {
         // 管理端登入验证
         // if (token == null) {
         //     // 未登录
@@ -94,18 +94,18 @@ router.beforeEach((to, from) => {
         //         return {path: config.managerBaseUrl + '/login'}
         //     }
         // }
-    } else if (to.path.startsWith(config.userBaseUrl)) {
+    } else if (to.path.startsWith(config.userRouterBaseUrl)) {
         // 用户端登入验证
         if (token == null) {
             // 未登录
             console.warn('未登录')
-            if (to.path !== config.userBaseUrl + '/login') {
+            if (to.path !== config.userRouterBaseUrl + '/login') {
                 // 跳转至登录页面
-                return {path: config.userBaseUrl + '/login'}
+                return {path: config.userRouterBaseUrl + '/login'}
             }
         }
     } else {
-        return {path: config.userBaseUrl + '/login'}
+        return {path: config.userRouterBaseUrl + '/login'}
     }
 });
 

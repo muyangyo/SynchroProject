@@ -24,16 +24,12 @@
 
 <script setup>
 import {ref, onMounted, onUnmounted, onBeforeUnmount} from 'vue';
-import {optionalRequest, RequestMethods} from '@/utils/RequestTool.js';
+import {easyRequest, optionalRequest, RequestMethods} from '@/utils/RequestTool.js';
 import useClipboard from 'vue-clipboard3';
-import getBlobData from "@/utils/getBLOBData.js";
+import getBlobData from "@/utils/getBlobData.js";
 
 const {toClipboard} = useClipboard();
 
-onMounted(() => {
-  console.log('文本预览组件挂载');
-  readFile();
-});
 
 onBeforeUnmount(() => {
   console.log('文本预览组件销毁');
@@ -45,18 +41,26 @@ const fileContent = ref('');
 const blobResult = ref(null);
 
 const props = defineProps({
-  sourceFileURL: { // 文件 URL
+  sourceFilePath: { // 文件 URL
     type: String,
     required: true,
   },
 });
 
+
+onMounted(() => {
+  console.log('文本预览组件挂载');
+  readFile();
+});
+
 const readFile = async () => {
   try {
-    const result = await getBlobData(props.sourceFileURL);
-    if (!result) throw new Error('Failed to fetch file content.');
-    blobResult.value = result.data;
-    showFileContent();
+    getBlobData('/previewTxt', {path: props.sourceFilePath}).then((response) => {
+      const result = response;
+      if (!result) throw new Error('Failed to fetch file content.');
+      blobResult.value = result;
+      showFileContent();
+    })
   } catch (error) {
     console.error('文件读取失败:', error);
   }
