@@ -15,6 +15,8 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.File;
 import java.security.PrivateKey;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -64,6 +66,9 @@ public class Setting {
     private int fileCacheExpireTime; // 视频缓存过期时间(分钟)
     private CustomTimer customTimer; // 用于定时清理压缩包的
 
+    // 全局
+    private ExecutorService settingThreadPool; // 线程池
+
     @PostConstruct
     public void init() {
         this.systemType = OSUtils.getSystemType();
@@ -75,6 +80,7 @@ public class Setting {
         this.videoCache = new ConcurrentLRUCache<>(this.videoCacheSize); // 缓存视频
         this.fileCache = new ConcurrentLRUCache<>(this.fileCacheSize, this.fileCacheExpireTime, TimeUnit.MINUTES); // 缓存文件(30分钟)
         this.customTimer = new CustomTimer();
+        this.settingThreadPool = Executors.newCachedThreadPool(); // 线程池
 
         if (isConfigInvalid()) {
             log.error("初始化项目配置失败，请检查配置!");
@@ -93,7 +99,7 @@ public class Setting {
         return Stream.of(
                 port, applicationName, systemType, serverIP, completeServerURL, invitationCode,
                 loginAndRegisterTimeCache, rasCache, maxNumberOfAttempts, signature, tokenLifeTime, videoCache, fileCache
-                , videoCacheSize, fileCacheSize, fileCacheExpireTime
+                , videoCacheSize, fileCacheSize, fileCacheExpireTime, settingThreadPool
         ).anyMatch(value -> {
             if (value == null) {
                 return true;
@@ -115,6 +121,7 @@ public class Setting {
     public void destroy() {
         log.info("正在释放缓存...");
         customTimer.shutdownNow();
+        settingThreadPool.shutdownNow();
         videoCache.shutdown();
         fileCache.shutdown();
         loginAndRegisterTimeCache.shutdown();
@@ -131,4 +138,5 @@ public class Setting {
     public static final String FE_USER_BASE_URL = "/user";
     public static final String USER_DOWNLOAD_TEMP_DIR_PATH = "./DLTemp";
 
+    public static final String USER_OPERATION_LOG_PREFIX = "用户操作日志[ {} ]";
 }

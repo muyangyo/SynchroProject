@@ -48,8 +48,9 @@ public class MetaDataBaseInitializer {
     private Boolean createTables() {
         try {
             createTablesMapper.createMountDirsTable();
-            createTablesMapper.CreateAdminTable();
-            createTablesMapper.CreateUserTable();
+            createTablesMapper.createAdminTable();
+            createTablesMapper.createUserTable();
+            createTablesMapper.createShareFileTable();
             return true;
         } catch (Exception e) {
             log.error("创建数据库表失败！", e);

@@ -213,7 +213,7 @@ public class FileController {
             return Result.error("文件不存在");
         }
 
-        fileService.checkFollowRootPathAndGetFileInfo(new File(oldPath));// 坚持文件是否合理
+        fileService.checkFollowRootPathAndGetFileInfo(new File(oldPath));// 检查文件是否合理
 
 
         String newName = renameFileDTO.getNewName();// 新名称
@@ -228,17 +228,42 @@ public class FileController {
      * @param filePathDTO 文件路径
      * @return 删除结果
      */
+    @SneakyThrows
     @PostMapping("/deleteFile")
     public Result deleteFile(@RequestBody FilePathDTO filePathDTO) {
         String path = FileUtils.normalizePath(filePathDTO.getPath());
+
+        if (fileService.isRootPath(path)) {
+            return Result.error("根目录不能删除");
+        }
+
         File file = new File(path);
+
         if (!file.exists()) {
             return Result.error("文件不存在");
         }
-        if (file.delete()) {
+
+        fileService.checkFollowRootPathAndGetFileInfo(file);// 检查文件是否合理
+
+
+        if (FileUtils.delete(file)) {
             return Result.success("文件删除成功");
         } else {
             return Result.error("文件删除失败");
         }
     }
+
+    @PostMapping("/shareFile") //todo 等待实现文件分享功能
+    public Result shareFile(@RequestBody FilePathDTO filePathDTO) {
+        String path = FileUtils.normalizePath(filePathDTO.getPath());
+        File file = new File(path);
+        fileService.checkFollowRootPathAndGetFileInfo(file);// 检查文件是否合理
+
+        String fid = RandomUtil.randomString(5);
+
+        return Result.success(fid);
+    }
+
+
+
 }

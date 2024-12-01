@@ -13,9 +13,11 @@ import org.apache.ibatis.annotations.Mapper;
 public interface CreateTablesMapper {
     Integer createMountDirsTable(); // 创建挂载目录表
 
-    Integer CreateAdminTable(); // 创建管理员表
+    Integer createAdminTable(); // 创建管理员表
 
-    Integer CreateUserTable(); // 创建用户表
+    Integer createUserTable(); // 创建用户表
+
+    Integer createShareFileTable(); // 创建分享文件表
 
 //    Integer BlackListIPTable(); // 创建黑名单IP表
 }

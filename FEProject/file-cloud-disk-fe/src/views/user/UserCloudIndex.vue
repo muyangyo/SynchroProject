@@ -71,12 +71,14 @@
                              @click="handleDownload(scope.$index, scope.row)"/>
                 </el-tooltip>
 
-                <el-tooltip content="重命名" placement="top" :show-arrow="false" v-if=" route.fullPath !== config.userRouterBaseUrl">
+                <el-tooltip content="重命名" placement="top" :show-arrow="false"
+                            v-if=" route.fullPath !== config.userRouterBaseUrl">
                   <el-button type="warning" size="small" :icon="EditPen"
                              @click="handleRename(scope.$index, scope.row)"/>
                 </el-tooltip>
 
-                <el-tooltip content="删除" placement="top" :show-arrow="false" v-if=" route.fullPath !== config.userRouterBaseUrl">
+                <el-tooltip content="删除" placement="top" :show-arrow="false"
+                            v-if=" route.fullPath !== config.userRouterBaseUrl">
                   <el-button type="danger" size="small" :icon="DeleteFilled"
                              @click="handleDelete(scope.$index, scope.row)"/>
                 </el-tooltip>
@@ -237,12 +239,12 @@ watch(() => route.fullPath, () => {
   if (route.fullPath === config.userRouterBaseUrl) {
     // 非首次加载页面，更新数据
     easyRequest(RequestMethods.POST, "/file/getFileList", {path: route.fullPath}, false, true).then((response) => {
-      handleResponseForWatch(response);
+      handleResponse(response);
     });
   } else {
     // 非根目录，更新数据
     easyRequest(RequestMethods.POST, "/file/getFileList", {path: route.fullPath}, false, true).then((response) => {
-      handleResponseForWatch(response);
+      handleResponse(response);
     });
   }
   // 面包屑更新
@@ -250,8 +252,7 @@ watch(() => route.fullPath, () => {
   pathPartsForBreadCrumb.value = (route.fullPath.split('/').filter((item) => item !== '' && item !== temp));
 });
 
-//watch方法抽离出来的请求处理方法
-const handleResponseForWatch = (response) => {
+const handleResponse = (response) => {
   response.data.forEach((item) => {
     if (item.fileType.category === FILE_CATEGORY.FOLDER) {
       item.fileSize = ''; // 目录不显示大小
@@ -434,7 +435,7 @@ const handleRename = (index, row) => {
             if (response.statusCode === "SUCCESS") {
               // 重新获取文件列表
               easyRequest(RequestMethods.POST, "/file/getFileList", {path: route.fullPath}, false, true).then((response) => {
-                handleResponseForWatch(response);
+                handleResponse(response);
               });
               ElMessage.success("文件重命名成功!");
             } else {
@@ -465,14 +466,16 @@ const handleDelete = (index, row) => {
     path: row.filePath
   };
 
-  easyRequest(RequestMethods.POST, "/file/deleteFile", filePathDTO, false)
+  easyRequest(RequestMethods.POST, "/file/deleteFile", filePathDTO, false, true)
       .then(response => {
-        if (response.code === 200) {
+        if (response.statusCode === "SUCCESS") {
           // 删除成功，更新表格数据
-          tableData.value.splice(index, 1);
-          ElMessage.success(response.message);
+          easyRequest(RequestMethods.POST, "/file/getFileList", {path: route.fullPath}, false, true).then((response) => {
+            handleResponse(response);
+            ElMessage.success("文件删除成功!");
+          });
         } else {
-          ElMessage.error(response.message);
+          ElMessage.error(response.errMsg);
         }
       })
       .catch(error => {
