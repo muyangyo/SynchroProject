@@ -53,7 +53,7 @@
               </template>
             </el-table-column>
             <el-table-column prop="modifiedTime" label="修改时间" sortable/>
-            <el-table-column prop="operation" label="操作">
+            <el-table-column prop="operation" label="操作" min-width="100px">
               <template #default="scope">
                 <el-tooltip
                     v-if="scope.row.fileType.category !== FILE_CATEGORY.FOLDER &&

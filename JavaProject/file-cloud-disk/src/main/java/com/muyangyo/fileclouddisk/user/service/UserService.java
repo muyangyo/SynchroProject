@@ -23,8 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.PrivateKey;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * UserService 服务层，处理用户相关的业务逻辑。
@@ -55,14 +53,14 @@ public class UserService {
             userMapper.updateByUserId(user);
 
             //生成token并设置cookie
-            Map<String, String> tokenMap = new HashMap<>();
-            tokenMap.put("userId", user.getUserId());// 用户ID
-            tokenMap.put("role", "user");// 角色
-            tokenMap.put("username", user.getUsername());// 用户名
-            tokenMap.put("IP", NetworkUtils.getClientIp(request));// 登入IP地址
-            tokenMap.put("loginTime", String.valueOf(new Date())); // 登录时间
+            TokenUtils.TokenLoad tokenLoad = new TokenUtils.TokenLoad();
+            tokenLoad.setUserId(user.getUserId());
+            tokenLoad.setRole("user");
+            tokenLoad.setUsername(user.getUsername());
+            tokenLoad.setIp(NetworkUtils.getClientIp(request));
+            tokenLoad.setLoginTime(String.valueOf(new Date()));
 
-            String token = TokenUtils.getToken(tokenMap);
+            String token = TokenUtils.createToken(TokenUtils.TokenLoad.createTokenLoad(tokenLoad));
             Cookie jwtCookie = new Cookie(Setting.TOKEN_HEADER_NAME, token);
             jwtCookie.setHttpOnly(true); // 防止JavaScript访问此Cookie
             jwtCookie.setPath("/"); // 设置Cookie的路径 表示根路径，意味着这个 Cookie 会在整个域名下的所有路径中被发送
@@ -131,7 +129,7 @@ public class UserService {
      * 解密Login信息
      *
      * @param loginDTO 登录信息
-     * @param ip    登录IP
+     * @param ip       登录IP
      */
     public void decryptLogin(LoginDTO loginDTO, String ip) {
         EasyTimedCache<String, PrivateKey> rasCache = setting.getRasCache();

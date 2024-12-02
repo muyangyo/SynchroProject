@@ -4,116 +4,125 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * 创建于 IntelliJ IDEA.
+ * 描述：
+ * User: 沐阳Yo
+ * Date: 2024/12/2
+ * Time: 12:53
+ */
 public class FileUtilsTest {
+
 
     private static final String TEST_DIR = "testDir";
     private static final String TEST_FILE = "testFile.txt";
-    private static final String TEST_FILE_CONTENT = "Hello, World!";
+    private static final String TEST_SUBDIR = "subDir";
+    private static final String TEST_SUBFILE = "subFile.txt";
 
     @BeforeEach
-    public void setUp() throws IOException {
-        // 创建测试目录和测试文件
+    void setUp() throws IOException {
+        // 创建测试目录和文件
         Files.createDirectories(Paths.get(TEST_DIR));
-        Files.write(Paths.get(TEST_DIR, TEST_FILE), TEST_FILE_CONTENT.getBytes());
+        Files.write(Paths.get(TEST_DIR, TEST_FILE), "Test content".getBytes());
+        Files.createDirectories(Paths.get(TEST_DIR, TEST_SUBDIR));
+        Files.write(Paths.get(TEST_DIR, TEST_SUBDIR, TEST_SUBFILE), "Sub file content".getBytes());
     }
 
     @AfterEach
-    public void tearDown() throws IOException {
-        // 删除测试目录及其内容
+    void tearDown() throws IOException {
+        // 删除测试目录和文件
         FileUtils.delete(TEST_DIR);
     }
 
     @Test
-    public void testRenameFile() throws IOException {
-        String oldPath = TEST_DIR + File.separator + TEST_FILE;
-        String newName = "renamedFile.txt";
-        String newPath = TEST_DIR + File.separator + newName;
+    void testCopyFileToFile() throws IOException {
+        String targetPath = "targetFile.txt";
+        FileUtils.copy(Paths.get(TEST_DIR, TEST_FILE).toString(), targetPath);
 
-        // 重命名文件
-        boolean success = FileUtils.rename(oldPath, newName);
-        assertTrue(success);
+        assertTrue(Files.exists(Paths.get(targetPath)));
+        assertEquals("Test content", new String(Files.readAllBytes(Paths.get(targetPath))));
 
-        // 检查新文件是否存在
-        assertTrue(Files.exists(Paths.get(newPath)));
-        // 检查原文件是否不存在
-        assertFalse(Files.exists(Paths.get(oldPath)));
+        // 清理目标文件
+        Files.delete(Paths.get(targetPath));
     }
 
     @Test
-    public void testRenameFileWithSameName() throws IOException {
-        String oldPath = TEST_DIR + File.separator + TEST_FILE;
-        String newName = TEST_FILE;
+    void testCopyFileToDirectory() throws IOException {
+        String targetDir = "targetDir";
+        Files.createDirectories(Paths.get(targetDir));
 
-        // 重命名文件
-        boolean success = FileUtils.rename(oldPath, newName);
-        assertTrue(success);
+        FileUtils.copy(Paths.get(TEST_DIR, TEST_FILE).toString(), targetDir);
 
-        // 检查文件是否仍然存在
-        assertTrue(Files.exists(Paths.get(oldPath)));
+        assertTrue(Files.exists(Paths.get(targetDir, TEST_FILE)));
+        assertEquals("Test content", new String(Files.readAllBytes(Paths.get(targetDir, TEST_FILE))));
+
+        // 清理目标目录
+        FileUtils.delete(targetDir);
     }
 
     @Test
-    public void testRenameFileWithExistingName() throws IOException {
-        String oldPath = TEST_DIR + File.separator + TEST_FILE;
-        String newName = "existingFile.txt";
-        String newPath = TEST_DIR + File.separator + newName;
+    void testCopyDirectoryToDirectory() throws IOException {
+        String targetDir = "targetDir";
+        FileUtils.copy(TEST_DIR, targetDir);
 
-        // 创建一个同名文件
-        Files.write(Paths.get(newPath), "Existing content".getBytes());
+        assertTrue(Files.exists(Paths.get(targetDir)));
+        assertTrue(Files.exists(Paths.get(targetDir, TEST_FILE)));
+        assertTrue(Files.exists(Paths.get(targetDir, TEST_SUBDIR)));
+        assertTrue(Files.exists(Paths.get(targetDir, TEST_SUBDIR, TEST_SUBFILE)));
 
-        // 重命名文件
-        boolean success = FileUtils.rename(oldPath, newName);
-        assertTrue(success);
+        assertEquals("Test content", new String(Files.readAllBytes(Paths.get(targetDir, TEST_FILE))));
+        assertEquals("Sub file content", new String(Files.readAllBytes(Paths.get(targetDir, TEST_SUBDIR, TEST_SUBFILE))));
 
-        // 检查新文件是否存在
-        assertTrue(Files.exists(Paths.get(newPath)));
-        // 检查原文件是否不存在
-        assertFalse(Files.exists(Paths.get(oldPath)));
-
-        // 检查新文件名是否是唯一的
-        String uniqueFileName = FileUtils.getFileName(newPath);
-        assertTrue(uniqueFileName.startsWith(newName));
+        // 清理目标目录
+        FileUtils.delete(targetDir);
     }
 
     @Test
-    public void testRenameDirectory() throws IOException {
-        String oldDirPath = TEST_DIR + File.separator + "oldDir";
-        String newDirName = "newDir";
-        String newDirPath = TEST_DIR + File.separator + newDirName;
+    void testCopyNonExistentFile() {
+        String nonExistentFile = "nonExistentFile.txt";
+        String targetPath = "targetFile.txt";
 
-        // 创建测试目录
-        Files.createDirectories(Paths.get(oldDirPath));
-
-        // 重命名目录
-        boolean success = FileUtils.rename(oldDirPath, newDirName);
-        assertTrue(success);
-
-        // 检查新目录是否存在
-        assertTrue(Files.exists(Paths.get(newDirPath)));
-        // 检查原目录是否不存在
-        assertFalse(Files.exists(Paths.get(oldDirPath)));
-    }
-
-    @Test
-    public void testRenameNonExistentFile() {
-        String oldPath = TEST_DIR + File.separator + "nonExistentFile.txt";
-        String newName = "newFile.txt";
-
-        // 重命名不存在的文件
-        Exception exception = assertThrows(IOException.class, () -> {
-            FileUtils.rename(oldPath, newName);
+        assertThrows(FileNotFoundException.class, () -> {
+            FileUtils.copy(nonExistentFile, targetPath);
         });
+    }
 
-        // 检查异常信息
-        String expectedMessage = "文件或目录不存在: " + oldPath;
-        String actualMessage = exception.getMessage();
-        assertTrue(actualMessage.contains(expectedMessage));
+    @Test
+    void testCopyExistingFileWithOverwrite() throws IOException {
+        String targetPath = "targetFile.txt";
+        Files.write(Paths.get(targetPath), "Existing content".getBytes());
+
+        FileUtils.copy(Paths.get(TEST_DIR, TEST_FILE).toString(), targetPath);
+
+        assertTrue(Files.exists(Paths.get(targetPath)));
+        assertEquals("Test content", new String(Files.readAllBytes(Paths.get(targetPath))));
+
+        // 清理目标文件
+        Files.delete(Paths.get(targetPath));
+    }
+
+    @Test
+    void testCopyDirectoryWithExistingTarget() throws IOException {
+        String targetDir = "targetDir";
+        Files.createDirectories(Paths.get(targetDir));
+
+        FileUtils.copy(TEST_DIR, targetDir);
+
+        assertTrue(Files.exists(Paths.get(targetDir, TEST_FILE)));
+        assertTrue(Files.exists(Paths.get(targetDir, TEST_SUBDIR)));
+        assertTrue(Files.exists(Paths.get(targetDir, TEST_SUBDIR, TEST_SUBFILE)));
+
+        assertEquals("Test content", new String(Files.readAllBytes(Paths.get(targetDir, TEST_FILE))));
+        assertEquals("Sub file content", new String(Files.readAllBytes(Paths.get(targetDir, TEST_SUBDIR, TEST_SUBFILE))));
+
+        // 清理目标目录
+        FileUtils.delete(targetDir);
     }
 }

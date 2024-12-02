@@ -9,7 +9,7 @@ import java.util.LinkedList;
 public interface ShareFileMapper {
 
     // 根据主键查询
-    ShareFile selectById(String id);
+    ShareFile selectByCode(String code);
 
     // 动态多条件查询
     LinkedList<ShareFile> selectByDynamicCondition(ShareFile shareFile);
@@ -21,5 +21,5 @@ public interface ShareFileMapper {
     int update(ShareFile shareFile);
 
     // 删除数据
-    int deleteById(String id);
+    int deleteByCode(String code);
 }

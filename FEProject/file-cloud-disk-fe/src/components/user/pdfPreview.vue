@@ -19,16 +19,16 @@ const props = defineProps({
 });
 
 
-await onMounted(() => {
+onMounted(() => {
   console.log("PDF预览组件挂载");
-  try{
+  try {
     loadPdf();
-  }catch(error){
+  } catch (error) {
     console.error('Failed to load PDF:', error);
   }
 });
 
-const loadPdf = async () => {
+const loadPdf = () => {
   try {
     getBlobData('/previewPdf', {path: props.sourceFilePath}).then(response => {
       pdfSource.value = URL.createObjectURL(response); // 将Blob对象转换为URL
@@ -37,7 +37,7 @@ const loadPdf = async () => {
     console.error('Failed to load PDF:', error);
   }
 }
-await onBeforeUnmount(() => {
+onBeforeUnmount(() => {
   console.log("PDF预览组件销毁");
   URL.revokeObjectURL(pdfSource.value);
 });

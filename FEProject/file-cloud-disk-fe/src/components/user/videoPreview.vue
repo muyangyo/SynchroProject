@@ -32,7 +32,7 @@ let Player = null
 
 onMounted(() => {
   console.log("plyr 初始化中...");
-  easyRequest(RequestMethods.POST, '/file/preparingVideo', {path: props.sourceFilePath}, false, true).then(response => {
+    easyRequest(RequestMethods.POST, '/file/preparingVideo', {path: props.sourceFilePath}, false, true).then(response => {
     if (response.statusCode === "SUCCESS" && response.data && response.data.mountRootPath) {
       file.value.mime = response.data.fileType.mimeType;
       file.value.url = "";

@@ -6,12 +6,15 @@ import com.muyangyo.fileclouddisk.common.config.Setting;
 import com.muyangyo.fileclouddisk.common.model.dto.FilePathDTO;
 import com.muyangyo.fileclouddisk.common.model.dto.RenameFileDTO;
 import com.muyangyo.fileclouddisk.common.model.enums.FileCategory;
+import com.muyangyo.fileclouddisk.common.model.meta.ShareFile;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
 import com.muyangyo.fileclouddisk.common.model.vo.DownloadFileInfo;
 import com.muyangyo.fileclouddisk.common.model.vo.FileInfo;
 import com.muyangyo.fileclouddisk.common.model.vo.VideoFileInfo;
 import com.muyangyo.fileclouddisk.common.utils.FileUtils;
+import com.muyangyo.fileclouddisk.common.utils.TokenUtils;
 import com.muyangyo.fileclouddisk.user.service.FileService;
+import com.muyangyo.fileclouddisk.user.service.ShareFileService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +28,7 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.TimerTask;
 
 @RestController
@@ -33,6 +37,9 @@ import java.util.TimerTask;
 public class FileController {
     @Resource
     private FileService fileService;
+
+    @Resource
+    private ShareFileService shareFileService;
 
     @Resource
     private Setting setting;
@@ -253,17 +260,65 @@ public class FileController {
         }
     }
 
-    @PostMapping("/shareFile") //todo 等待实现文件分享功能
-    public Result shareFile(@RequestBody FilePathDTO filePathDTO) {
+    @PostMapping("/createShareFile") // 创建分享文件(使用的绝对路径)
+    public Result createShareFile(@RequestBody FilePathDTO filePathDTO, HttpServletRequest request) {
         String path = FileUtils.normalizePath(filePathDTO.getPath());
         File file = new File(path);
         fileService.checkFollowRootPathAndGetFileInfo(file);// 检查文件是否合理
 
-        String fid = RandomUtil.randomString(5);
+        //从token中获取用户名
+        String token = TokenUtils.getTokenFromCookie(request);
+        Map<String, String> tokenLoad = TokenUtils.getTokenLoad(token);
+        String username = TokenUtils.TokenLoad.fromMap(tokenLoad).getUsername();
 
-        return Result.success(fid);
+
+        if (file.exists()) {
+            String shareCode = shareFileService.createShareFile(filePathDTO.getPath(), username);
+            return Result.success(setting.getCompleteServerURL() + "/file/getShareFile?shareCode=" + shareCode);
+        }
+        return Result.error("文件不存在");
     }
 
+    @GetMapping("/deleteShareFile")
+    public Result deleteShareFile(@RequestParam String shareCode, HttpServletRequest request) {
 
+        //从token中获取用户名
+        String token = TokenUtils.getTokenFromCookie(request);
+        Map<String, String> tokenLoad = TokenUtils.getTokenLoad(token);
+        String username = TokenUtils.TokenLoad.fromMap(tokenLoad).getUsername();
 
+        shareFileService.deleteShareFileByCode(shareCode, username);
+        return Result.success("删除成功");
+    }
+
+    @GetMapping("/getShareFileList")
+    public Result getShareFileList(HttpServletRequest request) {
+
+        //从token中获取用户名
+        String token = TokenUtils.getTokenFromCookie(request);
+        Map<String, String> tokenLoad = TokenUtils.getTokenLoad(token);
+        String username = TokenUtils.TokenLoad.fromMap(tokenLoad).getUsername();
+        return Result.success(shareFileService.getShareFileListByUsername(username));
+    }
+
+    @SneakyThrows
+    @GetMapping("/getShareFile") // 访客模式下获取分享文件(1天有效期)
+    public Result getShareFile(@RequestParam String shareCode, @RequestParam(required = false) String path) {
+        ShareFile shareFile = shareFileService.getSingleShareFileByCode(shareCode);
+        if (path == null) {
+            if (shareFile.getStatus() == 0) {
+                return Result.fail("分享文件已过期!");
+            } else {
+                return Result.success(fileService.OutSideGetFileInfoList(shareFile.getFilePath()));
+            }
+        } else {
+            String relativePath = URLDecoder.decode(path, StandardCharsets.UTF_8.toString());// 解码路径(防止中文乱码)
+            relativePath = FileUtils.normalizePath(relativePath); // 规范路径
+            String absolutePath = shareCode + "/" + relativePath;
+            return Result.success(fileService.OutSideGetFileInfoList(absolutePath));
+        }
+
+    }
+
+//    @GetMapping("/OutsideFileDownload")
 }

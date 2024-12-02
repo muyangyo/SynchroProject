@@ -2,6 +2,7 @@ package com.muyangyo.fileclouddisk.common.aspect;
 
 import com.muyangyo.fileclouddisk.common.exception.IllegalLoginWithoutRSA;
 import com.muyangyo.fileclouddisk.common.exception.IllegalPath;
+import com.muyangyo.fileclouddisk.common.exception.OperationWithoutPermission;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.UncategorizedSQLException;
@@ -47,5 +48,9 @@ public class ExceptionHandler {
         return Result.error("请使用客户端操作!");
     }
 
-
+    @org.springframework.web.bind.annotation.ExceptionHandler
+    public Result exception(OperationWithoutPermission e) {
+        log.error("操作权限不足!");
+        return Result.error("您没有操作权限!");
+    }
 }

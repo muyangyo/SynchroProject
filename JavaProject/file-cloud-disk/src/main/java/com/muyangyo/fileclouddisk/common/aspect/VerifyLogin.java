@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.annotation.Resource;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
@@ -34,26 +33,26 @@ public class VerifyLogin implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+
         String clientIp = NetworkUtils.getClientIp(request);// 获取客户端IP地址
         //如果是登录或注册接口，则记录登录或注册次数
         if (EXCLUDE_URL.contains(request.getRequestURI())) {
             return limitLoginAndRegister(request, clientIp);
         }
 
-
         try {
+            String token = TokenUtils.getTokenFromCookie(request);
             //持有token
-            Cookie[] requestCookies = request.getCookies();
-            for (Cookie tmp : requestCookies) {
-                if (tmp.getName().equals(Setting.TOKEN_HEADER_NAME)) {
-                    return TokenUtils.checkToken(tmp.getValue(), clientIp);
+            if (token != null) {
+                try {
+                    return TokenUtils.checkToken(token, clientIp);
+                } catch (Exception e) {
+                    log.error("获取Cookie失败", e);
                 }
             }
-        } catch (Exception e) {
-            log.error("获取Cookie失败", e);
-            return false;
+        }catch (Exception e){
+            // 没有token在cookie中会抛出空指针异常，忽略即可
         }
-
 
         //如果都没有则返回401状态码
         response.setStatus(401);

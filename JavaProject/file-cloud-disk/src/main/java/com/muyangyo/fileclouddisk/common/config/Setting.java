@@ -32,6 +32,8 @@ public class Setting {
 
     private SystemType systemType;
     private String serverIP;
+    @Value("${server.servlet.context-path}")
+    private String contextPath;
     private String completeServerURL;
     @Value("${invitationCode}")
     private String invitationCode;
@@ -73,7 +75,7 @@ public class Setting {
     public void init() {
         this.systemType = OSUtils.getSystemType();
         this.serverIP = NetworkUtils.getServerIP();
-        this.completeServerURL = "http://" + serverIP + ":" + port;
+        this.completeServerURL = "http://" + serverIP + ":" + port + contextPath;
         this.loginAndRegisterTimeCache = new EasyTimedCache<>(CACHE_SIZE, LIMIT_TIME, true);// 登录和注册时间缓存
         this.rasCache = new EasyTimedCache<>(CACHE_SIZE, RSA_USEFUL_TIME, true);// RSA密钥缓存
 
@@ -130,13 +132,14 @@ public class Setting {
     }
 
 
-    public static final String TOKEN_HEADER_NAME = "Authorization";
-    public static final String TOKEN_NAME_FOR_FE = "Token";
+    public static final String TOKEN_HEADER_NAME = "Authorization"; // 真token头名称
+    public static final String TOKEN_NAME_FOR_FE = "Token"; // 前端Token名称
 
     public static final Integer BYTE_CACHE_SIZE = 65536;// 缓存大小
 
-    public static final String FE_USER_BASE_URL = "/user";
-    public static final String USER_DOWNLOAD_TEMP_DIR_PATH = "./DLTemp";
+    public static final String FE_USER_BASE_URL = "/user"; // 用户模块前缀
+    public static final String USER_DOWNLOAD_TEMP_DIR_PATH = "./DownloadTemp"; // 用户下载临时目录
+    public static final String USER_SHARE_TEMP_DIR_PATH = "./shareTemp"; // 用户分享临时目录
 
-    public static final String USER_OPERATION_LOG_PREFIX = "用户操作日志[ {} ]";
+    public static final String USER_OPERATION_LOG_PREFIX = "用户操作日志[ {} ]"; // 用户操作日志前缀
 }

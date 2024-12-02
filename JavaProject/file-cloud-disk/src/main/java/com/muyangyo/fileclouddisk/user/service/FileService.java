@@ -59,6 +59,19 @@ public class FileService {
         return retList;
     }
 
+    @SneakyThrows
+    public LinkedList<FileInfo> OutSideGetFileInfoList(String path) {
+        File file = new File(path);
+        List<String> list = FileUtils.listFilesInDirectory(file);
+        FileUtils.sortFilePaths(list);
+
+        LinkedList<FileInfo> retList = new LinkedList<>();
+        for (String s : list) {
+            retList.add(initFileInfo(new File(s), path));
+        }
+        return retList;
+    }
+
     /**
      * 判断是否在根目录下,并获取文件信息
      *

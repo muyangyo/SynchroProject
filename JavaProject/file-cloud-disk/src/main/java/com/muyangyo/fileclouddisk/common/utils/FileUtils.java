@@ -122,31 +122,90 @@ public class FileUtils {
     }
 
     /**
-     * 复制文件
+     * 复制文件或目录
      *
-     * @param sourcePath 源文件路径
-     * @param targetPath 目标文件路径
+     * @param sourcePath 源文件或目录路径
+     * @param targetPath 目标文件或目录路径
      * @throws IOException 如果复制过程中发生错误
+     *
+     * 处理情况：
+     * 1. 源是文件夹，目标是文件夹：复制源文件夹下的所有文件到目标文件夹下。
+     * 2. 源是文件夹，目标是文件：抛出异常，因为不能将文件夹复制到文件。
+     * 3. 源是文件，目标是文件夹：将文件复制到目标文件夹下，并保持文件名不变。
+     * 4. 源是文件，目标是文件：直接复制文件。
      */
-    public static void copyFile(String sourcePath, String targetPath) throws IOException {
+    public static void copy(String sourcePath, String targetPath) throws IOException {
         Path source = Paths.get(sourcePath);
         Path target = Paths.get(targetPath);
 
         if (!Files.exists(source)) {
-            throw new FileNotFoundException("源文件不存在: " + sourcePath);
+            throw new FileNotFoundException("源文件或目录不存在: " + sourcePath);
         }
-        Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+
+        if (Files.isDirectory(source)) {
+            // 源是文件夹
+            if (Files.isRegularFile(target)) {
+                // 目标是文件，抛出异常
+                throw new IllegalArgumentException("不能将文件夹复制到文件: " + targetPath);
+            } else {
+                // 目标是文件夹，复制源文件夹下的所有文件到目标文件夹下
+                copyDirectory(source, target);
+            }
+        } else {
+            // 源是文件
+            if (Files.isDirectory(target)) {
+                // 目标是文件夹，将文件复制到目标文件夹下，并保持文件名不变
+                target = target.resolve(source.getFileName());
+            }
+            // 直接复制文件
+            Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 
     /**
-     * 复制文件
+     * 复制文件或目录
      *
-     * @param sourceFile 源文件对象
-     * @param targetFile 目标文件对象
+     * @param sourceFile 源文件或目录
+     * @param targetFile 目标文件或目录
+     * @throws IOException 如果复制过程中发生错误
+     *
+     * 处理情况：
+     * 1. 源是文件夹，目标是文件夹：复制源文件夹下的所有文件到目标文件夹下。
+     * 2. 源是文件夹，目标是文件：抛出异常，因为不能将文件夹复制到文件。
+     * 3. 源是文件，目标是文件夹：将文件复制到目标文件夹下，并保持文件名不变。
+     * 4. 源是文件，目标是文件：直接复制文件。
+     */
+    public static void copy(File sourceFile, File targetFile) throws IOException {
+        copy(sourceFile.getPath(), targetFile.getPath());
+    }
+
+    /**
+     * 递归复制目录及其内容
+     *
+     * @param sourceDir 源目录路径
+     * @param targetDir 目标目录路径
      * @throws IOException 如果复制过程中发生错误
      */
-    public static void copyFile(File sourceFile, File targetFile) throws IOException {
-        copyFile(sourceFile.getPath(), targetFile.getPath());
+    private static void copyDirectory(Path sourceDir, Path targetDir) throws IOException {
+        // 创建目标目录（如果不存在）
+        if (!Files.exists(targetDir)) {
+            Files.createDirectories(targetDir);
+        }
+
+        // 遍历源目录中的所有内容
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(sourceDir)) {
+            for (Path sourcePath : stream) {
+                Path targetPath = targetDir.resolve(sourceDir.relativize(sourcePath));
+
+                if (Files.isDirectory(sourcePath)) {
+                    // 如果是目录，递归复制
+                    copyDirectory(sourcePath, targetPath);
+                } else {
+                    // 如果是文件，直接复制
+                    Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
+        }
     }
 
     /**
