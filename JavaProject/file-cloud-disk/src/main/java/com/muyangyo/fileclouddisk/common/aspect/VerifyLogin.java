@@ -29,14 +29,15 @@ public class VerifyLogin implements HandlerInterceptor {
     @Resource
     private Setting setting;
 
-    List<String> EXCLUDE_URL = new LinkedList<>(Arrays.asList("/api/user/login", "/api/user/register", "/api/user/getPublicKey"));
+    private static final List<String> LOGIN_OR_REGISTER_URL = new LinkedList<>(Arrays.asList("/api/user/login", "/api/user/register", "/api/user/getPublicKey"));
+
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
 
         String clientIp = NetworkUtils.getClientIp(request);// 获取客户端IP地址
         //如果是登录或注册接口，则记录登录或注册次数
-        if (EXCLUDE_URL.contains(request.getRequestURI())) {
+        if (LOGIN_OR_REGISTER_URL.contains(request.getRequestURI())) {
             return limitLoginAndRegister(request, clientIp);
         }
 
@@ -50,7 +51,7 @@ public class VerifyLogin implements HandlerInterceptor {
                     log.error("获取Cookie失败", e);
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             // 没有token在cookie中会抛出空指针异常，忽略即可
         }
 

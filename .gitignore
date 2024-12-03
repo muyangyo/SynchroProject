@@ -50,3 +50,5 @@ pnpm-debug.log*
 target/
 yarn-debug.log*
 yarn-error.log*
+/JavaProject/file-cloud-disk/shareTemp
+/JavaProject/file-cloud-disk/DownloadTemp

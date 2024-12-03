@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
@@ -98,8 +99,9 @@ public class ShareFileService {
     public String createShareFile(String path, String username) {
         // 无论是文件还是文件夹都可以分享
         String shareCode = RandomUtil.randomString(10);
+        FileUtils.createHiddenDirectory(Setting.USER_SHARE_TEMP_DIR_PATH);
         String dirPath = Setting.USER_SHARE_TEMP_DIR_PATH + "/" + shareCode;
-        FileUtils.createHiddenDirectory(dirPath);
+        FileUtils.createDirectory(dirPath);
 
 
         // 异步复制(因为对方没那么快)
@@ -127,8 +129,8 @@ public class ShareFileService {
      * @param shareFile 分享文件
      */
     private void checkAndUpdateExpiredStatus(ShareFile shareFile) {
-        LocalDate createTime = LocalDate.parse(shareFile.getCreateTime().toString());
-        if (LocalDate.now().isAfter(createTime.plusDays(1))) {
+        LocalDate createTime = shareFile.getCreateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        if (LocalDate.now().isAfter(createTime.plusDays(1))) { // 1天后过期
             shareFile.setStatus(0); // 过期
             log.info("shareFile:{} 已过期", shareFile);
             // 异步更新数据库和删除分享临时文件夹

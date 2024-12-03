@@ -147,7 +147,7 @@ public class FileController {
         if (fileInfo.getFileType().getCategory() != FileCategory.FOLDER) {
             String fid = RandomUtil.randomString(5);
             setting.getFileCache().put(fid, file);
-            return Result.success(new DownloadFileInfo(fileInfo.getFileName(), "/file/download?fid=" + fid));// 只能返回相对地址
+            return Result.success(new DownloadFileInfo(fileInfo.getFileName(), "/file/download?fid=" + fid, fileInfo.getFileSize()));// 只能返回相对地址
         } else {
 
             FileUtils.createHiddenDirectory(Setting.USER_DOWNLOAD_TEMP_DIR_PATH);
@@ -168,7 +168,10 @@ public class FileController {
             }, (long) setting.getFileCacheExpireTime() * 60); // 定时删除压缩文件
 
 
-            return Result.success(new DownloadFileInfo(FileUtils.getFileName(tempDestZip), "/file/download?fid=" + FileUtils.getFileNameWithoutExtension(tempDestZip)));// 只能返回相对地址
+            return Result.success(
+                    new DownloadFileInfo(FileUtils.getFileName(tempDestZip),
+                            "/file/download?fid=" + FileUtils.getFileNameWithoutExtension(tempDestZip), tempDestZip.length())
+            );// 只能返回相对地址
         }
     }
 
@@ -274,9 +277,9 @@ public class FileController {
 
         if (file.exists()) {
             String shareCode = shareFileService.createShareFile(filePathDTO.getPath(), username);
-            return Result.success(setting.getCompleteServerURL() + "/file/getShareFile?shareCode=" + shareCode);
+            return Result.success("shareCode=" + shareCode);
         }
-        return Result.error("文件不存在");
+        return Result.fail("文件不存在");
     }
 
     @GetMapping("/deleteShareFile")
@@ -293,7 +296,6 @@ public class FileController {
 
     @GetMapping("/getShareFileList")
     public Result getShareFileList(HttpServletRequest request) {
-
         //从token中获取用户名
         String token = TokenUtils.getTokenFromCookie(request);
         Map<String, String> tokenLoad = TokenUtils.getTokenLoad(token);
@@ -314,11 +316,57 @@ public class FileController {
         } else {
             String relativePath = URLDecoder.decode(path, StandardCharsets.UTF_8.toString());// 解码路径(防止中文乱码)
             relativePath = FileUtils.normalizePath(relativePath); // 规范路径
-            String absolutePath = shareCode + "/" + relativePath;
-            return Result.success(fileService.OutSideGetFileInfoList(absolutePath));
+            String absolutePath = Setting.USER_SHARE_TEMP_DIR_PATH + "/" + shareCode + "/" + relativePath;
+            try {
+                return Result.success(fileService.OutSideGetFileInfoList(absolutePath));
+            } catch (IllegalArgumentException e) {
+                return Result.fail("分享文件已过期!");
+            }
         }
-
     }
 
-//    @GetMapping("/OutsideFileDownload")
+    @SneakyThrows
+    @GetMapping("/OutsideFileDownload") // 访客模式下下载文件
+    public void OutsideFileDownload(@RequestParam String shareCode, @RequestParam(required = false) String path
+            , @RequestParam(required = true) String fileName, HttpServletResponse response, HttpServletRequest request) {
+        String relativePath = null;
+        if (path != null) {
+            path = FileUtils.normalizePath(path);// 规范路径
+            relativePath = URLDecoder.decode(path, StandardCharsets.UTF_8.toString());// 解码路径(防止中文乱码)
+        }
+
+        String realFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8.toString());// 解码文件名(防止中文乱码)
+
+        String realFilePath = Setting.USER_SHARE_TEMP_DIR_PATH + "/" + shareCode + "/" + (relativePath == null ? "" : relativePath + "/") + realFileName;
+
+        File file = new File(realFilePath);
+
+        if (!file.exists()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        // 如果是文件夹,则压缩为zip文件
+        if (file.isDirectory()) {
+            FileUtils.createHiddenDirectory(Setting.USER_DOWNLOAD_TEMP_DIR_PATH);
+            File tempDestZip = new File(Setting.USER_DOWNLOAD_TEMP_DIR_PATH, RandomUtil.randomString(5) + ".zip");
+
+            log.info("开始压缩文件夹：" + realFilePath);
+            FileUtils.zip(realFilePath, tempDestZip);
+            log.info("压缩文件成功：" + FileUtils.getAbsolutePath(tempDestZip));
+
+            // 定时删除压缩文件
+            setting.getCustomTimer().scheduleTask(new TimerTask() {
+                @Override
+                public void run() {
+                    tempDestZip.delete(); // 定时删除压缩文件
+                }
+            }, 30 * 60); // 定时删除压缩文件(30分钟,外部用户的时间短点)
+
+            file = tempDestZip;
+        }
+
+        request.setAttribute(HandlerFileBinConfig.ATTR_FILE, FileUtils.getAbsolutePath(file));
+        handlerFileBinConfig.handleRequest(request, response);
+    }
 }

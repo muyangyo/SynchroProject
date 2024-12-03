@@ -16,6 +16,7 @@
             <el-button type="primary" :icon="FolderAdd" v-if="route.fullPath !== config.userRouterBaseUrl">创建文件夹
             </el-button>
             <el-button type="primary" :icon="Share">我的分享</el-button>
+            <el-button type="info">退出</el-button>
           </div>
         </div>
 
@@ -35,10 +36,10 @@
         <!-- 内容 -->
         <div class="cloud-index-content">
           <el-table :data="tableData" :default-sort="{ prop: '文件名', order: 'descending' }"
-                    class="full-width-table" height="600px">
+                    class="full-width-table custom-table" height="600px">
 
             <el-table-column prop="fileName" label="文件名" sortable min-width="100px" :show-overflow-tooltip="true">
-              <template #default="scope" style="color: white">
+              <template #default="scope">
                 <div class="cell-content" @click="handleFirstCellClick(scope.$index, scope.row)">
                   <IconFromDIY v-if="scope.row.fileType.category"
                                :name="getIconNameFromCategory(scope.row.fileType.category)"/>
@@ -129,14 +130,27 @@
         <PdfPreview v-if="file.fileType.category === FILE_CATEGORY.PDF " :sourceFilePath=" file.filePath"
                     :key="file.filePath +Math.random"/>
       </div>
-    </div>
 
+      <!-- 分享链接 -->
+      <div v-if="dialogState.contentType === 'share' && dialogState.visible">
+        <div class="share-link-container">
+          <div class="share-link">
+            <div class="share-link-label">
+              <span>链接:</span>
+            </div>
+            <div class="share-link-content">
+              <a :href="shareLink" target="_blank" @click.prevent="copyShareLink">{{ shareLink }}</a>
+            </div>
+          </div>
+          <el-button type="primary" size="small" @click="copyShareLink" class="copy-button">复制链接</el-button>
+        </div>
+      </div>
+    </div>
 
     <template #footer>
     </template>
   </el-dialog>
-
-  <!-- 音乐悬浮窗  TODO: 测试是否能正常销毁和播放-->
+  <!-- 音乐悬浮窗-->
   <AudioPreview
       v-if="musicPopover.visible && file.fileType.category === FILE_CATEGORY.AUDIO "
       :sourceFilePath="file.filePath"
@@ -174,8 +188,8 @@ import {useRoute} from "vue-router";
 import {config} from "@/GlobalConfig.js";
 import router from "@/router/RouterSetting.js";
 import {sizeTostr} from "@/utils/FileSizeConverter.js";
-import {ElMessage, ElMessageBox} from 'element-plus';
-import getBlobData from "@/utils/getBlobData.js";
+import {ElLoading, ElMessage, ElMessageBox} from 'element-plus';
+import useClipboard from 'vue-clipboard3'; // 引入 vue-clipboard3
 
 // 面包屑数据
 const pathPartsForBreadCrumb = ref([]);
@@ -195,7 +209,6 @@ const FILE_CATEGORY = Object.freeze({
   PPT: 'PPT',
   CODE: 'CODE', // 代码文件(从TEXT中分离出来)
 });
-
 
 //文件类型实例
 const file = ref({
@@ -232,7 +245,6 @@ onMounted(() => {
     tableData.value = response.data;
   });
 });
-
 
 watch(() => route.fullPath, () => {
   //如果是根目录
@@ -357,10 +369,11 @@ const handleDownload = (index, row) => {
   try {
     let needSleep = false;
     let messageBoxInstance = null;
+    let loading = null; // 初始化 loading 变量
 
     if (row.fileType.category === FILE_CATEGORY.FOLDER) {
       needSleep = true;
-      messageBoxInstance = ElMessageBox.alert('后端正在生成压缩包，请耐心等待!', '提示', {
+      messageBoxInstance = ElMessageBox.alert('正在生成压缩包，请耐心等待!', '提示', {
         confirmButtonText: '确定',
         type: 'warning',
         showClose: false,
@@ -381,6 +394,12 @@ const handleDownload = (index, row) => {
             const downloadUrl = response.data.url;
             const fileName = response.data.fileName;
 
+            loading = ElLoading.service({
+              lock: true,
+              text: '文件下载中，请稍候...',
+              background: 'rgba(32,31,31,0.7)',
+            });
+
             // 延迟执行下载请求
             setTimeout(() => {
               optionalRequest({
@@ -399,6 +418,10 @@ const handleDownload = (index, row) => {
                 document.body.removeChild(link);
               }).catch(error => {
                 console.error('文件下载失败', error);
+              }).finally(() => {
+                if (loading) {
+                  loading.close(); // 关闭加载提示
+                }
               });
             }, needSleep ? 8000 : 500);
           }
@@ -407,9 +430,15 @@ const handleDownload = (index, row) => {
           if (messageBoxInstance) {
             ElMessageBox.close(); // 关闭提示框
           }
+          if (loading) {
+            loading.close(); // 关闭加载提示
+          }
           console.error('文件下载失败', error);
         });
   } catch (error) {
+    if (loading) {
+      loading.close(); // 关闭加载提示
+    }
     console.error('文件下载失败', error);
   }
 };
@@ -453,11 +482,32 @@ const handleRename = (index, row) => {
   });
 };
 
+const shareLink = ref('');
+
 const handleShare = (index, row) => {
   dialogState.value.visible = true;
   dialogState.value.title = "分享";
-  dialogState.value.width = "50%";
+  dialogState.value.width = "66%";
   dialogState.value.contentType = 'share';
+
+  easyRequest(RequestMethods.POST, "/file/createShareFile", {path: row.filePath}, false, true).then(response => {
+    if (response.statusCode === "SUCCESS" && response.data) {
+      shareLink.value = "http://" + location.host + "/share?" + response.data + " 链接有效期一天,请及时下载";
+    } else {
+      ElMessage.error(response.errMsg);
+    }
+  });
+};
+
+const {toClipboard} = useClipboard(); // 使用 vue-clipboard3
+
+const copyShareLink = async () => {
+  try {
+    await toClipboard(shareLink.value);
+    ElMessage.success('链接已复制到剪贴板');
+  } catch (e) {
+    ElMessage.error('复制失败');
+  }
 };
 
 const handleDelete = (index, row) => {
@@ -485,6 +535,7 @@ const handleDelete = (index, row) => {
 };
 
 </script>
+
 <style scoped>
 .custom-dialog {
   border-radius: 8px;
@@ -513,11 +564,6 @@ const handleDelete = (index, row) => {
 .close-button:hover {
   color: #7b7b7b;
 }
-
-/*.dialog-body {*/
-/*!*  padding: 20px;*!  body和footer的分割线*/
-/*  border-bottom: 1px solid #e0e0e0;*/
-/*}*/
 
 .cloud-index-container {
   margin-top: 20px;
@@ -563,7 +609,7 @@ const handleDelete = (index, row) => {
 }
 
 .cloud-index-content {
-  background-color: #454444;
+  background-color: #555;
   color: #ccc;
 }
 
@@ -594,8 +640,54 @@ const handleDelete = (index, row) => {
 .cloud-index-breadcrumb .el-breadcrumb__item {
   cursor: pointer;
 }
-</style>
-<style>
+
+.share-link-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.share-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.share-link-label {
+  font-size: 16px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.share-link-content {
+  flex-grow: 1;
+  background-color: #333;
+  padding: 10px;
+  border-radius: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-all;
+}
+
+.share-link-content a {
+  color: #9ecaf9;
+  text-decoration: underline;
+  cursor: pointer;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-all;
+}
+
+.copy-button {
+  margin-left: auto;
+}
+
+/*原本的全局样式 */
 .full-width-table {
   width: 100%;
   border-radius: 8px;
@@ -605,7 +697,6 @@ const handleDelete = (index, row) => {
 .full-width-table th,
 .full-width-table td {
   padding: 12px;
-  background-color: #454444;
 }
 
 .full-width-table td {
@@ -626,6 +717,25 @@ const handleDelete = (index, row) => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 200px; /* 根据需要调整最大宽度 */
+  max-width: 200px;
+}
+
+.custom-table :deep(.el-table__row td) {
+  background-color: #555555;
+  color: #fff;
+}
+
+.custom-table :deep(.el-table th) {
+  background-color: #555555;
+  color: #fff;
+}
+
+.custom-table ::v-deep(.el-table__header-wrapper th) {
+  background: #212121;
+  color: white;
+}
+
+.share-link-container {
+  margin: 0;
 }
 </style>

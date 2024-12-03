@@ -15,4 +15,5 @@ import lombok.Data;
 public class DownloadFileInfo {
     private String fileName;
     private String url;
+    private Long fileSize;
 }

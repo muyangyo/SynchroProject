@@ -6,6 +6,9 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * 创建于 IntelliJ IDEA.
@@ -21,8 +24,11 @@ public class GlobalInterceptor implements WebMvcConfigurer {
     @Resource
     Setting setting;
 
+    private static final List<String> EXTERNALLY_ACCESSIBLE_PATHS = new LinkedList<>(
+            Arrays.asList("/file/getShareFile", "/file/OutsideFileDownload")); // 这里不需要/api,不是全路径判断的
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(verifyLogin).addPathPatterns("/**");
+        registry.addInterceptor(verifyLogin).addPathPatterns("/**").excludePathPatterns(EXTERNALLY_ACCESSIBLE_PATHS);
     }
 }

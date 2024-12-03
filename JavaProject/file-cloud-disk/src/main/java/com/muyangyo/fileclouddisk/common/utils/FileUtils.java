@@ -127,12 +127,12 @@ public class FileUtils {
      * @param sourcePath 源文件或目录路径
      * @param targetPath 目标文件或目录路径
      * @throws IOException 如果复制过程中发生错误
-     *
-     * 处理情况：
-     * 1. 源是文件夹，目标是文件夹：复制源文件夹下的所有文件到目标文件夹下。
-     * 2. 源是文件夹，目标是文件：抛出异常，因为不能将文件夹复制到文件。
-     * 3. 源是文件，目标是文件夹：将文件复制到目标文件夹下，并保持文件名不变。
-     * 4. 源是文件，目标是文件：直接复制文件。
+     *                     <p>
+     *                     处理情况：
+     *                     1. 源是文件夹，目标是文件夹：复制源文件夹下的所有文件到目标文件夹下。
+     *                     2. 源是文件夹，目标是文件：抛出异常，因为不能将文件夹复制到文件。
+     *                     3. 源是文件，目标是文件夹：将文件复制到目标文件夹下，并保持文件名不变。
+     *                     4. 源是文件，目标是文件：直接复制文件。
      */
     public static void copy(String sourcePath, String targetPath) throws IOException {
         Path source = Paths.get(sourcePath);
@@ -168,12 +168,12 @@ public class FileUtils {
      * @param sourceFile 源文件或目录
      * @param targetFile 目标文件或目录
      * @throws IOException 如果复制过程中发生错误
-     *
-     * 处理情况：
-     * 1. 源是文件夹，目标是文件夹：复制源文件夹下的所有文件到目标文件夹下。
-     * 2. 源是文件夹，目标是文件：抛出异常，因为不能将文件夹复制到文件。
-     * 3. 源是文件，目标是文件夹：将文件复制到目标文件夹下，并保持文件名不变。
-     * 4. 源是文件，目标是文件：直接复制文件。
+     *                     <p>
+     *                     处理情况：
+     *                     1. 源是文件夹，目标是文件夹：复制源文件夹下的所有文件到目标文件夹下。
+     *                     2. 源是文件夹，目标是文件：抛出异常，因为不能将文件夹复制到文件。
+     *                     3. 源是文件，目标是文件夹：将文件复制到目标文件夹下，并保持文件名不变。
+     *                     4. 源是文件，目标是文件：直接复制文件。
      */
     public static void copy(File sourceFile, File targetFile) throws IOException {
         copy(sourceFile.getPath(), targetFile.getPath());
@@ -667,6 +667,7 @@ public class FileUtils {
     }
 
     private static final int BUFFER_SIZE = 1024;
+
     /**
      * 递归压缩方法
      *

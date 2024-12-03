@@ -8,6 +8,7 @@ import syncFileManager from '@/views/manager/sync_manager/FileManager.vue';
 
 import cloudSettingManager from '@/views/manager/cloud_manager/SettingManager.vue';
 import cloudFileManager from '@/views/manager/cloud_manager/FileManager.vue';
+import ShareIndex from "@/views/user/ShareIndex.vue";
 
 
 /**
@@ -60,6 +61,13 @@ const mangerUrlBaseRoutes = [
 const userUrlBaseRoutes = [
     // 路由配置
     {
+        path: '/share', // 分享文件路由
+        component: ShareIndex,
+        meta: {
+            requiresAuth: false // 不需要登录验证
+        }
+    },
+    {
         path: config.userRouterBaseUrl,
         component: userCloudIndex,
     }, {
@@ -83,8 +91,10 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach((to, from) => {
     const token = getCookie('Token');
-    // 管理端
-    if (to.path.startsWith(config.managerRouterBaseUrl)) {
+
+    if (to.meta.requiresAuth === false) {
+        // 免登入路由
+    } else if (to.path.startsWith(config.managerRouterBaseUrl)) {
         // 管理端登入验证
         // if (token == null) {
         //     // 未登录
@@ -107,6 +117,7 @@ router.beforeEach((to, from) => {
     } else {
         return {path: config.userRouterBaseUrl + '/login'}
     }
+
 });
 
 
