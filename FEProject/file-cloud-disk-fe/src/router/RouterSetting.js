@@ -90,7 +90,7 @@ const router = createRouter({
 
 // 路由守卫
 router.beforeEach((to, from) => {
-    const token = getCookie('Token');
+    const token = getCookie(tokenName);
 
     if (to.meta.requiresAuth === false) {
         // 免登入路由
@@ -121,11 +121,17 @@ router.beforeEach((to, from) => {
 });
 
 
-const getCookie = (name) => {
+export const tokenName = 'Token';
+
+export const getCookie = (name) => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(';').shift();
     return null;
 }
+
+export const deleteCookie = (name) => {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+};
 
 export default router;

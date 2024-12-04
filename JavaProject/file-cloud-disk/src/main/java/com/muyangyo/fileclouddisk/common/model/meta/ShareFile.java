@@ -14,5 +14,5 @@ public class ShareFile {
     private String filePath;
     private String creator; //分享文件的创建者
     private Date createTime;
-    private Integer status = 1; //默认状态, 1-有效，0-无效
+    private Integer status; //默认状态, 1-有效，0-无效
 }

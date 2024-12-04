@@ -4,8 +4,12 @@ import cn.hutool.core.util.RandomUtil;
 import com.muyangyo.fileclouddisk.common.config.Setting;
 import com.muyangyo.fileclouddisk.common.exception.OperationWithoutPermission;
 import com.muyangyo.fileclouddisk.common.model.meta.ShareFile;
+import com.muyangyo.fileclouddisk.common.model.vo.ShareFileListVO;
+import com.muyangyo.fileclouddisk.common.model.vo.ShareFileVO;
+import com.muyangyo.fileclouddisk.common.utils.EasyTimer;
 import com.muyangyo.fileclouddisk.common.utils.FileUtils;
 import com.muyangyo.fileclouddisk.user.mapper.ShareFileMapper;
+import converter.MetaToVoConverter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,6 +18,7 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -54,15 +59,26 @@ public class ShareFileService {
      * @param username 用户名
      * @return 分享文件列表
      */
-    public List<ShareFile> getShareFileListByUsername(String username) {
+    @SneakyThrows
+    public ShareFileListVO getShareFileListByUsername(String username, int currentPageIndex, int pathSize) {
         ShareFile shareFile = new ShareFile();
         shareFile.setCreator(username);
 
-        List<ShareFile> shareFiles = shareFileMapper.selectByDynamicCondition(shareFile);
-        for (ShareFile file : shareFiles) {
+        int count = shareFileMapper.getShareFileCount(shareFile); // 总数
+        List<ShareFile> shareFileList = shareFileMapper.selectByDynamicConditionAndLimit(shareFile, currentPageIndex * pathSize, pathSize);
+        List<ShareFileVO> retList = new ArrayList<>(shareFileList.size());
+        for (ShareFile file : shareFileList) {
             checkAndUpdateExpiredStatus(file);
+            ShareFileVO vo = MetaToVoConverter.convert(file, ShareFileVO.class);
+            vo.setCreateTime(EasyTimer.getFormatTime(file.getCreateTime()));
+            retList.add(vo);
         }
-        return shareFiles;
+
+        ShareFileListVO ret = new ShareFileListVO();
+        ret.setTotal(count);
+        ret.setPageSize(pathSize);
+        ret.setList(retList);
+        return ret;
     }
 
     /**
@@ -76,7 +92,7 @@ public class ShareFileService {
             shareFileMapper.deleteByCode(code);
             setting.getSettingThreadPool().submit(() -> {
                 try {
-                    FileUtils.delete(Setting.USER_SHARE_TEMP_DIR_PATH + "/" + code);
+                    FileUtils.delete(shareFile.getFilePath());
                 } catch (IOException e) {
                     log.error("删除分享临时文件夹失败", e);
                     throw new RuntimeException(e);
@@ -133,6 +149,7 @@ public class ShareFileService {
         if (LocalDate.now().isAfter(createTime.plusDays(1))) { // 1天后过期
             shareFile.setStatus(0); // 过期
             log.info("shareFile:{} 已过期", shareFile);
+
             // 异步更新数据库和删除分享临时文件夹
             setting.getSettingThreadPool().submit(() -> {
                 shareFileMapper.update(shareFile);
@@ -143,6 +160,47 @@ public class ShareFileService {
                     throw new RuntimeException(e);
                 }
             });
+        }
+    }
+
+    public void batchDeleteShareFileByUsername(Boolean isDeleteAll, String username) {
+        // 异步删除分享临时文件夹
+        ShareFile shareFile = new ShareFile();
+        shareFile.setCreator(username);
+        List<ShareFile> userOwnerShareFileList = shareFileMapper.selectByDynamicCondition(shareFile);
+        for (ShareFile tempShareFile : userOwnerShareFileList){
+            if (isDeleteAll){
+                // 删除所有分享文件
+                setting.getSettingThreadPool().submit(() -> {
+                    try {
+                        FileUtils.delete(tempShareFile.getFilePath());
+                    } catch (IOException e) {
+                        log.error("删除分享临时文件夹失败", e);
+                        throw new RuntimeException(e);
+                    }
+                });
+            }else{
+                if (tempShareFile.getStatus() == 0){
+                    // 删除过期的分享文件
+                    setting.getSettingThreadPool().submit(() -> {
+                        try {
+                            FileUtils.delete(tempShareFile.getFilePath());
+                        } catch (IOException e) {
+                            log.error("删除分享临时文件夹失败", e);
+                            throw new RuntimeException(e);
+                        }
+                    });
+                }
+            }
+        }
+
+
+        // isDeleteAll 为 true 时，删除所有分享文件
+        if (isDeleteAll) {
+            shareFileMapper.deleteAllByCreator(username);
+        } else {
+            //只删除过期的
+            shareFileMapper.deleteExpiredShareFileByCreator(username);
         }
     }
 }

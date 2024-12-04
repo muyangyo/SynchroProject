@@ -15,8 +15,8 @@
             </el-button>
             <el-button type="primary" :icon="FolderAdd" v-if="route.fullPath !== config.userRouterBaseUrl">创建文件夹
             </el-button>
-            <el-button type="primary" :icon="Share">我的分享</el-button>
-            <el-button type="info">退出</el-button>
+            <el-button type="primary" :icon="Share" @click="showShareLinkList()">我的分享</el-button>
+            <el-button type="info" @click="logout()">退出</el-button>
           </div>
         </div>
 
@@ -131,6 +131,10 @@
                     :key="file.filePath +Math.random"/>
       </div>
 
+      <div v-if=" dialogState.visible && dialogState.contentType === 'ShareLinkList' ">
+        <UserShareManager></UserShareManager>
+      </div>
+
       <!-- 分享链接 -->
       <div v-if="dialogState.contentType === 'share' && dialogState.visible">
         <div class="share-link-container">
@@ -186,10 +190,12 @@ import IconFromDIY from "@/components/common/iconFromDIY.vue";
 import {easyRequest, optionalRequest, RequestMethods} from "@/utils/RequestTool.js";
 import {useRoute} from "vue-router";
 import {config} from "@/GlobalConfig.js";
-import router from "@/router/RouterSetting.js";
+import router, {deleteCookie, tokenName} from "@/router/RouterSetting.js";
 import {sizeTostr} from "@/utils/FileSizeConverter.js";
 import {ElLoading, ElMessage, ElMessageBox} from 'element-plus';
-import useClipboard from 'vue-clipboard3'; // 引入 vue-clipboard3
+import useClipboard from 'vue-clipboard3';// 引入 vue-clipboard3
+import {useUserStore} from "@/stores/userStore.js";
+import UserShareManager from "@/views/user/UserShareManager.vue";
 
 // 面包屑数据
 const pathPartsForBreadCrumb = ref([]);
@@ -487,12 +493,12 @@ const shareLink = ref('');
 const handleShare = (index, row) => {
   dialogState.value.visible = true;
   dialogState.value.title = "分享";
-  dialogState.value.width = "66%";
+  dialogState.value.width = "50%";
   dialogState.value.contentType = 'share';
 
   easyRequest(RequestMethods.POST, "/file/createShareFile", {path: row.filePath}, false, true).then(response => {
     if (response.statusCode === "SUCCESS" && response.data) {
-      shareLink.value = "http://" + location.host + "/share?" + response.data + " 链接有效期一天,请及时下载";
+      shareLink.value = location.origin + "/share?" + response.data + " 链接有效期一天,请及时下载";
     } else {
       ElMessage.error(response.errMsg);
     }
@@ -534,6 +540,26 @@ const handleDelete = (index, row) => {
       });
 };
 
+const logout = () => {
+  const userStore = useUserStore(); // 用户存储
+  userStore.logout();
+  deleteCookie(tokenName);
+  router.push("/user/login");
+
+  ElMessage({
+    message: `退出成功!`,
+    type: 'success',
+  });
+};
+
+
+const showShareLinkList = () => {
+  // 显示分享链接列表
+  dialogState.value.visible = true;
+  dialogState.value.title = "分享链接";
+  dialogState.value.width = "60%";
+  dialogState.value.contentType = 'ShareLinkList';
+}
 </script>
 
 <style scoped>

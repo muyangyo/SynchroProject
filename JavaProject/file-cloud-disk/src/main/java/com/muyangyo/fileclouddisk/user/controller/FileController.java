@@ -165,7 +165,7 @@ public class FileController {
                 public void run() {
                     tempDestZip.delete(); // 定时删除压缩文件
                 }
-            }, (long) setting.getFileCacheExpireTime() * 60); // 定时删除压缩文件
+            }, (long) setting.getDownloadFileCacheExpireTime() * 60); // 定时删除压缩文件
 
 
             return Result.success(
@@ -282,7 +282,7 @@ public class FileController {
         return Result.fail("文件不存在");
     }
 
-    @GetMapping("/deleteShareFile")
+    @DeleteMapping("/deleteShareFile")
     public Result deleteShareFile(@RequestParam String shareCode, HttpServletRequest request) {
 
         //从token中获取用户名
@@ -294,14 +294,35 @@ public class FileController {
         return Result.success("删除成功");
     }
 
-    @GetMapping("/getShareFileList")
-    public Result getShareFileList(HttpServletRequest request) {
+    @DeleteMapping("/batchDeleteShareFile")
+    public Result batchDeleteShareFile(@RequestParam Boolean isDeleteAll, HttpServletRequest request) {
+
         //从token中获取用户名
         String token = TokenUtils.getTokenFromCookie(request);
         Map<String, String> tokenLoad = TokenUtils.getTokenLoad(token);
         String username = TokenUtils.TokenLoad.fromMap(tokenLoad).getUsername();
-        return Result.success(shareFileService.getShareFileListByUsername(username));
+
+        shareFileService.batchDeleteShareFileByUsername(isDeleteAll, username);
+        return Result.success("删除成功");
     }
+
+    @GetMapping("/getShareFileList")
+    public Result getShareFileList(HttpServletRequest request, @RequestParam(required = false) Integer page, @RequestParam(required = false) Integer pageSize) {
+        if (page == null) {
+            page = 1;
+        }
+
+        if (pageSize == null) {
+            pageSize = 6;
+        }
+
+        //从token中获取用户名
+        String token = TokenUtils.getTokenFromCookie(request);
+        Map<String, String> mapFromToken = TokenUtils.getTokenLoad(token);
+        String username = TokenUtils.TokenLoad.fromMap(mapFromToken).getUsername();
+        return Result.success(shareFileService.getShareFileListByUsername(username, page - 1, pageSize));// page-1 因为前端传过来的是从1开始的
+    }
+
 
     @SneakyThrows
     @GetMapping("/getShareFile") // 访客模式下获取分享文件(1天有效期)

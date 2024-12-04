@@ -4,7 +4,9 @@ package com.muyangyo.fileclouddisk.common.config;
 import com.muyangyo.fileclouddisk.FileCloudDiskApplication;
 import com.muyangyo.fileclouddisk.common.exception.InitFailedException;
 import com.muyangyo.fileclouddisk.common.model.enums.SystemType;
+import com.muyangyo.fileclouddisk.common.model.meta.ShareFile;
 import com.muyangyo.fileclouddisk.common.utils.*;
+import com.muyangyo.fileclouddisk.user.mapper.ShareFileMapper;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,8 +15,14 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
 import java.io.File;
+import java.io.IOException;
 import java.security.PrivateKey;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -62,11 +70,13 @@ public class Setting {
     private ConcurrentLRUCache<String, File> fileCache; // 文件缓存
     @Value("${Cache.videoCacheSize}")
     private int videoCacheSize; // 视频缓存大小
-    @Value("${Cache.fileCacheSize}")
-    private int fileCacheSize;// 文件缓存大小
-    @Value("${Cache.fileCacheExpireTime}")
-    private int fileCacheExpireTime; // 视频缓存过期时间(分钟)
+    @Value("${Cache.downloadFileCacheSize}")
+    private int downloadFileCacheSize;// 文件缓存大小
+    @Value("${Cache.downloadFileCacheExpireTime}")
+    private int downloadFileCacheExpireTime; // 文件缓存过期时间(分钟)
     private CustomTimer customTimer; // 用于定时清理压缩包的
+    @Value("${Cache.MaximumSurvivalTimeOfSharedFile}")
+    private int maximumSurvivalTimeOfSharedFile; // 共享文件最大存活时间(分钟)
 
     // 全局
     private ExecutorService settingThreadPool; // 线程池
@@ -80,7 +90,7 @@ public class Setting {
         this.rasCache = new EasyTimedCache<>(CACHE_SIZE, RSA_USEFUL_TIME, true);// RSA密钥缓存
 
         this.videoCache = new ConcurrentLRUCache<>(this.videoCacheSize); // 缓存视频
-        this.fileCache = new ConcurrentLRUCache<>(this.fileCacheSize, this.fileCacheExpireTime, TimeUnit.MINUTES); // 缓存文件(30分钟)
+        this.fileCache = new ConcurrentLRUCache<>(this.downloadFileCacheSize, this.downloadFileCacheExpireTime, TimeUnit.MINUTES); // 缓存文件(30分钟)
         this.customTimer = new CustomTimer();
         this.settingThreadPool = Executors.newCachedThreadPool(); // 线程池
 
@@ -95,13 +105,41 @@ public class Setting {
         } else {
             log.warn("登入注册模块未使用加密");
         }
+
+
+        File shareTempFolder = new File(Setting.USER_SHARE_TEMP_DIR_PATH);
+        if (shareTempFolder.exists()) {
+            settingThreadPool.submit(() -> {
+            log.info("正在扫描分享缓存文件夹: {}", shareTempFolder.getPath());
+            ShareFile shareFile = new ShareFile();
+            List<ShareFile> shareFileList = shareFileMapper.selectAll();
+
+            for (ShareFile file : shareFileList) {
+                LocalDateTime createTime = file.getCreateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                if ((createTime.plusMinutes(maximumSurvivalTimeOfSharedFile)).isBefore(LocalDateTime.now())) {
+                    try {
+                        log.warn("扫描时发现超过最大存活时间的分享文件,分享码为: {} ,文件路径为: {} ,已自动删除!", file.getCode(), file.getFilePath());
+                        FileUtils.delete(file.getFilePath());
+                        shareFileMapper.deleteByCode(file.getCode());
+                        if (shareTempFolder.listFiles() == null || Objects.requireNonNull(shareTempFolder.listFiles()).length == 0){
+                            //如果文件夹是空的,则删除文件夹
+                            FileUtils.delete(shareTempFolder);
+                        }
+                    } catch (IOException e) {
+                        log.error("删除超过最大存活时间的分享文件失败: {} ,原因: {}", file, e.getMessage());
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+            });
+        }
     }
 
     private boolean isConfigInvalid() {
         return Stream.of(
                 port, applicationName, systemType, serverIP, completeServerURL, invitationCode,
                 loginAndRegisterTimeCache, rasCache, maxNumberOfAttempts, signature, tokenLifeTime, videoCache, fileCache
-                , videoCacheSize, fileCacheSize, fileCacheExpireTime, settingThreadPool
+                , videoCacheSize, downloadFileCacheSize, downloadFileCacheExpireTime, settingThreadPool,maximumSurvivalTimeOfSharedFile
         ).anyMatch(value -> {
             if (value == null) {
                 return true;
@@ -131,7 +169,11 @@ public class Setting {
         log.info("缓存释放完毕!");
     }
 
+    // springboot注入
+    @Resource
+    private ShareFileMapper shareFileMapper;
 
+    //完全静态变量
     public static final String TOKEN_HEADER_NAME = "Authorization"; // 真token头名称
     public static final String TOKEN_NAME_FOR_FE = "Token"; // 前端Token名称
 

@@ -2,8 +2,10 @@ package com.muyangyo.fileclouddisk.user.mapper;
 
 import com.muyangyo.fileclouddisk.common.model.meta.ShareFile;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.LinkedList;
+import java.util.List;
 
 @Mapper
 public interface ShareFileMapper {
@@ -22,4 +24,14 @@ public interface ShareFileMapper {
 
     // 删除数据
     int deleteByCode(String code);
+
+    List<ShareFile> selectByDynamicConditionAndLimit(@Param("shareFile") ShareFile shareFile, int start, int size);
+
+    int getShareFileCount(ShareFile shareFile);
+
+    int deleteAllByCreator(String creator);
+
+    int deleteExpiredShareFileByCreator(String creator);
+
+    List<ShareFile> selectAll();
 }
