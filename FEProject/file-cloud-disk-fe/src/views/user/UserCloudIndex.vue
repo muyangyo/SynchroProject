@@ -10,10 +10,12 @@
         <div class="cloud-index-header">
           <h2 class="cloud-index-title">我的云盘</h2>
           <div class="cloud-index-actions">
-            <el-button type="primary" :icon="UploadFilled" v-if="route.fullPath !== config.userRouterBaseUrl">
+            <el-button type="primary" :icon="UploadFilled" v-if="route.fullPath !== config.userRouterBaseUrl"
+                       @click="handleUploadFile()">
               上传文件
             </el-button>
-            <el-button type="primary" :icon="FolderAdd" v-if="route.fullPath !== config.userRouterBaseUrl">创建文件夹
+            <el-button type="primary" :icon="FolderAdd" v-if="route.fullPath !== config.userRouterBaseUrl"
+                       @click="handleCreateFolder()">创建文件夹
             </el-button>
             <el-button type="primary" :icon="Share" @click="showShareLinkList()">我的分享</el-button>
             <el-button type="info" @click="logout()">退出</el-button>
@@ -167,18 +169,42 @@
                 @close="imagePreview.visible = false"
                 :key="file.filePath +Math.random"/>
 
+
+  <!-- 上传文件弹窗 -->
+  <el-dialog
+      v-model="uploadDialog.visible"
+      title="上传文件"
+      width="40%"
+      :before-close="handleUploadClose"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      class="upload-dialog"
+  >
+    <div class="upload-dialog-content">
+      <el-progress :percentage="uploadProgress" :text-inside="true" :stroke-width="24"
+                   class="upload-progress" :color="colorsForProgress"></el-progress>
+      <p class="upload-speed">速度: {{ uploadSpeed }} MB/s</p>
+    </div>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="cancelUpload">取消</el-button>
+      </span>
+    </template>
+  </el-dialog>
+
 </template>
 <script setup>
-import {onMounted, reactive, ref, watch, computed} from 'vue';
+import {markRaw, onMounted, reactive, ref, watch} from 'vue';
 import {
-  UploadFilled,
-  FolderAdd,
-  Share,
+  Close,
+  DataAnalysis,
+  Delete,
+  DeleteFilled,
   Download,
   EditPen,
-  DeleteFilled,
-  DataAnalysis,
-  Close
+  FolderAdd,
+  Share,
+  UploadFilled
 } from '@element-plus/icons-vue';
 import VideoPreview from "@/components/user/videoPreview.vue";
 import AudioPreview from "@/components/user/audioPreview.vue";
@@ -193,9 +219,11 @@ import {config} from "@/GlobalConfig.js";
 import router, {deleteCookie, tokenName} from "@/router/RouterSetting.js";
 import {sizeTostr} from "@/utils/FileSizeConverter.js";
 import {ElLoading, ElMessage, ElMessageBox} from 'element-plus';
-import useClipboard from 'vue-clipboard3';// 引入 vue-clipboard3
+import useClipboard from 'vue-clipboard3'; // 引入 vue-clipboard3
 import {useUserStore} from "@/stores/userStore.js";
 import UserShareManager from "@/views/user/UserShareManager.vue";
+import SparkMD5 from 'spark-md5';
+
 
 // 面包屑数据
 const pathPartsForBreadCrumb = ref([]);
@@ -269,6 +297,212 @@ watch(() => route.fullPath, () => {
   let temp = config.userRouterBaseUrl.substring(1, config.userRouterBaseUrl.length);
   pathPartsForBreadCrumb.value = (route.fullPath.split('/').filter((item) => item !== '' && item !== temp));
 });
+
+const handleCreateFolder = () => {
+  ElMessageBox.prompt('请输入文件夹名称', '创建文件夹', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    inputValue: '',
+    inputPattern: /^[^\\/]+$/, // 只允许输入文件名，不允许输入路径
+    inputErrorMessage: '文件夹名不能包含路径信息',
+    inputType: 'text',
+  }).then(({value}) => {
+    if (value) {
+      const createFolderDTO = {
+        parentPath: route.fullPath,
+        folderName: value
+      };
+
+      easyRequest(RequestMethods.POST, "/file/createFolder", createFolderDTO, false, true).then(response => {
+        if (response.statusCode === "SUCCESS") {
+          // 重新获取文件列表
+          easyRequest(RequestMethods.POST, "/file/getFileList", {path: route.fullPath}, false, true).then((response) => {
+            handleResponse(response);
+          });
+          ElMessage.success("文件夹创建成功!");
+        } else {
+          ElMessage.error(response.errMsg);
+        }
+      });
+    }
+  });
+}
+
+// 定义上传相关变量
+const uploadDialog = reactive({visible: false,});
+const uploadProgress = ref(0); // 上传进度
+const uploadSpeed = ref("0"); // 上传速度
+const upLoadFile = ref(null); // 需要上传的文件
+const uploadCanceled = ref(false); // 上传是否取消
+const colorsForProgress = [
+  {color: '#f56c6c', percentage: 20},
+  {color: '#e6a23c', percentage: 40},
+  {color: '#13CE66', percentage: 60},
+  {color: '#13cebb', percentage: 80},
+  {color: '#1989fa', percentage: 100},
+];
+
+
+// 处理上传文件按钮点击事件
+const handleUploadFile = () => {
+  uploadDialog.visible = true;
+  // 创建文件选择输入框
+  const input = document.createElement('input');
+  input.type = 'file'; // 设置input类型为file
+
+  input.onchange = (e) => {  //注册 onchange 事件
+    upLoadFile.value = e.target.files[0]; // 获取选择的文件
+    if (upLoadFile.value) {
+      startUpload(upLoadFile.value); // 开始上传
+    }
+  };
+
+  input.click();
+};
+
+// 开始上传文件
+const startUpload = async (file) => {
+  // 初始化
+  uploadProgress.value = 0;
+  uploadSpeed.value = 0;
+  uploadCanceled.value = false;
+  if (file.size === 0) {
+    ElMessage.error('空文件!');
+    return;
+  }
+
+  // 分片上传逻辑
+  // 1.根据文件大小选择分片大小
+  let chunkSize = 1024 * 1024 * 8; // 默认分片大小 8MB
+  if (file.size < 10 * 1024 * 1024) {
+    // 文件小于10MB，整个文件作为一个分片
+    chunkSize = file.size;
+  } else if (file.size > 200 * 1024 * 1024) {
+    // 文件大于200MB，分片大小16MB
+    chunkSize = 1024 * 1024 * 16;
+  }
+
+  // 2.计算分片数量
+  const totalChunks = Math.ceil(file.size / chunkSize);
+  console.warn(`分片数量: ${totalChunks}`); // todo: test
+
+  // 3.上传分片
+  let isBreak = false;// 是否中断上传
+  for (let i = 0; i < totalChunks; i++) {
+    let startTime = performance.now(); // 开始时间
+
+    if (uploadCanceled.value) {
+      isBreak = true;
+      break;
+    }
+
+    // 3.1 读取分片数据
+    const start = i * chunkSize;
+    const end = Math.min(start + chunkSize, file.size); // 计算本次实际分片大小(最后一次不能超过文件实际大小)
+    const chunk = file.slice(start, end);
+
+    // 3.2计算分片MD5
+    const chunkMd5 = await calculateMd5(chunk);
+
+    // 3.3 上传分片
+    const uploadResult = await uploadChunk(chunk, i, totalChunks, chunkMd5, file.name);
+    if (uploadResult === null || uploadResult.statusCode === "ERROR") {
+      ElMessage.error('服务器错误，上传失败!');
+      isBreak = true;
+      break; // 上传失败，退出循环
+    }
+
+    // 更新进度
+    uploadProgress.value = Number.parseInt((((i + 1) / totalChunks) * 100).toFixed(2));
+
+    // 更新速度
+    const speed = ((end - start) / 1024 / 1024) / ((performance.now() - startTime) / 1000);
+    uploadSpeed.value = speed.toFixed(2);
+  }
+  if (!isBreak) {
+    // 重新获取文件列表
+    easyRequest(RequestMethods.POST, "/file/getFileList", {path: route.fullPath}, false, true).then((response) => {
+      handleResponse(response);
+    });
+
+    ElMessage.success('上传成功!');
+    uploadDialog.visible = false;
+  }
+
+  setTimeout(() => {
+    uploadProgress.value = 0;
+    uploadSpeed.value = 0;
+  }, 1000);
+};
+// 上传分片
+const uploadChunk = async (chunk, chunkIndex, totalChunks, chunkMd5, fileName) => {
+  const formData = new FormData();
+  formData.append("parentPath", route.fullPath);
+  formData.append("file", chunk);
+  formData.append("chunkIndex", chunkIndex);
+  formData.append("fileName", fileName)
+  formData.append("totalChunks", totalChunks);
+  formData.append("chunkMd5", chunkMd5);
+
+  return optionalRequest({
+    method: RequestMethods.POST,
+    url: "/file/uploadChunk",
+    dataType: "file",
+    data: formData,
+    showError: true,
+    checkDataFormat: true,
+    errorCallback: (errorMsg) => {
+      ElMessage.error('上传错误: ' + errorMsg);
+    },
+  });
+};
+
+
+// 计算MD5
+const calculateMd5 = async (chunk) => {
+  return new Promise((resolve, reject) => {
+    const spark = new SparkMD5.ArrayBuffer();
+    const fileReader = new FileReader();
+
+    fileReader.onload = (e) => {
+      spark.append(e.target.result);
+      const md5 = spark.end();
+      resolve(md5);
+      spark.destroy(); // 释放内存
+    };
+
+    fileReader.onerror = (e) => {
+      reject(e);
+    };
+
+    fileReader.readAsArrayBuffer(chunk);
+  });
+};
+
+// 取消上传
+const cancelUpload = () => {
+  uploadCanceled.value = true;
+  uploadDialog.visible = false;
+  ElMessage.warning('上传已取消');
+};
+
+// 上传弹窗关闭前的处理
+const handleUploadClose = () => {
+  if (!uploadCanceled.value && uploadProgress.value < 100) {
+    ElMessageBox.confirm('上传未完成，确定要关闭吗?', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }).then(() => {
+      cancelUpload();
+    }).catch(() => {
+      // 取消关闭
+    });
+  } else {
+    cancelUpload();
+  }
+};
+
 
 const handleResponse = (response) => {
   response.data.forEach((item) => {
@@ -484,7 +718,6 @@ const handleRename = (index, row) => {
     }
   }).catch(() => {
     // 用户取消操作
-    ElMessage.info('取消重命名');
   });
 };
 
@@ -517,27 +750,40 @@ const copyShareLink = async () => {
 };
 
 const handleDelete = (index, row) => {
-  setFileProperties(row);
-  const filePathDTO = {
-    path: row.filePath
-  };
+  ElMessageBox.confirm(
+      `确定要删除文件 ${row.fileName} ？`,
+      '删除',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'error',
+        icon: markRaw(Delete),
+      }
+  ).then(() => {
+    setFileProperties(row);
+    const filePathDTO = {
+      path: row.filePath
+    };
 
-  easyRequest(RequestMethods.POST, "/file/deleteFile", filePathDTO, false, true)
-      .then(response => {
-        if (response.statusCode === "SUCCESS") {
-          // 删除成功，更新表格数据
-          easyRequest(RequestMethods.POST, "/file/getFileList", {path: route.fullPath}, false, true).then((response) => {
-            handleResponse(response);
-            ElMessage.success("文件删除成功!");
-          });
-        } else {
-          ElMessage.error(response.errMsg);
-        }
-      })
-      .catch(error => {
-        console.error('文件删除失败', error);
-        ElMessage.error('文件删除失败');
-      });
+    easyRequest(RequestMethods.POST, "/file/deleteFile", filePathDTO, false, true)
+        .then(response => {
+          if (response.statusCode === "SUCCESS") {
+            // 删除成功，更新表格数据
+            easyRequest(RequestMethods.POST, "/file/getFileList", {path: route.fullPath}, false, true).then((response) => {
+              handleResponse(response);
+              ElMessage.success("文件删除成功!");
+            });
+          } else {
+            ElMessage.error(response.errMsg);
+          }
+        })
+        .catch(error => {
+          console.error('文件删除失败', error);
+          ElMessage.error('文件删除失败');
+        });
+  }).catch(() => {
+    // 用户取消操作
+  });
 };
 
 const logout = () => {
@@ -764,4 +1010,27 @@ const showShareLinkList = () => {
 .share-link-container {
   margin: 0;
 }
+
+.upload-dialog {
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+.upload-dialog-content {
+  padding: 20px 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.upload-progress {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.upload-speed {
+  font-size: 16px;
+  color: #333;
+}
+
 </style>

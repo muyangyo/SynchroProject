@@ -13,7 +13,13 @@
       </el-table-column>
       <el-table-column label="操作" width="100">
         <template #default="scope">
-          <el-button type="danger" size="small" @click="handleDelete(scope.row)">删除</el-button>
+          <el-button
+              type="danger"
+              size="small"
+              @click="handleDelete(scope.row)"
+              :disabled="shareData.list.length === 0"
+          >删除
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -27,18 +33,28 @@
           @current-change="handlePageChange"
       />
       <div class="button-group">
-        <el-button type="danger" @click="handleBatchDeleteShareFile(true)">全部删除</el-button>
-        <el-button type="warning" @click="handleBatchDeleteShareFile(false)">删除过期</el-button>
+        <el-button
+            type="danger"
+            @click="handleBatchDeleteShareFile(true)"
+            :disabled="shareData.list.length === 0"
+        >全部删除
+        </el-button>
+        <el-button
+            type="warning"
+            @click="handleBatchDeleteShareFile(false)"
+            :disabled="shareData.list.length === 0"
+        >删除过期
+        </el-button>
       </div>
-
     </div>
   </div>
 </template>
 
 <script setup>
-import {onBeforeUnmount, onMounted, ref} from 'vue';
+import {markRaw, onBeforeUnmount, onMounted, ref} from 'vue';
 import {ElMessage, ElMessageBox} from 'element-plus';
 import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
+import {Delete} from "@element-plus/icons-vue";
 
 const shareData = ref({
   list: [], /* 分享列表 type: array */
@@ -46,7 +62,6 @@ const shareData = ref({
   pageSize: 0, /* 每页显示条数 type: number */
   currentPage: 0, /* 当前页码 type: number */
 });
-
 
 const getDate = (pageIndex) => {
   easyRequest(RequestMethods.GET, `/file/getShareFileList?page=${pageIndex}`, "", false).then(response => {
@@ -70,7 +85,6 @@ onBeforeUnmount(() => {
   shareData.value = null;
 });
 
-
 const handlePageChange = (page) => {
   getDate(page);
 };
@@ -82,7 +96,8 @@ const handleDelete = (row) => {
       {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
-        type: 'warning',
+        type: 'error',
+        icon: markRaw(Delete),
       }
   ).then(() => {
     easyRequest(RequestMethods.DELETE, `/file/deleteShareFile?shareCode=${row.code}`, "", false).then((response) => {
@@ -111,6 +126,7 @@ const handleBatchDeleteShareFile = (isDeleteAll) => {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'error',
+        icon: markRaw(Delete),
       }
   ).then(() => {
     easyRequest(RequestMethods.DELETE, `/file/batchDeleteShareFile?isDeleteAll=${isDeleteAll}`, "", false).then((response) => {
@@ -145,6 +161,7 @@ const handleBatchDeleteShareFile = (isDeleteAll) => {
 .el-pagination {
   margin-top: 0; /* 移除默认的 margin-top */
 }
+
 .button-group {
   display: flex;
   gap: 10px; /* 按钮之间的间距 */

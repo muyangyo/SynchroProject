@@ -455,7 +455,7 @@ public class FileUtils {
      * @param originalPath 原始文件路径
      * @return 唯一的文件路径
      */
-    private static Path getUniqueFileName(Path originalPath) {
+    public static Path getUniqueFileName(Path originalPath) {
         Path parent = originalPath.getParent(); // 获取父目录
         String fileName = originalPath.getFileName().toString(); // 获取文件名
         String baseName = fileName; // 文件名（不含扩展名）

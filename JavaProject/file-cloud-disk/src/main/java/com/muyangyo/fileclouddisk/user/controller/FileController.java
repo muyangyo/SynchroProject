@@ -3,6 +3,7 @@ package com.muyangyo.fileclouddisk.user.controller;
 import cn.hutool.core.util.RandomUtil;
 import com.muyangyo.fileclouddisk.common.aspect.HandlerFileBinConfig;
 import com.muyangyo.fileclouddisk.common.config.Setting;
+import com.muyangyo.fileclouddisk.common.model.dto.CreateFolderDTO;
 import com.muyangyo.fileclouddisk.common.model.dto.FilePathDTO;
 import com.muyangyo.fileclouddisk.common.model.dto.RenameFileDTO;
 import com.muyangyo.fileclouddisk.common.model.enums.FileCategory;
@@ -17,7 +18,9 @@ import com.muyangyo.fileclouddisk.user.service.FileService;
 import com.muyangyo.fileclouddisk.user.service.ShareFileService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletException;
@@ -60,6 +63,37 @@ public class FileController {
         path = FileUtils.normalizePath(path); // 规范路径
         LinkedList<FileInfo> fileInfos = fileService.getFileInfoList(path); // 获取文件列表
         return Result.success(fileInfos);
+    }
+
+    /**
+     * 创建文件夹(使用伪路径)
+     *
+     * @param createFolderDTO 创建文件夹参数
+     * @return 创建结果
+     */
+    @PostMapping("/createFolder")
+    public Result createFolder(@RequestBody CreateFolderDTO createFolderDTO) {
+        String parentPath = FileUtils.normalizePath(createFolderDTO.getParentPath());
+
+
+        if (StringUtils.hasLength(parentPath)) {
+            return fileService.createFolder(parentPath, createFolderDTO.getFolderName());
+        } else {
+            return Result.fail("文件夹路径不能为空");
+        }
+    }
+
+    @PostMapping("/uploadChunk")
+    public Result uploadChunk(
+            @RequestParam("parentPath") String parentPath,// 父路径
+            @RequestParam("file") MultipartFile file, // 上传的文件
+            @RequestParam("chunkIndex") int chunkIndex, // 当前块的索引
+            @RequestParam("fileName") String fileName, // 文件名
+            @RequestParam("totalChunks") int totalChunks, // 当前文件总块数
+            @RequestParam("chunkMd5") String chunkMd5 // 分块文件的MD5用于验证完整性
+    ) {
+        fileService.uploadChunk(parentPath, file, chunkIndex, fileName, totalChunks, chunkMd5);
+        return Result.success("上传成功!");
     }
 
     @PostMapping(value = "/previewDocx")

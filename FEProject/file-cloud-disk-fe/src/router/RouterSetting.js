@@ -8,7 +8,7 @@ import syncFileManager from '@/views/manager/sync_manager/FileManager.vue';
 
 import cloudSettingManager from '@/views/manager/cloud_manager/SettingManager.vue';
 import cloudFileManager from '@/views/manager/cloud_manager/FileManager.vue';
-import ShareIndex from "@/views/user/ShareIndex.vue";
+import outSideShareIndex from "@/views/user/OutsideshareIndex.vue";
 
 
 /**
@@ -62,7 +62,7 @@ const userUrlBaseRoutes = [
     // 路由配置
     {
         path: '/share', // 分享文件路由
-        component: ShareIndex,
+        component: outSideShareIndex,
         meta: {
             requiresAuth: false // 不需要登录验证
         }

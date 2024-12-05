@@ -180,8 +180,9 @@ public class Setting {
     public static final Integer BYTE_CACHE_SIZE = 65536;// 缓存大小
 
     public static final String FE_USER_BASE_URL = "/user"; // 用户模块前缀
-    public static final String USER_DOWNLOAD_TEMP_DIR_PATH = "./DownloadTemp"; // 用户下载临时目录
+    public static final String USER_DOWNLOAD_TEMP_DIR_PATH = "./downloadTemp"; // 用户下载临时目录
     public static final String USER_SHARE_TEMP_DIR_PATH = "./shareTemp"; // 用户分享临时目录
+    public static final String USER_UPLOAD_TEMP_DIR_PATH = "./uploadTemp"; // 用户上传临时目录
 
     public static final String USER_OPERATION_LOG_PREFIX = "用户操作日志[ {} ]"; // 用户操作日志前缀
 }

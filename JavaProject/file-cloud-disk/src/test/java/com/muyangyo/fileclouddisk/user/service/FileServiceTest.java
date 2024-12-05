@@ -1,9 +1,5 @@
 package com.muyangyo.fileclouddisk.user.service;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-
-
 /**
  * 创建于 IntelliJ IDEA.
  * 描述：
@@ -11,13 +7,13 @@ import org.springframework.boot.test.context.SpringBootTest;
  * Date: 2024/11/25
  * Time: 14:40
  */
-@SpringBootTest
+//@SpringBootTest
 class FileServiceTest {
 
-    @Test
-    void getRootMountDir() {
-
-    }
+//    @Test
+//    void getRootMountDir() {
+//
+//    }
 
 //    public static void main(String[] args) {
 //        String path = "/user/1/files/2024/11/25/test.txt";
@@ -28,4 +24,5 @@ class FileServiceTest {
 //        System.out.println(path);
 //        System.out.println(mountRootPathFromPath);
 //    }
+
 }
