@@ -66,7 +66,7 @@ const shareData = ref({
 const getDate = (pageIndex) => {
   easyRequest(RequestMethods.GET, `/file/getShareFileList?page=${pageIndex}`, "", false).then(response => {
     response.data.list.forEach(item => {
-      item.url = `${location.origin}/share?${item.code}`;
+      item.url = `${location.origin}/share?shareCode=${item.code}`;
     });
 
     shareData.value.list = [];

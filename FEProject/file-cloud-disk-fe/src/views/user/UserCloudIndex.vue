@@ -221,7 +221,7 @@ import {sizeTostr} from "@/utils/FileSizeConverter.js";
 import {ElLoading, ElMessage, ElMessageBox} from 'element-plus';
 import useClipboard from 'vue-clipboard3'; // 引入 vue-clipboard3
 import {useUserStore} from "@/stores/userStore.js";
-import UserShareManager from "@/views/user/UserShareManager.vue";
+import UserShareManager from "@/components/user/UserShareManager.vue";
 import SparkMD5 from 'spark-md5';
 
 
@@ -606,81 +606,70 @@ const handlePreview = (index, row) => {
 
 
 const handleDownload = (index, row) => {
-  try {
-    let needSleep = false;
-    let messageBoxInstance = null;
-    let loading = null; // 初始化 loading 变量
+  let messageBoxInstance = null;
+  let loading = null; // 初始化 loading 变量
 
-    if (row.fileType.category === FILE_CATEGORY.FOLDER) {
-      needSleep = true;
-      messageBoxInstance = ElMessageBox.alert('正在生成压缩包，请耐心等待!', '提示', {
-        confirmButtonText: '确定',
-        type: 'warning',
-        showClose: false,
-        closeOnClickModal: false,
-        closeOnPressEscape: false,
-        showCancelButton: false,
-        showConfirmButton: false,
+  if (row.fileType.category === FILE_CATEGORY.FOLDER) {
+    messageBoxInstance = ElMessageBox.alert('正在生成压缩包，请耐心等待!', '提示', {
+      confirmButtonText: '确定',
+      type: 'warning',
+      showClose: false,
+      closeOnClickModal: false,
+      closeOnPressEscape: false,
+      showCancelButton: false,
+      showConfirmButton: false,
+    });
+  } // 目录需要等待一会儿
+
+  easyRequest(RequestMethods.POST, "/file/preparingDownloadFile", {path: row.filePath}, false, true, 60000) // 设置较长的超时时间
+      .then(response => {
+        if (messageBoxInstance) {
+          ElMessageBox.close(); // 关闭提示框
+        }
+
+        if (response.statusCode === "SUCCESS" && response.data) {
+          const downloadUrl = response.data.url;
+          // const fileName = response.data.fileName;
+
+          loading = ElLoading.service({
+            lock: true,
+            text: '文件下载中，请稍候...',
+            background: 'rgba(32,31,31,0.7)',
+          });
+
+          optionalRequest({
+            method: RequestMethods.GET,
+            responseType: 'blob',
+            url: downloadUrl,
+            dataTypes: 'blob',
+            timeout: 60000 // 设置较长的超时时间
+          }).then(response => {
+            const url = window.URL.createObjectURL(response);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', row.fileName); // 设置下载文件的名称
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url); // 释放 URL
+          }).catch(error => {
+            console.error('文件下载失败', error);
+          }).finally(() => {
+            if (loading) {
+              loading.close(); // 关闭加载提示
+            }
+          });
+        }
+      })
+      .catch(error => {
+        if (messageBoxInstance) {
+          ElMessageBox.close(); // 关闭提示框
+        }
+        if (loading) {
+          loading.close(); // 关闭加载提示
+        }
+        console.error('文件下载失败', error);
       });
-    } // 目录需要等待一会儿
-
-    easyRequest(RequestMethods.POST, "/file/preparingDownloadFile", {path: row.filePath}, false, true, 60000) // 设置较长的超时时间
-        .then(response => {
-          if (messageBoxInstance) {
-            ElMessageBox.close(); // 关闭提示框
-          }
-
-          if (response.statusCode === "SUCCESS" && response.data) {
-            const downloadUrl = response.data.url;
-            const fileName = response.data.fileName;
-
-            loading = ElLoading.service({
-              lock: true,
-              text: '文件下载中，请稍候...',
-              background: 'rgba(32,31,31,0.7)',
-            });
-
-            // 延迟执行下载请求
-            setTimeout(() => {
-              optionalRequest({
-                method: RequestMethods.GET,
-                responseType: 'blob',
-                url: downloadUrl,
-                dataTypes: 'blob',
-                timeout: 60000 // 设置较长的超时时间
-              }).then(response => {
-                const url = window.URL.createObjectURL(new Blob([response]));
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', fileName); // 设置下载文件的名称
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-              }).catch(error => {
-                console.error('文件下载失败', error);
-              }).finally(() => {
-                if (loading) {
-                  loading.close(); // 关闭加载提示
-                }
-              });
-            }, needSleep ? 8000 : 500);
-          }
-        })
-        .catch(error => {
-          if (messageBoxInstance) {
-            ElMessageBox.close(); // 关闭提示框
-          }
-          if (loading) {
-            loading.close(); // 关闭加载提示
-          }
-          console.error('文件下载失败', error);
-        });
-  } catch (error) {
-    if (loading) {
-      loading.close(); // 关闭加载提示
-    }
-    console.error('文件下载失败', error);
-  }
 };
 
 const handleRename = (index, row) => {

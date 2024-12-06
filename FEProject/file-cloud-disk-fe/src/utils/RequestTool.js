@@ -67,7 +67,7 @@ const validateRequestParams = ({ method, relativeURL, data, checkDataFormat = tr
 };
 
 // 封装通用请求方法
-const easyRequest = (method, relativeURL, data, checkDataFormat = true, autoTransformToJSON = false, timeout = 5000) => {
+const easyRequest = async (method, relativeURL, data, checkDataFormat = true, autoTransformToJSON = false, timeout = 5000) => {
     // 自动转换请求数据为JSON字符串
     if (autoTransformToJSON && typeof data !== 'string') {
         data = JSON.stringify(data);

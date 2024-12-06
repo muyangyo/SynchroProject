@@ -13,17 +13,15 @@
 
         <!-- 内容 -->
         <div class="cloud-index-content">
-          <el-table :data="tableData" :default-sort="{ prop: '文件名', order: 'descending' }"
-                    class="full-width-table" height="600px">
+          <el-table :data="tableData" :default-sort="{ prop: 'fileName', order: 'descending' }"
+                    class="full-width-table custom-table" height="600px">
 
             <el-table-column prop="fileName" label="文件名" sortable min-width="100px" :show-overflow-tooltip="true">
               <template #default="scope" style="color: white">
                 <div class="cell-content" @click="handleFirstCellClick(scope.$index, scope.row)">
                   <IconFromDIY v-if="scope.row.fileType.category"
                                :name="getIconNameFromCategory(scope.row.fileType.category)"/>
-                  <el-tooltip :content="scope.row.fileName" placement="top">
-                    <span class="file-name">{{ scope.row.fileName }}</span>
-                  </el-tooltip>
+                  <span class="file-name">{{ scope.row.fileName }}</span>
                 </div>
               </template>
             </el-table-column>
@@ -52,13 +50,17 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue';
+import {onMounted, ref, watch} from 'vue';
 import {Download} from '@element-plus/icons-vue';
 import IconFromDIY from "@/components/common/iconFromDIY.vue";
-import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
-import {useRoute} from "vue-router";
+import {easyRequest, optionalRequest, RequestMethods} from "@/utils/RequestTool.js";
+import {useRoute, useRouter} from "vue-router";
 import {sizeTostr} from "@/utils/FileSizeConverter.js";
-import {ElMessage} from 'element-plus';
+import {ElLoading, ElMessage, ElMessageBox} from 'element-plus';
+
+const route = useRoute();
+const router = useRouter();
+const shareCode = route.query.shareCode;
 
 // 文件类型常量
 const FILE_CATEGORY = Object.freeze({
@@ -78,25 +80,49 @@ const FILE_CATEGORY = Object.freeze({
 
 // 文件列表数据
 const tableData = ref([]);
-
-const route = useRoute();
+// 文件对象
+const file = ref({
+  fileName: '',
+  fileSize: '',
+  modifiedTime: '',
+  filePath: '',
+  mountRootPath: '',
+  fileType: {
+    category: FILE_CATEGORY.UNKNOWN,
+    typeName: '',
+    mimeType: ''
+  },
+});
+const handleResponse = (response) => {
+  response.data.forEach((item) => {
+    if (item.fileType.category === FILE_CATEGORY.FOLDER) {
+      item.fileSize = ''; // 目录不显示大小
+    }
+  });
+  tableData.value = response.data;
+};
 
 // 初次加载页面时，获取分享文件
 onMounted(() => {
-  const shareCode = route.query.shareCode;
   if (!shareCode) {
     ElMessage.error('分享链接无效');
     return;
   }
 
-  easyRequest(RequestMethods.GET, `/file/getShareFile?shareCode=${shareCode}`, "", false, true).then(response => {
-    if (response.statusCode === "SUCCESS" && response.data) {
+  getShareFileList(route.query.parentPath);
+});
 
+
+const getShareFileList = (parentPath) => {
+  easyRequest(RequestMethods.GET, `/file/getShareFile?shareCode=${shareCode}&parentPath=${parentPath || ''}`, "", false, true).then(response => {
+    if (response.statusCode === "SUCCESS" && response.data) {
+      handleResponse(response);
+      tableData.value = response.data;
     } else {
       ElMessage.error(response.errMsg);
     }
   });
-});
+}
 
 // 根据文件类型获取icon名称
 const getIconNameFromCategory = (category) => {
@@ -118,18 +144,79 @@ const getIconNameFromCategory = (category) => {
 };
 
 const handleFirstCellClick = (index, row) => {
-  // 处理文件点击事件
-};
-
-const handleDownload = (index, row) => {
-  const downloadUrl = row.downloadUrl;
-  if (downloadUrl) {
-    window.location.href = downloadUrl;
-  } else {
-    ElMessage.error('下载链接无效');
+  if (row.fileType.category === FILE_CATEGORY.FOLDER) {
+    // 处理文件夹点击事件
+    const currentParentPath = route.query.parentPath || '';
+    let newPath = currentParentPath ? `${currentParentPath}/${row.fileName}` : row.fileName;
+    // 更新路由
+    router.push({
+      query: {
+        shareCode: shareCode,
+        parentPath: newPath
+      }
+    });
   }
 };
 
+
+watch(() => route.query.parentPath, () => {
+  const currentParentPath = route.query.parentPath || '';
+  getShareFileList(currentParentPath);
+})
+const handleDownload = (index, row) => {
+  let messageBoxInstance = null;
+  let loading = null;
+
+  if (row.fileType.category === FILE_CATEGORY.FOLDER) {
+    messageBoxInstance = ElMessageBox.alert('正在生成压缩包，请耐心等待!', '提示', {
+      confirmButtonText: '确定',
+      type: 'warning',
+      showClose: false,
+      closeOnClickModal: false,
+      closeOnPressEscape: false,
+      showCancelButton: false,
+      showConfirmButton: false,
+    });
+  }
+
+  const parentPath = route.query.parentPath || '';
+  optionalRequest({
+    method: RequestMethods.GET,
+    url: `/file/OutsideFileDownload?shareCode=${shareCode}&fileName=${row.fileName}&parentPath=${parentPath}`,
+    responseType: 'blob',
+    dataTypes: 'blob',
+    timeout: 60000 // 超时时间 60s
+  })
+      .then(response => {
+        if (messageBoxInstance) {
+          ElMessageBox.close(); // 关闭提示框
+        }
+        loading = ElLoading.service({
+          lock: true,
+          text: '文件下载中，请稍候...',
+          background: 'rgba(32,31,31,0.7)',
+        });
+
+        const url = window.URL.createObjectURL(response);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', row.fileName); // 设置下载文件的名称
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url); // 释放 URL
+        loading.close();
+      })
+      .catch(error => {
+        if (messageBoxInstance) {
+          ElMessageBox.close(); // 关闭提示框
+        }
+        if (loading) {
+          loading.close();
+        }
+        console.error('文件下载失败', error);
+      });
+};
 </script>
 
 <style scoped>
@@ -141,6 +228,7 @@ const handleDownload = (index, row) => {
   border-radius: 8px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   padding: 20px;
+  background-color: #333;
 }
 
 .cloud-index-header {
@@ -156,40 +244,27 @@ const handleDownload = (index, row) => {
 }
 
 .cloud-index-content {
-  /*padding: 20px;*/
-  border-radius: 8px;
-  min-height: 300px;
-  font-size: 16px;
-  text-align: center;
-}
-
-.cloud-index-wrapper {
-  background-color: #333;
-}
-
-.cloud-index-title {
-  color: #fff;
-}
-
-.cloud-index-content {
   background-color: #454444;
   color: #ccc;
 }
 
-.full-width-table {
-  width: 100%;
-  border-radius: 8px;
-  border-collapse: collapse;
+.custom-table :deep(.el-table__row td) {
+  background-color: #555555 !important;
+  color: #fff !important;
 }
 
-.full-width-table th,
-.full-width-table td {
-  padding: 12px;
-  background-color: #333;
+.custom-table :deep(.el-table__row:hover td) {
+  background-color: #444 !important;
 }
 
-.full-width-table td {
-  color: #fff;
+.custom-table :deep(.el-table th) {
+  background-color: #555555 !important;
+  color: #fff !important;
+}
+
+.custom-table ::v-deep(.el-table__header-wrapper th) {
+  background: #212121 !important;
+  color: white !important;
 }
 
 .cell-content {

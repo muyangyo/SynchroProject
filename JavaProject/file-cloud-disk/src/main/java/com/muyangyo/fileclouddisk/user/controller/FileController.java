@@ -360,16 +360,20 @@ public class FileController {
 
     @SneakyThrows
     @GetMapping("/getShareFile") // 访客模式下获取分享文件(1天有效期)
-    public Result getShareFile(@RequestParam String shareCode, @RequestParam(required = false) String path) {
+    public Result getShareFile(@RequestParam String shareCode, @RequestParam(required = false) String parentPath) {
+        if (shareCode == null || shareCode.length() != 10) {
+            return Result.fail("分享码不正确!");
+        }
+
         ShareFile shareFile = shareFileService.getSingleShareFileByCode(shareCode);
-        if (path == null) {
+        if (!StringUtils.hasLength(parentPath)) {
             if (shareFile.getStatus() == 0) {
                 return Result.fail("分享文件已过期!");
             } else {
                 return Result.success(fileService.OutSideGetFileInfoList(shareFile.getFilePath()));
             }
         } else {
-            String relativePath = URLDecoder.decode(path, StandardCharsets.UTF_8.toString());// 解码路径(防止中文乱码)
+            String relativePath = URLDecoder.decode(parentPath, StandardCharsets.UTF_8.toString());// 解码路径(防止中文乱码)
             relativePath = FileUtils.normalizePath(relativePath); // 规范路径
             String absolutePath = Setting.USER_SHARE_TEMP_DIR_PATH + "/" + shareCode + "/" + relativePath;
             try {
@@ -382,17 +386,15 @@ public class FileController {
 
     @SneakyThrows
     @GetMapping("/OutsideFileDownload") // 访客模式下下载文件
-    public void OutsideFileDownload(@RequestParam String shareCode, @RequestParam(required = false) String path
+    public void OutsideFileDownload(@RequestParam String shareCode, @RequestParam(required = false) String parentPath
             , @RequestParam(required = true) String fileName, HttpServletResponse response, HttpServletRequest request) {
-        String relativePath = null;
-        if (path != null) {
-            path = FileUtils.normalizePath(path);// 规范路径
-            relativePath = URLDecoder.decode(path, StandardCharsets.UTF_8.toString());// 解码路径(防止中文乱码)
+        if (StringUtils.hasLength(parentPath)) {
+            parentPath = FileUtils.normalizePath(parentPath);// 规范路径
+            parentPath = URLDecoder.decode(parentPath, StandardCharsets.UTF_8.toString());// 解码路径(防止中文乱码)
         }
-
         String realFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8.toString());// 解码文件名(防止中文乱码)
 
-        String realFilePath = Setting.USER_SHARE_TEMP_DIR_PATH + "/" + shareCode + "/" + (relativePath == null ? "" : relativePath + "/") + realFileName;
+        String realFilePath = Setting.USER_SHARE_TEMP_DIR_PATH + "/" + shareCode + "/" + (StringUtils.hasLength(parentPath) ? (parentPath + "/") : "") + realFileName;
 
         File file = new File(realFilePath);
 
