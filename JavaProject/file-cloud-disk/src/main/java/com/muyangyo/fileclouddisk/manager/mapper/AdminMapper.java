@@ -14,4 +14,6 @@ public interface AdminMapper {
     Integer updateByUserId(Admin admin);
 
     Integer insertByDynamicCondition(Admin admin);
+
+    Integer numberOfAdmin();
 }

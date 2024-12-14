@@ -73,7 +73,7 @@
             <el-icon>
               <Folder/>
             </el-icon>
-            云盘文件
+            文件操作日志
           </template>
         </el-menu-item>
         <el-menu-item index="2-2" @click="navigateTo('/manager/cloud_manager/cloud_setting_manager')">
@@ -99,8 +99,9 @@
 import {markRaw, ref} from 'vue';
 import {useRouter} from 'vue-router';
 import {useUserStore} from "@/stores/userStore.js";
-import {ElMessageBox} from 'element-plus';
+import {ElMessage, ElMessageBox} from 'element-plus';
 import {InfoFilled} from "@element-plus/icons-vue";
+import {deleteCookie, tokenName} from "@/router/RouterSetting.js";
 
 
 const router = useRouter();
@@ -133,13 +134,19 @@ const confirmLogout = () => {
   ).then(() => {
     logout();
   }).catch(() => {
-    console.log("取消退出登录");
   });
 };
 
 const logout = () => {
+  const userStore = useUserStore(); // 用户存储
   userStore.logout();
-  router.push('/manager/login');
+  deleteCookie(tokenName);
+  router.push("/manager/login");
+
+  ElMessage({
+    message: `退出成功!`,
+    type: 'success',
+  });
 };
 
 const DesignerUrl = () => {

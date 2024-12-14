@@ -1,10 +1,14 @@
 package com.muyangyo.fileclouddisk.common.model.meta;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Admin {
     private String userId; // 用户id
     private String username;// 用户名

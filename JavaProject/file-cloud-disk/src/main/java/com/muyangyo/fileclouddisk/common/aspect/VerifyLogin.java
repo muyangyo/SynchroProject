@@ -29,7 +29,9 @@ public class VerifyLogin implements HandlerInterceptor {
     @Resource
     private Setting setting;
 
-    private static final List<String> LOGIN_OR_REGISTER_URL = new LinkedList<>(Arrays.asList("/api/user/login", "/api/user/register", "/api/user/getPublicKey"));
+    private static final List<String> LOGIN_OR_REGISTER_URL = new LinkedList<>(Arrays.asList(
+            "/api/user/login", "/api/user/getPublicKey", "/api/user/register",
+            "/api/admin/login", "/api/admin/getPublicKey"));
 
 
     @Override

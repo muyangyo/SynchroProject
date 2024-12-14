@@ -6,6 +6,7 @@ import cn.hutool.crypto.asymmetric.RSA;
 import com.muyangyo.fileclouddisk.common.config.Setting;
 import com.muyangyo.fileclouddisk.common.exception.IllegalLoginWithoutRSA;
 import com.muyangyo.fileclouddisk.common.model.dto.LoginDTO;
+import com.muyangyo.fileclouddisk.common.model.enums.Roles;
 import com.muyangyo.fileclouddisk.common.model.meta.User;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
 import com.muyangyo.fileclouddisk.common.utils.EasyTimedCache;
@@ -55,7 +56,7 @@ public class UserService {
             //生成token并设置cookie
             TokenUtils.TokenLoad tokenLoad = new TokenUtils.TokenLoad();
             tokenLoad.setUserId(user.getUserId());
-            tokenLoad.setRole("user");
+            tokenLoad.setRole(Roles.USER.toString());
             tokenLoad.setUsername(user.getUsername());
             tokenLoad.setIp(NetworkUtils.getClientIp(request));
             tokenLoad.setLoginTime(String.valueOf(new Date()));
@@ -100,8 +101,8 @@ public class UserService {
         User user = userMapper.selectByUsername(username); // 判断用户名是否存在
         if (user == null) {
             String encipher = MD5Utils.encipher(password);
-            Integer i = userMapper.numberOfUser() + 1;
-            user = new User(i.toString(), username, encipher, new Date(), new Date(), 0, permissions);
+            int i = userMapper.numberOfUser() + 1;
+            user = new User(Integer.toString(i), username, encipher, new Date(), new Date(), 0, permissions);
             userMapper.insertByDynamicCondition(user);
             return Result.success(true);
         } else {

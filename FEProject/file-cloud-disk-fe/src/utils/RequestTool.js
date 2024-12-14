@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { config } from "@/GlobalConfig.js";
+import {config} from "@/GlobalConfig.js";
 
 // 请求方法
 const RequestMethods = {
@@ -49,7 +49,7 @@ requestTool.interceptors.response.use(response => {
  * @param {object|string} data 请求数据
  * @param checkDataFormat 是否检查请求数据格式
  */
-const validateRequestParams = ({ method, relativeURL, data, checkDataFormat = true }) => {
+const validateRequestParams = ({method, relativeURL, data, checkDataFormat = true}) => {
     if (!Object.values(RequestMethods).includes(method)) {
         throw new Error(`无效的请求方法: ${method}. 只能是 ${Object.values(RequestMethods).join(', ')} 中的一种.`);
     }
@@ -72,7 +72,7 @@ const easyRequest = async (method, relativeURL, data, checkDataFormat = true, au
     if (autoTransformToJSON && typeof data !== 'string') {
         data = JSON.stringify(data);
     }
-    validateRequestParams({ method, relativeURL, data, checkDataFormat });
+    validateRequestParams({method, relativeURL, data, checkDataFormat});
 
     // 发送请求并返回结果
     return requestTool({
@@ -98,11 +98,11 @@ const optionalRequest = async (options) => {
         timeout = 5000 // 默认超时时间
     } = options;
 
-    validateRequestParams({ method, relativeURL, data, checkDataFormat });
+    validateRequestParams({method, relativeURL, data, checkDataFormat});
 
     const headers = dataType === 'file'
-        ? { 'Content-Type': 'multipart/form-data' }
-        : { 'Content-Type': 'application/json;charset=UTF-8' };
+        ? {'Content-Type': 'multipart/form-data'}
+        : {'Content-Type': 'application/json;charset=UTF-8'};
 
     // 发送请求并返回结果
     return requestTool({
@@ -145,5 +145,5 @@ const optionalRequest = async (options) => {
  * });
  */
 
-export { easyRequest, optionalRequest, RequestMethods }; // 导出请求方法
+export {easyRequest, optionalRequest, RequestMethods}; // 导出请求方法
 export default requestTool; // 导出axios请求对象

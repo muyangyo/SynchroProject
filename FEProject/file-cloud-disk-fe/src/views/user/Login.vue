@@ -26,7 +26,7 @@ import {ElMessage} from 'element-plus';
 import {useRouter} from 'vue-router';
 import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
 import {useKeyStore} from "@/stores/keyStore.js";
-import {useUserStore} from "@/stores/userStore.js";
+import {ROLES, useUserStore} from "@/stores/userStore.js";
 
 const router = useRouter();// 路由
 const keyStore = useKeyStore(); // 密钥存储
@@ -62,7 +62,7 @@ const submitForm = () => {
         // 使用 easyRequest 发送登录请求,返回响应
         const response = await easyRequest(RequestMethods.POST, '/user/login', RequestData);
         if (response.data === true && response.statusCode === "SUCCESS") {
-          userStore.setLoginStatus(true);
+          userStore.setLoginStatus(true, ROLES.user);
           userStore.setUserName(form.value.username);
           ElMessage({
             message: `欢迎回来, ${form.value.username}`,

@@ -1,38 +1,54 @@
 import {defineStore} from 'pinia';
 import {ref} from 'vue';
 
-export const useUserStore = defineStore('userStore', () => {
-    // 提供共享数据
-    const userName = ref(""); // 用户名
+export const ROLES = {
+    admin: "admin",
+    user: "user"
+};
 
-    const getUserName = () => {
-        console.log("userName.value:" + userName.value)
-        return userName.value === "" ? "unknown" : userName.value;
-    } // 获取用户名
+export const useUserStore = defineStore('userStore', () => {
+    const userName = ref(getFromLocalStorage('userName') || "");
+    const isLoggedIn = ref(getFromLocalStorage('isLoggedIn') || false);
+
+    function getFromLocalStorage(key) {
+        return localStorage.getItem(key);
+    }
+
+    function setToLocalStorage(key, value) {
+        localStorage.setItem(key, value);
+    }
 
     const setUserName = (name) => {
         userName.value = name;
-    } // 设置用户名
+        setToLocalStorage('userName', name);
+    };
 
-    const isLoggedInBoolean = ref(false);
+    const getUserName = () => {
+        console.warn("userName.value:" + userName.value);
+        return userName.value === "" ? "unknown" : userName.value;
+    };
 
-    const setLoginStatus = (value) => {
-        isLoggedInBoolean.value = value;
-    } // 设置是否登录
+    const setLoginStatus = (value, role) => {
+        isLoggedIn.value = value;
+        setToLocalStorage('isLoggedIn', value);
+        setToLocalStorage('role', role);
+    };
 
     const IsLoggedIn = () => {
-        console.log("是否登录:" + isLoggedInBoolean.value);
-        return isLoggedInBoolean.value;
-    } // 获取是否登录
+        console.warn("是否登录:" + isLoggedIn.value);
+        return isLoggedIn.value;
+    };
 
     const logout = () => {
-        setLoginStatus(false);
+        setLoginStatus(false, "");
         setUserName("");
-    } // 退出登录
+    };
 
-
-    // 返回共享数据和修改函数
     return {
-        setLoginStatus, IsLoggedIn, setUserName, getUserName, logout
-    }
+        setLoginStatus,
+        IsLoggedIn,
+        setUserName,
+        getUserName,
+        logout
+    };
 });

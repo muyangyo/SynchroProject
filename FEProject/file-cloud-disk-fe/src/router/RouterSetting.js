@@ -9,6 +9,7 @@ import syncFileManager from '@/views/manager/sync_manager/FileManager.vue';
 import cloudSettingManager from '@/views/manager/cloud_manager/SettingManager.vue';
 import cloudFileManager from '@/views/manager/cloud_manager/FileManager.vue';
 import outSideShareIndex from "@/views/user/OutsideshareIndex.vue";
+import {ROLES} from "@/stores/userStore.js";
 
 
 /**
@@ -91,22 +92,24 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach((to, from) => {
     const token = getCookie(tokenName);
+    const role = localStorage.getItem("role");
+
 
     if (to.meta.requiresAuth === false) {
         // 免登入路由
     } else if (to.path.startsWith(config.managerRouterBaseUrl)) {
         // 管理端登入验证
-        // if (token == null) {
-        //     // 未登录
-        //     console.warn('未登录')
-        //     if (to.path !== config.managerBaseUrl + '/login') {
-        //         // 跳转至登录页面
-        //         return {path: config.managerBaseUrl + '/login'}
-        //     }
-        // }
+        if (token == null || role !== ROLES.admin) {
+            // 未登录
+            console.warn('未登录')
+            if (to.path !== config.managerRouterBaseUrl + '/login') {
+                // 跳转至登录页面
+                return {path: config.managerRouterBaseUrl + '/login'}
+            }
+        }
     } else if (to.path.startsWith(config.userRouterBaseUrl)) {
         // 用户端登入验证
-        if (token == null) {
+        if (token == null || role !== ROLES.user) {
             // 未登录
             console.warn('未登录')
             if (to.path !== config.userRouterBaseUrl + '/login') {
