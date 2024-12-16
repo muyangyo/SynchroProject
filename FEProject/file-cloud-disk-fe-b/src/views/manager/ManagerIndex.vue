@@ -176,7 +176,6 @@ const handleSelect = (index, indexPath) => {
 </script>
 
 <style lang="scss" scoped>
-
 .header-row {
   padding: 20px;
   background-color: #323333;

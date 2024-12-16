@@ -15,6 +15,7 @@ import java.util.LinkedList;
  * User: 沐阳Yo
  * Date: 2024/11/25
  * Time: 13:43
+ * desk: 挂载目录组件(屏蔽mapper层)
  */
 @Component
 @Slf4j
@@ -22,7 +23,7 @@ public class MountDirComponent {
     @Resource
     MountDirMapper mountDirMapper;
 
-    public LinkedList<String> getRootMountDir() { //TODO 限定挂载的必须是目录
+    public LinkedList<String> getRootMountDir() {
         MountDir mountDir = mountDirMapper.select();
         if (mountDir == null) {
             return new LinkedList<>();
@@ -36,7 +37,7 @@ public class MountDirComponent {
 
         MountDir mountDir = new MountDir();
         mountDir.setDirList(dirList);
-        if (getRootMountDir().size() == 0) {
+        if (getRootMountDir().isEmpty()) {
             //如果是第一次写入则插入
             mountDirMapper.insert(mountDir);
         } else {
