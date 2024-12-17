@@ -81,36 +81,6 @@ public class UserService {
 
     }
 
-
-    /**
-     * 创建用户
-     *
-     * @param username 用户名
-     * @param password 密码
-     * @param key      邀请码
-     * @return 创建结果
-     */
-    public Result createUser(String username, String password, String key) { //TODO 这个方法以后只能由管理员调用，需要权限控制
-        if (!key.equals("123456")) {
-            return Result.fail("邀请码错误");
-        }
-
-        String permissions = "rwd";// TODO 这里应该调用权限服务，获取用户权限
-        // 1. n: 没有权限 2. r:读权限 3. w:写权限 4. d:删除权限
-
-        User user = userMapper.selectByUsername(username); // 判断用户名是否存在
-        if (user == null) {
-            String encipher = MD5Utils.encipher(password);
-            int i = userMapper.numberOfUser() + 1;
-            user = new User(Integer.toString(i), username, encipher, new Date(), new Date(), 0, permissions);
-            userMapper.insertByDynamicCondition(user);
-            return Result.success(true);
-        } else {
-            return Result.fail("用户名已存在");
-        }
-    }
-
-
     /**
      * 生成公钥和私钥，并缓存私钥
      *

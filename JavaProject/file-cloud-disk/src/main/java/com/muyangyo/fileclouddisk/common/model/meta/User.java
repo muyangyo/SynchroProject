@@ -17,7 +17,7 @@ public class User {
     private Date lastLoginTime; // 最后登录时间
     private Integer accountStatus; // 账户状态 0-注销 1-正常
     /**
-     * 1. n: 没有权限
+     * 1. 空的话: 没有权限
      * 2. r:读权限
      * 3. w:写权限
      * 4. d:删除权限
@@ -35,4 +35,5 @@ public class User {
     public Boolean haveDeletePermission() {
         return permissions.contains("d");
     }
+
 }

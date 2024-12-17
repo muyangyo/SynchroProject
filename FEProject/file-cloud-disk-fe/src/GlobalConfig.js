@@ -7,6 +7,11 @@ const config = {
     managerRouterBaseUrl: "/manager"
 }
 
+// 全局变量名
+export const globalVariable = {
+    ADMIN_OPERATION_IS_OPEN: "ADMIN_OPERATION_IS_OPEN",
+};
+
 /**
  * 初始化主题
  * @returns toggleDark - 返回一个 toggleDark 函数, 用于控制暗黑模式( config.theme 为空时生效 )

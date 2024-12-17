@@ -1,5 +1,6 @@
 package com.muyangyo.fileclouddisk.manager.controller;
 
+import com.muyangyo.fileclouddisk.common.aspect.annotations.LocalOperation;
 import com.muyangyo.fileclouddisk.common.config.Setting;
 import com.muyangyo.fileclouddisk.common.model.dto.LoginDTO;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
@@ -33,9 +34,15 @@ public class AdminController {
     private Setting setting;
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
+    @LocalOperation
     public Result login(@RequestBody LoginDTO loginDTO, HttpServletRequest request, HttpServletResponse response) {
         if (setting.isLoginAndRegisterUseEncrypt()) {
             adminService.decryptLogin(loginDTO, NetworkUtils.getClientIp(request));// 解密登录信息
+        }
+        if (setting.isLocalOperationOnly()) {
+            if (!NetworkUtils.isLocalhost(request)) {
+                return Result.fail("登录失败!请使用局域网登录!", 401);
+            }
         }
 
         // 有密钥则创建新用户
@@ -64,10 +71,16 @@ public class AdminController {
     }
 
     @RequestMapping(value = "/getPublicKey", method = RequestMethod.GET)
+    @LocalOperation
     public Result getPublicKey(HttpServletRequest request) {
         if (setting.isLoginAndRegisterUseEncrypt())
             return adminService.getPublicKey(NetworkUtils.getClientIp(request));
         else
             return Result.success("NONE");
+    }
+
+    @RequestMapping(value = "/remoteOperationIsOpen", method = RequestMethod.GET)
+    public Result remoteOperationIsOpen(HttpServletRequest request) {
+        return Result.success(!setting.isLocalOperationOnly());
     }
 }

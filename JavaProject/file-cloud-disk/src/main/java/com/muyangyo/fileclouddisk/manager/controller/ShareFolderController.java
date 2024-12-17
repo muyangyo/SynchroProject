@@ -1,5 +1,7 @@
 package com.muyangyo.fileclouddisk.manager.controller;
 
+import com.muyangyo.fileclouddisk.common.aspect.annotations.LocalOperation;
+import com.muyangyo.fileclouddisk.common.config.Setting;
 import com.muyangyo.fileclouddisk.common.model.dto.FilePathDTO;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
 import com.muyangyo.fileclouddisk.common.utils.FileUtils;
@@ -18,14 +20,28 @@ import javax.annotation.Resource;
  */
 @RestController
 @RequestMapping("/shareFolderManager")
+@LocalOperation
 public class ShareFolderController {
 
     @Resource
     private ShareFolderService shareFolderService;
 
+    @Resource
+    private Setting setting;
+
     @PostMapping("/addShareFolder")
-    public Result addShareFolder() {
-        return shareFolderService.addNewShareFolder();
+    public Result addShareFolder(@RequestBody(required = false) FilePathDTO filePathDTO) {
+        if (filePathDTO != null && StringUtils.hasLength(filePathDTO.getPath())) { // 如果是通过路径来增加的话,有两种情况: 1.系统开启了远程添加 2.系统关闭了远程添加
+            if (setting.isLocalOperationOnly()) { // 如果有限制只能本地操作
+                return Result.fail("不支持远程操作!");
+            }
+            // 远程添加
+            String path = FileUtils.normalizePath(filePathDTO.getPath());
+            return shareFolderService.addNewShareFolderByPath(path);
+        } else {
+            // 是本地请求则直接打开选择框
+            return shareFolderService.addNewShareFolder();
+        }
     }
 
     @GetMapping("/getShareFolderList")

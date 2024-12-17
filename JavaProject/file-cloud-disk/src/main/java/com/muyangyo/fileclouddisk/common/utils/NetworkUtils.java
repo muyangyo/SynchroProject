@@ -2,6 +2,7 @@ package com.muyangyo.fileclouddisk.common.utils;
 
 
 import com.muyangyo.fileclouddisk.common.exception.CanNotGetLocalIP;
+import lombok.SneakyThrows;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
@@ -10,6 +11,13 @@ import java.net.SocketException;
 import java.util.Enumeration;
 
 public class NetworkUtils {
+
+    @SneakyThrows // 在前端有端口映射时无效
+    public static boolean isLocalhost(HttpServletRequest request) {
+        String remoteAddr = request.getRemoteAddr();
+        InetAddress inetAddress = InetAddress.getByName(remoteAddr);
+        return inetAddress.isLoopbackAddress();
+    }
 
     /**
      * 获取服务器的局域网IP地址

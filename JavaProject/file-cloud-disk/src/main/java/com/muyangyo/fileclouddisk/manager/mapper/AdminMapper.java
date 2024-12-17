@@ -3,13 +3,15 @@ package com.muyangyo.fileclouddisk.manager.mapper;
 import com.muyangyo.fileclouddisk.common.model.meta.Admin;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.LinkedList;
+
 @Mapper
 public interface AdminMapper {
     Admin selectByUserId(String userId);
 
     Admin selectByUsername(String username);
 
-    Admin selectByDynamicCondition(Admin admin);
+    LinkedList<Admin> selectByDynamicCondition(Admin admin);
 
     Integer updateByUserId(Admin admin);
 

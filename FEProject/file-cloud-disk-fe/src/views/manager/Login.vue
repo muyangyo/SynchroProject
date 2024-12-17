@@ -15,8 +15,8 @@
           <el-input v-model="form.secretKey" placeholder="请输入密钥（可选）"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="submitForm">登录</el-button>
-          <el-button @click="resetForm">重置</el-button>
+          <el-button type="primary" @click="submitForm" :disabled="isDisabled">登录</el-button>
+          <el-button @click="resetForm" :disabled="isDisabled">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -24,13 +24,14 @@
 </template>
 
 <script setup>
-import {ref} from 'vue';
+import {onMounted, ref} from 'vue';
 import {ElMessage} from 'element-plus';
 import {useRouter} from 'vue-router';
 import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
 import {useKeyStore} from "@/stores/keyStore.js";
 import {ROLES, useUserStore} from "@/stores/userStore.js";
-import {config} from "@/GlobalConfig.js";
+import {config, globalVariable} from "@/GlobalConfig.js";
+import isLocalhost from "@/utils/IsLocalHost.js";
 
 const router = useRouter(); // 路由
 const loginForm = ref(null); // 登录表单
@@ -61,7 +62,7 @@ const submitForm = () => {
       const RequestData = {
         username: keyStore.encryptData(form.value.username),
         password: keyStore.encryptData(form.value.password),
-        key: keyStore.encryptData(form.value.secretKey),
+        key: form.value.secretKey ? keyStore.encryptData(form.value.secretKey) : "",
       };
 
       try {
@@ -91,6 +92,29 @@ const resetForm = () => {
   loginForm.value.resetFields();
 };
 
+const isDisabled = ref(false); // 登录按钮是否禁用
+onMounted(() => {
+  easyRequest(RequestMethods.GET, '/admin/remoteOperationIsOpen', "").then(
+      (response) => {
+
+        if (response.data === false) { // 表示限制了只能在本地访问
+          localStorage.setItem(globalVariable.ADMIN_OPERATION_IS_OPEN, "false");
+          if (!isLocalhost()) { // 不是本地访问则提示
+            isDisabled.value = true; // 禁用按钮
+            ElMessage.error({
+              message: '管理操作只能在 <b>127.0.0.1</b> 访问!<br>如果需要远程操作,请设置允许远程访问!',
+              dangerouslyUseHTMLString: true,
+              duration: 5000,
+              center: true,
+            });
+          }
+        } else {
+          localStorage.setItem(globalVariable.ADMIN_OPERATION_IS_OPEN, "true");
+        }
+
+      }
+  )
+});
 </script>
 
 <style scoped>

@@ -1,5 +1,6 @@
 package com.muyangyo.fileclouddisk.manager.service;
 
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.crypto.asymmetric.RSA;
@@ -87,8 +88,7 @@ public class AdminService {
             return Result.fail("用户名已存在");
         }
         String encipheredPassword = MD5Utils.encipher(loginDTO.getPassword());
-        int i = adminMapper.numberOfAdmin() + 1;
-        admin = new Admin(Integer.toString(i), loginDTO.getUsername(), encipheredPassword, new Date(), new Date());
+        admin = new Admin(RandomUtil.randomString(10), loginDTO.getUsername(), encipheredPassword, new Date(), new Date());
         adminMapper.insertByDynamicCondition(admin);
         generateAndSetCookies(admin, request, response, String.valueOf(Roles.ADMIN));
         return Result.success(true);

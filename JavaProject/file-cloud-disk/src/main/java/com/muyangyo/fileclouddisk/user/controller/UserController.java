@@ -51,22 +51,6 @@ public class UserController {
         return Result.fail("登录失败!用户名或密码为空!", 401);
     }
 
-    @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public Result register(@RequestBody LoginDTO loginDTO, HttpServletRequest request) {
-//        userService.decryptLogin(login, NetworkUtils.getClientIp(request));// 解密登录信息  TODO: 记得释放
-
-        if (StringUtils.hasLength(loginDTO.getUsername()) && StringUtils.hasLength(loginDTO.getPassword()) && StringUtils.hasLength(loginDTO.getKey())) {
-            if (loginDTO.getUsername().length() > 30) {
-                return Result.fail("创建新用户失败!用户名不能超过30个字符!", 401);
-            }
-            if (loginDTO.getPassword().length() > 32) {
-                return Result.fail("创建新用户失败!密码不能超过32个字符!", 401);
-            }
-            return userService.createUser(loginDTO.getUsername(), loginDTO.getPassword(), loginDTO.getKey());
-        }
-        return Result.fail("创建新用户失败!密钥有误或用户名或密码为空!", 401);
-    }
-
 
     @RequestMapping(value = "/getPublicKey", method = RequestMethod.GET)
     public Result getPublicKey(HttpServletRequest request) {

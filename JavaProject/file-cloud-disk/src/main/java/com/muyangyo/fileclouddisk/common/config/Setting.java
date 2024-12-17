@@ -57,6 +57,9 @@ public class Setting {
     @Value("${securityOptions.dataComponent}")
     private boolean dataUseEncrypt;
 
+    @Value("${securityOptions.localOperationOnly}")
+    private boolean localOperationOnly;
+
     private EasyTimedCache<String, Integer> loginAndRegisterTimeCache; // 登录和注册时间缓存
     private EasyTimedCache<String, PrivateKey> rasCache; // RSA密钥缓存
     @Value("${maxNumberOfAttempts}")
@@ -110,27 +113,27 @@ public class Setting {
         File shareTempFolder = new File(Setting.USER_SHARE_TEMP_DIR_PATH);
         if (shareTempFolder.exists()) {
             settingThreadPool.submit(() -> {
-            log.info("正在扫描分享缓存文件夹: {}", shareTempFolder.getPath());
-            ShareFile shareFile = new ShareFile();
-            List<ShareFile> shareFileList = shareFileMapper.selectAll();
+                log.info("正在扫描分享缓存文件夹: {}", shareTempFolder.getPath());
+                ShareFile shareFile = new ShareFile();
+                List<ShareFile> shareFileList = shareFileMapper.selectAll();
 
-            for (ShareFile file : shareFileList) {
-                LocalDateTime createTime = file.getCreateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-                if ((createTime.plusMinutes(maximumSurvivalTimeOfSharedFile)).isBefore(LocalDateTime.now())) {
-                    try {
-                        log.warn("扫描时发现超过最大存活时间的分享文件,分享码为: {} ,文件路径为: {} ,已自动删除!", file.getCode(), file.getFilePath());
-                        FileUtils.delete(file.getFilePath());
-                        shareFileMapper.deleteByCode(file.getCode());
-                        if (shareTempFolder.listFiles() == null || Objects.requireNonNull(shareTempFolder.listFiles()).length == 0){
-                            //如果文件夹是空的,则删除文件夹
-                            FileUtils.delete(shareTempFolder);
+                for (ShareFile file : shareFileList) {
+                    LocalDateTime createTime = file.getCreateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                    if ((createTime.plusMinutes(maximumSurvivalTimeOfSharedFile)).isBefore(LocalDateTime.now())) {
+                        try {
+                            log.warn("扫描时发现超过最大存活时间的分享文件,分享码为: {} ,文件路径为: {} ,已自动删除!", file.getCode(), file.getFilePath());
+                            FileUtils.delete(file.getFilePath());
+                            shareFileMapper.deleteByCode(file.getCode());
+                            if (shareTempFolder.listFiles() == null || Objects.requireNonNull(shareTempFolder.listFiles()).length == 0) {
+                                //如果文件夹是空的,则删除文件夹
+                                FileUtils.delete(shareTempFolder);
+                            }
+                        } catch (IOException e) {
+                            log.error("删除超过最大存活时间的分享文件失败: {} ,原因: {}", file, e.getMessage());
+                            throw new RuntimeException(e);
                         }
-                    } catch (IOException e) {
-                        log.error("删除超过最大存活时间的分享文件失败: {} ,原因: {}", file, e.getMessage());
-                        throw new RuntimeException(e);
                     }
                 }
-            }
             });
         }
     }
@@ -139,7 +142,8 @@ public class Setting {
         return Stream.of(
                 port, applicationName, systemType, serverIP, completeServerURL, invitationCode,
                 loginAndRegisterTimeCache, rasCache, maxNumberOfAttempts, signature, tokenLifeTime, videoCache, fileCache
-                , videoCacheSize, downloadFileCacheSize, downloadFileCacheExpireTime, settingThreadPool,maximumSurvivalTimeOfSharedFile
+                , videoCacheSize, downloadFileCacheSize, downloadFileCacheExpireTime, settingThreadPool, maximumSurvivalTimeOfSharedFile,
+                localOperationOnly
         ).anyMatch(value -> {
             if (value == null) {
                 return true;

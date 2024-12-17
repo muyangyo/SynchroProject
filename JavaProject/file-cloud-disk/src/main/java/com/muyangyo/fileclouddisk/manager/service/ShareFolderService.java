@@ -40,7 +40,6 @@ public class ShareFolderService {
         if (result == JFileChooser.APPROVE_OPTION) { //用户点击了确定按钮
             File selectedFolder = fileChooser.getSelectedFile();
             String path = FileUtils.getAbsolutePath(selectedFolder); // 格式化绝对路径
-            log.info("选择的文件夹: " + path);
             shareFolderMapper.insertNewShareFolder(path);
             return Result.success(true);
         } else {
@@ -85,6 +84,16 @@ public class ShareFolderService {
             return Result.success(true);
         } else {
             return Result.fail("该文件夹不在共享文件夹列表中!");
+        }
+    }
+
+    public Result addNewShareFolderByPath(String path) {
+        File newFolder = new File(path);
+        if (newFolder.exists() && newFolder.isDirectory()) {
+            shareFolderMapper.insertNewShareFolder(path);
+            return Result.success(true);
+        } else {
+            return Result.fail("非法路径!");
         }
     }
 }
