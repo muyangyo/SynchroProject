@@ -293,11 +293,9 @@ const confirmUserChangeAction = () => {
           userData.password = keyStore.encryptData(currentUser.value.password); // 加密密码
         }
 
-        console.warn(userData);
 
         if (isEdit.value) {
           // 修改用户
-          console.warn(userData);
           easyRequest(RequestMethods.POST, "/userManager/updateUser", userData, false, true).then(
               (response) => {
                 if (response.data === true && response.statusCode === "SUCCESS") {

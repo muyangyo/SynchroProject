@@ -29,14 +29,13 @@ import {ElMessage} from 'element-plus';
 import {useRouter} from 'vue-router';
 import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
 import {useKeyStore} from "@/stores/keyStore.js";
-import {ROLES, useUserStore} from "@/stores/userStore.js";
 import {config, globalVariable} from "@/GlobalConfig.js";
 import isLocalhost from "@/utils/IsLocalHost.js";
+import {UserSession, ROLES} from "@/utils/UserLocalStoreUtils.js";
 
 const router = useRouter(); // 路由
 const loginForm = ref(null); // 登录表单
 const keyStore = useKeyStore(); // 密钥存储
-const userStore = useUserStore(); // 用户存储
 
 
 const form = ref({
@@ -69,8 +68,7 @@ const submitForm = () => {
         // 使用 easyRequest 发送登录请求,返回响应
         const response = await easyRequest(RequestMethods.POST, '/admin/login', RequestData);
         if (response.data === true && response.statusCode === "SUCCESS") {
-          userStore.setLoginStatus(true, ROLES.admin);
-          userStore.setUserName(form.value.username);
+          UserSession.login(ROLES.admin, form.value.username, "");
           ElMessage({
             message: `欢迎回来, ${form.value.username}`,
             type: 'success',

@@ -1,5 +1,6 @@
 package com.muyangyo.fileclouddisk.manager.controller;
 
+import com.muyangyo.fileclouddisk.common.aspect.annotations.AdminRequired;
 import com.muyangyo.fileclouddisk.common.config.Setting;
 import com.muyangyo.fileclouddisk.common.model.dto.UserDTO;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
@@ -22,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @Slf4j
 @RequestMapping("/userManager")
+@AdminRequired
 public class UserManagerController {
     @Resource
     private UserManagerService userManagerService;

@@ -54,8 +54,9 @@ public class Setting {
     @Value("${securityOptions.userComponent}")
     private boolean loginAndRegisterUseEncrypt;
 
-    @Value("${securityOptions.dataComponent}")
-    private boolean dataUseEncrypt;
+/*    @Value("${securityOptions.dataComponent}") todo: 待完善
+  dataComponent: false # 文件加密(不建议开启,消耗性能过大)
+    private boolean dataUseEncrypt; // 文件数据是否加密*/
 
     @Value("${securityOptions.localOperationOnly}")
     private boolean localOperationOnly;

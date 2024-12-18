@@ -220,9 +220,9 @@ import router, {deleteCookie, tokenName} from "@/router/RouterSetting.js";
 import {sizeTostr} from "@/utils/FileSizeConverter.js";
 import {ElLoading, ElMessage, ElMessageBox} from 'element-plus';
 import useClipboard from 'vue-clipboard3'; // 引入 vue-clipboard3
-import {useUserStore} from "@/stores/userStore.js";
 import UserShareManager from "@/components/user/UserShareManager.vue";
 import SparkMD5 from 'spark-md5';
+import {UserSession} from "@/utils/UserLocalStoreUtils.js";
 
 
 // 面包屑数据
@@ -483,7 +483,6 @@ const calculateMd5 = async (chunk) => {
 const cancelUpload = () => {
   uploadCanceled.value = true;
   uploadDialog.visible = false;
-  ElMessage.warning('上传已取消');
 };
 
 // 上传弹窗关闭前的处理
@@ -776,8 +775,7 @@ const handleDelete = (index, row) => {
 };
 
 const logout = () => {
-  const userStore = useUserStore(); // 用户存储
-  userStore.logout();
+  UserSession.logout();
   deleteCookie(tokenName);
   router.push("/user/login");
 

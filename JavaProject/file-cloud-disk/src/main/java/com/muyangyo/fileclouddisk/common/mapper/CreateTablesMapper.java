@@ -19,5 +19,7 @@ public interface CreateTablesMapper {
 
     Integer createShareFileTable(); // 创建分享文件表
 
+    Integer createOperationLogTable(); // 创建操作日志表
+
 //    Integer BlackListIPTable(); // 创建黑名单IP表
 }

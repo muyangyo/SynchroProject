@@ -2,6 +2,7 @@ package com.muyangyo.fileclouddisk.user.controller;
 
 import cn.hutool.core.util.RandomUtil;
 import com.muyangyo.fileclouddisk.common.aspect.HandlerFileBinConfig;
+import com.muyangyo.fileclouddisk.common.aspect.annotations.UserOperationLimit;
 import com.muyangyo.fileclouddisk.common.config.Setting;
 import com.muyangyo.fileclouddisk.common.model.dto.CreateFolderDTO;
 import com.muyangyo.fileclouddisk.common.model.dto.FilePathDTO;
@@ -57,6 +58,7 @@ public class FileController {
      * @return 文件列表
      */
     @SneakyThrows
+    @UserOperationLimit("r")
     @PostMapping(value = "/getFileList")
     public Result getFileList(@RequestBody FilePathDTO filePath) {
         String path = URLDecoder.decode(filePath.getPath(), StandardCharsets.UTF_8.toString());// 解码路径(防止中文乱码)
@@ -72,6 +74,7 @@ public class FileController {
      * @return 创建结果
      */
     @PostMapping("/createFolder")
+    @UserOperationLimit("w")
     public Result createFolder(@RequestBody CreateFolderDTO createFolderDTO) {
         String parentPath = FileUtils.normalizePath(createFolderDTO.getParentPath());
 
@@ -84,6 +87,7 @@ public class FileController {
     }
 
     @PostMapping("/uploadChunk")
+    @UserOperationLimit("w")
     public Result uploadChunk(
             @RequestParam("parentPath") String parentPath,// 父路径
             @RequestParam("file") MultipartFile file, // 上传的文件
@@ -97,20 +101,24 @@ public class FileController {
     }
 
     @PostMapping(value = "/previewDocx")
+    @UserOperationLimit("r")
     public void previewDocx(@RequestBody FilePathDTO filePath, HttpServletResponse response) throws IOException {
         fileService.previewFile(filePath.getPath(), response);
     }
 
     @PostMapping(value = "/previewImage")
+    @UserOperationLimit("r")
     public void previewImage(@RequestBody FilePathDTO filePath, HttpServletResponse response) throws IOException {
         fileService.previewFile(filePath.getPath(), response);
     }
 
+    @UserOperationLimit("r")
     @PostMapping("/previewAudio")
     public void previewAudio(@RequestBody FilePathDTO filePath, HttpServletResponse response) throws IOException {
         fileService.previewFile(filePath.getPath(), response);
     }
 
+    @UserOperationLimit("r")
     @PostMapping("/getPreviewAudioInfo")
     public Result getPreviewAudioName(@RequestBody FilePathDTO filePath) {
         String path = FileUtils.normalizePath(filePath.getPath());
@@ -119,16 +127,19 @@ public class FileController {
         return Result.success(fileInfo);
     }
 
+    @UserOperationLimit("r")
     @PostMapping("/previewPdf")
     public void previewPdf(@RequestBody FilePathDTO filePath, HttpServletResponse response) throws IOException {
         fileService.previewFile(filePath.getPath(), response);
     }
 
+    @UserOperationLimit("r")
     @PostMapping("/previewTxt")
     public void previewTxt(@RequestBody FilePathDTO filePath, HttpServletResponse response) throws IOException {
         fileService.previewFile(filePath.getPath(), response);
     }
 
+    @UserOperationLimit("r")
     @PostMapping("/preparingVideo")
     public Result preparingVideo(@RequestBody FilePathDTO filePath) {
         String path = FileUtils.normalizePath(filePath.getPath());
@@ -151,6 +162,7 @@ public class FileController {
         return Result.error("无法准备预览该文件");
     }
 
+    @UserOperationLimit("r")
     @GetMapping(value = "/previewVideo")
     public void video(String vid, HttpServletRequest request, HttpServletResponse response) throws ServletException {
         File file = setting.getVideoCache().get(vid);// 获取缓存的视频文件
@@ -172,6 +184,7 @@ public class FileController {
     }
 
 
+    @UserOperationLimit("r")
     @SneakyThrows
     @PostMapping(value = "/preparingDownloadFile")
     public Result preparingDownloadFile(@RequestBody FilePathDTO filePath) {
@@ -209,6 +222,7 @@ public class FileController {
         }
     }
 
+    @UserOperationLimit("r")
     @SneakyThrows
     @GetMapping(value = "/download")
     public void downloadFile(@RequestParam String fid, HttpServletResponse response, HttpServletRequest request) {
@@ -243,6 +257,7 @@ public class FileController {
      * @param renameFileDTO 文件路径和新名称
      * @return 重命名结果
      */
+    @UserOperationLimit("w")
     @SneakyThrows
     @PostMapping("/renameFile")
     public Result renameFile(@RequestBody RenameFileDTO renameFileDTO) {
@@ -273,6 +288,7 @@ public class FileController {
      * @return 删除结果
      */
     @SneakyThrows
+    @UserOperationLimit("d")
     @PostMapping("/deleteFile")
     public Result deleteFile(@RequestBody FilePathDTO filePathDTO) {
         String path = FileUtils.normalizePath(filePathDTO.getPath());
@@ -297,6 +313,7 @@ public class FileController {
         }
     }
 
+    @UserOperationLimit("w")
     @PostMapping("/createShareFile") // 创建分享文件(使用的绝对路径)
     public Result createShareFile(@RequestBody FilePathDTO filePathDTO, HttpServletRequest request) {
         String path = FileUtils.normalizePath(filePathDTO.getPath());
@@ -316,6 +333,7 @@ public class FileController {
         return Result.fail("文件不存在");
     }
 
+    @UserOperationLimit("d")
     @DeleteMapping("/deleteShareFile")
     public Result deleteShareFile(@RequestParam String shareCode, HttpServletRequest request) {
 
@@ -328,6 +346,7 @@ public class FileController {
         return Result.success("删除成功");
     }
 
+    @UserOperationLimit("d")
     @DeleteMapping("/batchDeleteShareFile")
     public Result batchDeleteShareFile(@RequestParam Boolean isDeleteAll, HttpServletRequest request) {
 
@@ -341,6 +360,7 @@ public class FileController {
     }
 
     @GetMapping("/getShareFileList")
+    @UserOperationLimit("r")
     public Result getShareFileList(HttpServletRequest request, @RequestParam(required = false) Integer page, @RequestParam(required = false) Integer pageSize) {
         if (page == null) {
             page = 1;

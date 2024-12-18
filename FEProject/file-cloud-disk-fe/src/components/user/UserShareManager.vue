@@ -108,10 +108,7 @@ const handleDelete = (row) => {
         });
         getDate(shareData.value.currentPage);
       } else {
-        ElMessage({
-          type: 'error',
-          message: '删除失败',
-        });
+        ElMessage.error(response.errMsg ? response.errMsg : '删除失败');
       }
     });
 
@@ -137,10 +134,7 @@ const handleBatchDeleteShareFile = (isDeleteAll) => {
         });
         getDate(shareData.value.currentPage);
       } else {
-        ElMessage({
-          type: 'error',
-          message: '删除失败',
-        });
+        ElMessage.error(response.errMsg ? response.errMsg : '删除失败');
       }
     })
   })

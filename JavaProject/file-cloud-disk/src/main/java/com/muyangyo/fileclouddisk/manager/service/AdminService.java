@@ -51,7 +51,7 @@ public class AdminService {
             admin.setLastLoginTime(new Date());
             adminMapper.updateByUserId(admin);
 
-            generateAndSetCookies(admin, request, response, "admin");
+            generateAndSetCookies(admin, request, response, String.valueOf(Roles.ADMIN));
 
             return Result.success(true);
         } else {

@@ -68,12 +68,12 @@
         </template>
 
         <!-- 二级菜单 -->
-        <el-menu-item index="2-1" @click="navigateTo('/manager/cloud_manager/cloud_file_manager')">
+        <el-menu-item index="2-1" @click="navigateTo('/manager/cloud_manager/cloud_log_manager')">
           <template #default>
             <el-icon>
-              <Folder/>
+              <List/>
             </el-icon>
-            文件操作日志
+            操作日志
           </template>
         </el-menu-item>
         <el-menu-item index="2-2" @click="navigateTo('/manager/cloud_manager/cloud_setting_manager')">
@@ -98,10 +98,10 @@
 <script setup>
 import {markRaw, ref} from 'vue';
 import {useRouter} from 'vue-router';
-import {useUserStore} from "@/stores/userStore.js";
 import {ElMessage, ElMessageBox} from 'element-plus';
 import {InfoFilled} from "@element-plus/icons-vue";
 import {deleteCookie, tokenName} from "@/router/RouterSetting.js";
+import {UserSession} from "@/utils/UserLocalStoreUtils.js";
 
 
 const router = useRouter();
@@ -115,10 +115,8 @@ const toggleMenu = () => {
 };
 
 // 用户登录状态
-const userStore = useUserStore();
-
-const isLoggedIn = userStore.IsLoggedIn();
-const userName = userStore.getUserName();
+const isLoggedIn = UserSession.isLoggedIn();
+const userName = UserSession.getUserName();
 
 const confirmLogout = () => {
   ElMessageBox.confirm(
@@ -138,8 +136,7 @@ const confirmLogout = () => {
 };
 
 const logout = () => {
-  const userStore = useUserStore(); // 用户存储
-  userStore.logout();
+  UserSession.logout();
   deleteCookie(tokenName);
   router.push("/manager/login");
 

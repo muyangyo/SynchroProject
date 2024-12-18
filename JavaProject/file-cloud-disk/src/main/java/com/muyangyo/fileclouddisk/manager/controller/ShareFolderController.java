@@ -1,15 +1,18 @@
 package com.muyangyo.fileclouddisk.manager.controller;
 
+import com.muyangyo.fileclouddisk.common.aspect.annotations.AdminRequired;
 import com.muyangyo.fileclouddisk.common.aspect.annotations.LocalOperation;
 import com.muyangyo.fileclouddisk.common.config.Setting;
 import com.muyangyo.fileclouddisk.common.model.dto.FilePathDTO;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
 import com.muyangyo.fileclouddisk.common.utils.FileUtils;
+import com.muyangyo.fileclouddisk.common.utils.NetworkUtils;
 import com.muyangyo.fileclouddisk.manager.service.ShareFolderService;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 创建于 IntelliJ IDEA.
@@ -21,6 +24,7 @@ import javax.annotation.Resource;
 @RestController
 @RequestMapping("/shareFolderManager")
 @LocalOperation
+@AdminRequired
 public class ShareFolderController {
 
     @Resource
@@ -30,16 +34,16 @@ public class ShareFolderController {
     private Setting setting;
 
     @PostMapping("/addShareFolder")
-    public Result addShareFolder(@RequestBody(required = false) FilePathDTO filePathDTO) {
-        if (filePathDTO != null && StringUtils.hasLength(filePathDTO.getPath())) { // 如果是通过路径来增加的话,有两种情况: 1.系统开启了远程添加 2.系统关闭了远程添加
-            if (setting.isLocalOperationOnly()) { // 如果有限制只能本地操作
-                return Result.fail("不支持远程操作!");
-            }
+    public Result addShareFolder(@RequestBody(required = false) FilePathDTO filePathDTO, HttpServletRequest request) {
+        if (filePathDTO != null && StringUtils.hasLength(filePathDTO.getPath())) {
             // 远程添加
             String path = FileUtils.normalizePath(filePathDTO.getPath());
             return shareFolderService.addNewShareFolderByPath(path);
         } else {
-            // 是本地请求则直接打开选择框
+            if (!NetworkUtils.isLocalhost(request)) {
+                return Result.fail("不支持远程操作!");
+            }
+            // 是本地请求则打开选择框
             return shareFolderService.addNewShareFolder();
         }
     }
@@ -50,7 +54,11 @@ public class ShareFolderController {
     }
 
     @PostMapping("/openFolder")
-    public Result openFolder(@RequestBody FilePathDTO filePathDTO) {
+    public Result openFolder(@RequestBody FilePathDTO filePathDTO, HttpServletRequest request) {
+        if (!NetworkUtils.isLocalhost(request)) {
+            return Result.fail("不支持远程操作!");
+        }
+
         String path = filePathDTO.getPath();
         if (StringUtils.hasLength(path)) {
             path = FileUtils.normalizePath(path);

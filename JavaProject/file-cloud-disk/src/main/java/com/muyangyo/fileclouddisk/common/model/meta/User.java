@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -36,4 +38,11 @@ public class User {
         return permissions.contains("d");
     }
 
+    public Set<Character> getPermissionsSet() {
+        Set<Character> permissionSet = new HashSet<>();
+        for (Character c : permissions.toCharArray()) {
+            permissionSet.add(c);
+        }
+        return permissionSet;
+    }
 }

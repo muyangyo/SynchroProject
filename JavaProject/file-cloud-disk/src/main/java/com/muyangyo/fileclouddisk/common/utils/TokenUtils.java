@@ -75,7 +75,6 @@ public class TokenUtils {
     }
 
 
-
     /**
      * 从cookie中获取token
      *
@@ -94,18 +93,36 @@ public class TokenUtils {
     }
 
 
+    /**
+     * 解析Token并返回Claims
+     *
+     * @param token token字符串
+     * @return Optional<Claims>
+     */
+    private static Optional<Claims> parseToken(String token) {
+        try {
+            JwtParser parser = Jwts.parserBuilder().setSigningKey(KEY).build();
+            Claims body = parser.parseClaimsJws(token).getBody();
+            return Optional.of(body);
+        } catch (Exception e) {
+            log.warn("解析Token时出现错误: {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class TokenLoad {
         private String userId; // 用户id
-        private String role = "user"; // 角色
+        private String role = "user"; // 角色 admin/user
         private String username; // 用户名
         private String ip; // 登入ip地址
         private String loginTime; // 登入时间
 
         /**
          * 根据TokenLoad生成Map形式的载荷
+         *
          * @param tokenLoad TokenLoad对象
          * @return Map形式的载荷
          */
@@ -133,23 +150,6 @@ public class TokenUtils {
             tokenLoad.setIp(map.get("ip"));
             tokenLoad.setLoginTime(map.get("loginTime"));
             return tokenLoad;
-        }
-    }
-
-    /**
-     * 解析Token并返回Claims
-     *
-     * @param token token字符串
-     * @return Optional<Claims>
-     */
-    private static Optional<Claims> parseToken(String token) {
-        try {
-            JwtParser parser = Jwts.parserBuilder().setSigningKey(KEY).build();
-            Claims body = parser.parseClaimsJws(token).getBody();
-            return Optional.of(body);
-        } catch (Exception e) {
-            log.warn("解析Token时出现错误: {}", e.getMessage());
-            return Optional.empty();
         }
     }
 }

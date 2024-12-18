@@ -51,6 +51,7 @@ public class MetaDataBaseInitializer {
             createTablesMapper.createAdminTable();
             createTablesMapper.createUserTable();
             createTablesMapper.createShareFileTable();
+            createTablesMapper.createOperationLogTable();
             return true;
         } catch (Exception e) {
             log.error("创建数据库表失败！", e);

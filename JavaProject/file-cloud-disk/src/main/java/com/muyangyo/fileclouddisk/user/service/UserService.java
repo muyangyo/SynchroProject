@@ -74,7 +74,7 @@ public class UserService {
             cookie.setMaxAge(setting.getTokenLifeTime());
             response.addCookie(cookie);// 给前端验证token是否存在的
 
-            return Result.success(true);
+            return Result.success(user.getPermissions());
         } else {
             return Result.fail("用户名或密码错误");
         }

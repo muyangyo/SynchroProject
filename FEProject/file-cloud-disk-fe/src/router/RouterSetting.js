@@ -7,9 +7,9 @@ import syncSettingManager from '@/views/manager/sync_manager/SettingManager.vue'
 import syncFileManager from '@/views/manager/sync_manager/FileManager.vue';
 
 import cloudSettingManager from '@/views/manager/cloud_manager/SettingManager.vue';
-import cloudFileManager from '@/views/manager/cloud_manager/FileManager.vue';
+import operationLog from '@/views/manager/cloud_manager/OperationLog.vue';
 import outSideShareIndex from "@/views/user/OutsideshareIndex.vue";
-import {ROLES} from "@/stores/userStore.js";
+import {ROLES} from "@/utils/UserLocalStoreUtils.js";
 
 
 /**
@@ -43,10 +43,10 @@ const mangerUrlBaseRoutes = [
                     component: syncSettingManager,
                 },
                 {
-                    path: 'cloud_manager/cloud_file_manager', //云端文件管理
-                    component: cloudFileManager,
+                    path: 'cloud_manager/cloud_log_manager', //操作日志
+                    component: operationLog,
                 }, {
-                    path: 'cloud_manager/cloud_setting_manager', //云端设置管理
+                    path: 'cloud_manager/cloud_setting_manager', //云盘设置管理
                     component: cloudSettingManager,
                 },
             ]
