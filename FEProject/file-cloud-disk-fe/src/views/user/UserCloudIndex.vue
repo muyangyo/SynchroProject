@@ -10,14 +10,17 @@
         <div class="cloud-index-header">
           <h2 class="cloud-index-title">我的云盘</h2>
           <div class="cloud-index-actions">
-            <el-button type="primary" :icon="UploadFilled" v-if="route.fullPath !== config.userRouterBaseUrl"
+            <el-button type="primary" :icon="UploadFilled"
+                       v-if="route.fullPath !== config.userRouterBaseUrl && haveWritePermission"
                        @click="handleUploadFile()">
               上传文件
             </el-button>
-            <el-button type="primary" :icon="FolderAdd" v-if="route.fullPath !== config.userRouterBaseUrl"
+            <el-button type="primary" :icon="FolderAdd"
+                       v-if="route.fullPath !== config.userRouterBaseUrl && haveWritePermission"
                        @click="handleCreateFolder()">创建文件夹
             </el-button>
-            <el-button type="primary" :icon="Share" @click="showShareLinkList()">我的分享</el-button>
+            <el-button type="primary" :icon="Share" @click="showShareLinkList()" v-if="haveReadPermission">我的分享
+            </el-button>
             <el-button type="info" @click="logout()">退出</el-button>
           </div>
         </div>
@@ -63,30 +66,30 @@
                     scope.row.fileType.category !== FILE_CATEGORY.UNKNOWN &&
                     scope.row.fileType.category !== FILE_CATEGORY.COMPRESSED &&
                     scope.row.fileType.category !== FILE_CATEGORY.EXCEL &&
-                    scope.row.fileType.category !== FILE_CATEGORY.PPT"
+                    scope.row.fileType.category !== FILE_CATEGORY.PPT && haveReadPermission"
                     content="预览" placement="top" :show-arrow="false">
                   <el-button type="primary" size="small" :icon="DataAnalysis"
                              @click="handlePreview(scope.$index, scope.row)"/>
                 </el-tooltip>
 
-                <el-tooltip content="下载" placement="top" :show-arrow="false">
+                <el-tooltip content="下载" placement="top" :show-arrow="false" v-if="haveReadPermission">
                   <el-button type="success" size="small" :icon="Download"
                              @click="handleDownload(scope.$index, scope.row)"/>
                 </el-tooltip>
 
                 <el-tooltip content="重命名" placement="top" :show-arrow="false"
-                            v-if=" route.fullPath !== config.userRouterBaseUrl">
+                            v-if=" route.fullPath !== config.userRouterBaseUrl && haveWritePermission">
                   <el-button type="warning" size="small" :icon="EditPen"
                              @click="handleRename(scope.$index, scope.row)"/>
                 </el-tooltip>
 
                 <el-tooltip content="删除" placement="top" :show-arrow="false"
-                            v-if=" route.fullPath !== config.userRouterBaseUrl">
+                            v-if=" route.fullPath !== config.userRouterBaseUrl && haveDeletePermission">
                   <el-button type="danger" size="small" :icon="DeleteFilled"
                              @click="handleDelete(scope.$index, scope.row)"/>
                 </el-tooltip>
 
-                <el-tooltip content="分享" placement="top" :show-arrow="false">
+                <el-tooltip content="分享" placement="top" :show-arrow="false" v-if="haveWritePermission">
                   <el-button type="info" size="small" :icon="Share" @click="handleShare(scope.$index, scope.row)"/>
                 </el-tooltip>
 
@@ -203,7 +206,7 @@ import {
   Download,
   EditPen,
   FolderAdd,
-  Share,
+  Share, SuitcaseLine,
   UploadFilled
 } from '@element-plus/icons-vue';
 import VideoPreview from "@/components/user/videoPreview.vue";
@@ -224,6 +227,10 @@ import UserShareManager from "@/components/user/UserShareManager.vue";
 import SparkMD5 from 'spark-md5';
 import {UserSession} from "@/utils/UserLocalStoreUtils.js";
 
+// 权限相关变量
+const haveDeletePermission = ref(UserSession.getPermissions().includes("d"));
+const haveWritePermission = ref(UserSession.getPermissions().includes("w"));
+const haveReadPermission = ref(UserSession.getPermissions().includes("r"));
 
 // 面包屑数据
 const pathPartsForBreadCrumb = ref([]);
@@ -270,14 +277,18 @@ onMounted(() => {
     return;
   }
 
-  easyRequest(RequestMethods.POST, "/file/getFileList", {path: config.userRouterBaseUrl}, false, true).then(response => {
-    response.data.forEach((item) => {
-      if (item.fileType.category === FILE_CATEGORY.FOLDER) {
-        item.fileSize = ''; // 目录不显示大小
-      }
-    }); // 先处理一下目录
-    tableData.value = response.data;
-  });
+  if (haveReadPermission.value) {
+    easyRequest(RequestMethods.POST, "/file/getFileList", {path: config.userRouterBaseUrl}, false, true).then(response => {
+      response.data.forEach((item) => {
+        if (item.fileType.category === FILE_CATEGORY.FOLDER) {
+          item.fileSize = ''; // 目录不显示大小
+        }
+      }); // 先处理一下目录
+      tableData.value = response.data;
+    });
+  } else {
+    console.warn("没有读取权限，无法获取文件列表!")
+  }
 });
 
 watch(() => route.fullPath, () => {
@@ -384,7 +395,6 @@ const startUpload = async (file) => {
 
   // 2.计算分片数量
   const totalChunks = Math.ceil(file.size / chunkSize);
-  console.warn(`分片数量: ${totalChunks}`); // todo: test
 
   // 3.上传分片
   let isBreak = false;// 是否中断上传
@@ -777,12 +787,14 @@ const handleDelete = (index, row) => {
 const logout = () => {
   UserSession.logout();
   deleteCookie(tokenName);
+  easyRequest(RequestMethods.POST, "/user/logout", "", false, false).then(
+      (response) => {
+        if (response.statusCode === "SUCCESS") {
+          ElMessage.success("退出成功");
+        }
+      }
+  );
   router.push("/user/login");
-
-  ElMessage({
-    message: `退出成功!`,
-    type: 'success',
-  });
 };
 
 

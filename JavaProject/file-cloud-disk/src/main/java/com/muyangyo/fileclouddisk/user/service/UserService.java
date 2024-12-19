@@ -119,4 +119,20 @@ public class UserService {
         }
         log.info("登录信息解密成功!");
     }
+
+    public Result logout(HttpServletResponse response) {
+        Cookie jwtCookie = new Cookie(Setting.TOKEN_HEADER_NAME, null);
+        jwtCookie.setMaxAge(0); // 设置过期时间为 0，表示立即删除
+        jwtCookie.setPath("/"); // 确保路径一致
+        jwtCookie.setHttpOnly(true); // 保持 HttpOnly 属性
+        response.addCookie(jwtCookie);
+
+        // 清空前端验证 Token 的 Cookie
+        Cookie cookie = new Cookie(Setting.TOKEN_NAME_FOR_FE, null);
+        cookie.setMaxAge(0); // 设置过期时间为 0，表示立即删除
+        cookie.setPath("/"); // 确保路径一致
+        cookie.setHttpOnly(false); // 保持非 HttpOnly 属性
+        response.addCookie(cookie);
+        return Result.success("退出成功!");
+    }
 }

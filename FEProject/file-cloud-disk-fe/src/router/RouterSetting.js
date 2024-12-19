@@ -32,16 +32,17 @@ const mangerUrlBaseRoutes = [
         {
             path: config.managerRouterBaseUrl,
             component: managerIndex,
-            redirect: '/manager/sync_manager/sync_file_manager',
+            redirect: '/manager/cloud_manager/cloud_setting_manager',
+            // redirect: '/manager/sync_manager/sync_file_manager',
             children: [
-                {
-                    path: 'sync_manager/sync_file_manager', //同步文件管理
-                    component: syncFileManager,
-                },
-                {
-                    path: 'sync_manager/sync_setting_manager', //同步设置管理
-                    component: syncSettingManager,
-                },
+                /* {
+                     path: 'sync_manager/sync_file_manager', //同步文件管理
+                     component: syncFileManager,
+                 },
+                 {
+                     path: 'sync_manager/sync_setting_manager', //同步设置管理
+                     component: syncSettingManager,
+                 },*/
                 {
                     path: 'cloud_manager/cloud_log_manager', //操作日志
                     component: operationLog,

@@ -83,4 +83,9 @@ public class AdminController {
     public Result remoteOperationIsOpen(HttpServletRequest request) {
         return Result.success(!setting.isLocalOperationOnly());
     }
+
+    @RequestMapping("/logout")
+    public Result logout(HttpServletResponse response) {
+        return adminService.logout(response);
+    }
 }

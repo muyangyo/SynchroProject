@@ -40,7 +40,7 @@ public class TrayIconInitializer {
     // 创建托盘图标和右键菜单的方法
     private TrayIcon createTrayIcon() {
         // 托盘图标和菜单项
-        Image image = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/logo.jpg")); // 加载托盘图标
+        Image image = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/logo.png")); // 加载托盘图标
 
         PopupMenu popupMenu = new PopupMenu(); // 创建右键弹出菜单
 

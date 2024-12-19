@@ -60,7 +60,7 @@ const submitForm = () => {
       try {
         // 使用 easyRequest 发送登录请求,返回响应
         const response = await easyRequest(RequestMethods.POST, '/user/login', RequestData);
-        if (response.data && response.statusCode === "SUCCESS") {
+        if (response.statusCode === "SUCCESS") {
           UserSession.login(ROLES.user, form.value.username, response.data);
           ElMessage({
             message: `欢迎回来, ${form.value.username}`,

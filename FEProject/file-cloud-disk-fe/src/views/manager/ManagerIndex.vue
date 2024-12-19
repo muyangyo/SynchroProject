@@ -26,18 +26,18 @@
   <el-row :gutter="20" class="main-row">
 
     <!-- 侧边栏菜单 -->
-    <el-menu default-active="1-1" class="el-menu-vertical-demo" :collapse="showMenu" @open="handleOpen"
+    <el-menu default-active="2-2" class="el-menu-vertical-demo" :collapse="showMenu" @open="handleOpen"
              @close="handleClose" @select="handleSelect">
       <!-- 同步功能菜单项 -->
-      <el-sub-menu index="1">
-        <!-- 一级菜单 -->
+<!--      <el-sub-menu index="1">
+        &lt;!&ndash; 一级菜单 &ndash;&gt;
         <template #title>
           <el-icon>
             <Refresh/>
           </el-icon>
           <span>同步</span>
         </template>
-        <!-- 二级菜单 -->
+        &lt;!&ndash; 二级菜单 &ndash;&gt;
         <el-menu-item index="1-1" @click="navigateTo('/manager/sync_manager/sync_file_manager')">
           <template #default>
             <el-icon>
@@ -55,7 +55,7 @@
             同步设置
           </template>
         </el-menu-item>
-      </el-sub-menu>
+      </el-sub-menu>-->
 
       <!-- 云盘功能菜单项 -->
       <el-sub-menu index="2">
@@ -102,6 +102,7 @@ import {ElMessage, ElMessageBox} from 'element-plus';
 import {InfoFilled} from "@element-plus/icons-vue";
 import {deleteCookie, tokenName} from "@/router/RouterSetting.js";
 import {UserSession} from "@/utils/UserLocalStoreUtils.js";
+import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
 
 
 const router = useRouter();
@@ -138,12 +139,16 @@ const confirmLogout = () => {
 const logout = () => {
   UserSession.logout();
   deleteCookie(tokenName);
-  router.push("/manager/login");
 
-  ElMessage({
-    message: `退出成功!`,
-    type: 'success',
-  });
+  easyRequest(RequestMethods.POST, "/admin/logout", "", false, false).then(
+      (response) => {
+        if (response.statusCode === "SUCCESS") {
+          ElMessage.success("退出成功");
+        }
+      }
+  );
+
+  router.push("/manager/login");
 };
 
 const DesignerUrl = () => {
@@ -158,17 +163,17 @@ const navigateTo = (path) => {
 //todo: 实现菜单展开、关闭、选择事件(保留)
 // 处理菜单展开事件
 const handleOpen = (key, keyPath) => {
-  console.log(`菜单展开: key=${key}, keyPath=${keyPath}`);
+  // console.log(`菜单展开: key=${key}, keyPath=${keyPath}`);
 };
 
 // 处理菜单关闭事件
 const handleClose = (key, keyPath) => {
-  console.log(`菜单关闭: key=${key}, keyPath=${keyPath}`);
+  // console.log(`菜单关闭: key=${key}, keyPath=${keyPath}`);
 };
 
 // 处理菜单选择事件
 const handleSelect = (index, indexPath) => {
-  console.log(`菜单选择: index=${index}, indexPath=${indexPath}`);
+  // console.log(`菜单选择: index=${index}, indexPath=${indexPath}`);
 };
 </script>
 

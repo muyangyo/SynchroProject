@@ -29,6 +29,7 @@ public class GlobalInterceptor implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(verifyLogin).addPathPatterns("/**").excludePathPatterns(EXTERNALLY_ACCESSIBLE_PATHS);
+        registry.addInterceptor(verifyLogin).addPathPatterns("/**").excludePathPatterns(EXTERNALLY_ACCESSIBLE_PATHS).
+                excludePathPatterns("/static/**"); // 放行静态资源;
     }
 }

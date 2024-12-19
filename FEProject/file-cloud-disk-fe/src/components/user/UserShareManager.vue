@@ -17,7 +17,7 @@
               type="danger"
               size="small"
               @click="handleDelete(scope.row)"
-              :disabled="shareData.list.length === 0"
+              :disabled="shareData.list.length === 0 || !haveDeletePermission"
           >删除
           </el-button>
         </template>
@@ -36,13 +36,13 @@
         <el-button
             type="danger"
             @click="handleBatchDeleteShareFile(true)"
-            :disabled="shareData.list.length === 0"
+            :disabled="shareData.list.length === 0 || !haveDeletePermission"
         >全部删除
         </el-button>
         <el-button
             type="warning"
             @click="handleBatchDeleteShareFile(false)"
-            :disabled="shareData.list.length === 0"
+            :disabled="shareData.list.length === 0 || !haveDeletePermission"
         >删除过期
         </el-button>
       </div>
@@ -55,6 +55,10 @@ import {markRaw, onBeforeUnmount, onMounted, ref} from 'vue';
 import {ElMessage, ElMessageBox} from 'element-plus';
 import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
 import {Delete} from "@element-plus/icons-vue";
+import {UserSession} from "@/utils/UserLocalStoreUtils.js";
+// 权限相关变量
+const haveDeletePermission = ref(UserSession.getPermissions().includes("d"));
+const haveReadPermission = ref(UserSession.getPermissions().includes("r"));
 
 const shareData = ref({
   list: [], /* 分享列表 type: array */
@@ -78,7 +82,11 @@ const getDate = (pageIndex) => {
 }
 
 onMounted(() => {
-  getDate(1);
+  if (haveReadPermission.value) {
+    getDate(1);
+  } else {
+    ElMessage.error("无权限访问分享列表");
+  }
 });
 
 onBeforeUnmount(() => {
