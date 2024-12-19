@@ -39,7 +39,7 @@ public class LocalOperationAspect {
             return joinPoint.proceed(); // 如果不限制，直接执行目标方法
         }
 
-        log.info("{} 的 {} 本方法已被限制在本地进行", joinPoint.getSignature().getDeclaringTypeName(), joinPoint.getSignature().getName());
+        log.trace("由于开启了本地操作限制，{} 的 {} 本方法只能在本地进行", joinPoint.getSignature().getDeclaringTypeName(), joinPoint.getSignature().getName());
 
         // 获取当前请求的 HttpServletRequest
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();

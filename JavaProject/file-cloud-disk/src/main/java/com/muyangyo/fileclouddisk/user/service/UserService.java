@@ -6,6 +6,7 @@ import cn.hutool.crypto.asymmetric.RSA;
 import com.muyangyo.fileclouddisk.common.config.Setting;
 import com.muyangyo.fileclouddisk.common.exception.IllegalLoginWithoutRSA;
 import com.muyangyo.fileclouddisk.common.model.dto.LoginDTO;
+import com.muyangyo.fileclouddisk.common.model.enums.OperationLevel;
 import com.muyangyo.fileclouddisk.common.model.enums.Roles;
 import com.muyangyo.fileclouddisk.common.model.meta.User;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
@@ -13,6 +14,7 @@ import com.muyangyo.fileclouddisk.common.utils.EasyTimedCache;
 import com.muyangyo.fileclouddisk.common.utils.MD5Utils;
 import com.muyangyo.fileclouddisk.common.utils.NetworkUtils;
 import com.muyangyo.fileclouddisk.common.utils.TokenUtils;
+import com.muyangyo.fileclouddisk.manager.service.OperationLogService;
 import com.muyangyo.fileclouddisk.user.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,9 @@ public class UserService {
 
     @Resource
     private UserMapper userMapper;
+
+    @Resource
+    private OperationLogService operationLogService;
 
     @Resource
     private Setting setting;
@@ -74,6 +79,7 @@ public class UserService {
             cookie.setMaxAge(setting.getTokenLifeTime());
             response.addCookie(cookie);// 给前端验证token是否存在的
 
+            operationLogService.addLog("登入", username, NetworkUtils.getClientIp(request), OperationLevel.INFO);
             return Result.success(user.getPermissions());
         } else {
             return Result.fail("用户名或密码错误");
@@ -120,7 +126,7 @@ public class UserService {
         log.info("登录信息解密成功!");
     }
 
-    public Result logout(HttpServletResponse response) {
+    public Result logout(HttpServletRequest request, HttpServletResponse response) {
         Cookie jwtCookie = new Cookie(Setting.TOKEN_HEADER_NAME, null);
         jwtCookie.setMaxAge(0); // 设置过期时间为 0，表示立即删除
         jwtCookie.setPath("/"); // 确保路径一致
@@ -133,6 +139,8 @@ public class UserService {
         cookie.setPath("/"); // 确保路径一致
         cookie.setHttpOnly(false); // 保持非 HttpOnly 属性
         response.addCookie(cookie);
+
+        operationLogService.addLogFromRequest("登出", OperationLevel.INFO, request);
         return Result.success("退出成功!");
     }
 }

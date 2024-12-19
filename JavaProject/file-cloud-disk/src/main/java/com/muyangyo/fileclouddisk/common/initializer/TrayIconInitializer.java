@@ -44,10 +44,15 @@ public class TrayIconInitializer {
 
         PopupMenu popupMenu = new PopupMenu(); // 创建右键弹出菜单
 
-        // 右键菜单项：打开项目网址
+        // 右键菜单项：1.1打开项目网址
         MenuItem openUrlItem = new MenuItem("打开项目网址");
         openUrlItem.addActionListener(e -> openUrl()); // 添加点击事件
         popupMenu.add(openUrlItem); // 将菜单项添加到弹出菜单
+
+        // 右键菜单项：1.2打开管理页面
+        MenuItem openManageItem = new MenuItem("打开管理页面");
+        openManageItem.addActionListener(e -> openManagePage()); // 添加点击事件
+        popupMenu.add(openManageItem); // 将菜单项添加到弹出菜单
 
         // TODO:  等待验证：注册开机自启功能
         if (setting.getSystemType() == SystemType.WINDOWS) {
@@ -60,13 +65,13 @@ public class TrayIconInitializer {
                     unregisterAutoStartup(); // 取消注册开机自启
                 }
             });
-            popupMenu.add(registerStartupItem); // 将菜单项添加到弹出菜单
+            popupMenu.add(registerStartupItem); // 2.将菜单项添加到弹出菜单
         }
 
         // 分割线
         popupMenu.addSeparator();
 
-        // 右键菜单项：退出
+        // 右键菜单项：3.退出
         MenuItem exitItem = new MenuItem("退出");
         exitItem.addActionListener(e -> exitApplication()); // 添加点击事件
         popupMenu.add(exitItem); // 将菜单项添加到弹出菜单
@@ -78,6 +83,14 @@ public class TrayIconInitializer {
         trayIcon.addActionListener(e -> openUrl());
         trayIcon.setImageAutoSize(true); // 自动调整图标大小以适应托盘
         return trayIcon; // 返回托盘图标
+    }
+
+    private void openManagePage() {
+        try {
+            Desktop.getDesktop().browse(java.net.URI.create(setting.getCompleteServerURL())); // 使用系统浏览器打开网址
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // 打开项目网址的方法

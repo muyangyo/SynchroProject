@@ -5,12 +5,16 @@ import com.muyangyo.fileclouddisk.common.model.meta.OperationLog;
 import com.muyangyo.fileclouddisk.common.model.vo.OperationLogListVO;
 import com.muyangyo.fileclouddisk.common.model.vo.OperationLogVO;
 import com.muyangyo.fileclouddisk.common.utils.EasyTimer;
+import com.muyangyo.fileclouddisk.common.utils.NetworkUtils;
+import com.muyangyo.fileclouddisk.common.utils.TokenUtils;
 import com.muyangyo.fileclouddisk.manager.mapper.OperationLogMapper;
 import converter.MetaToVoConverter;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -23,14 +27,39 @@ import java.util.List;
  * Time: 15:29
  */
 @Service
+@Slf4j
 public class OperationLogService {
     @Resource
     private OperationLogMapper operationLogMapper;
 
-    public boolean addLog(String operation, String username, String ip, OperationLevel level) {
+    /**
+     * 添加操作日志
+     *
+     * @param operation 操作
+     * @param username  用户名
+     * @param ip        IP
+     * @param level     等级
+     */
+    public void addLog(String operation, String username, String ip, OperationLevel level) {
         OperationLog operationLog = new OperationLog(new Date(), operation, username, ip, level);
         operationLogMapper.insertOperationLog(operationLog);
-        return true;
+        log.trace("用户操作日志[ 操作: {} , 用户名: {} , IP: {} , 等级: {} ]", operation, username, ip, level);
+    }
+
+    /**
+     * 添加操作日志（从request中获取用户名和ip）
+     *
+     * @param operation 操作
+     * @param level     等级
+     */
+    public void addLogFromRequest(String operation, OperationLevel level, HttpServletRequest request) {
+        String token = TokenUtils.getTokenFromCookie(request);
+        TokenUtils.TokenLoad tokenLoad = TokenUtils.TokenLoad.fromMap(TokenUtils.getTokenLoad(token));
+        String username = tokenLoad.getUsername();
+        String ip = NetworkUtils.getClientIp(request);
+        OperationLog operationLog = new OperationLog(new Date(), operation, username, ip, level);
+        operationLogMapper.insertOperationLog(operationLog);
+        log.trace("用户操作日志[ 操作: {} , 用户名: {} , IP: {} , 等级: {} ]", operation, username, ip, level);
     }
 
     @SneakyThrows

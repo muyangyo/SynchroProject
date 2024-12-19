@@ -7,6 +7,7 @@ import cn.hutool.crypto.asymmetric.RSA;
 import com.muyangyo.fileclouddisk.common.config.Setting;
 import com.muyangyo.fileclouddisk.common.exception.IllegalLoginWithoutRSA;
 import com.muyangyo.fileclouddisk.common.model.dto.LoginDTO;
+import com.muyangyo.fileclouddisk.common.model.enums.OperationLevel;
 import com.muyangyo.fileclouddisk.common.model.enums.Roles;
 import com.muyangyo.fileclouddisk.common.model.meta.Admin;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
@@ -35,6 +36,8 @@ public class AdminService {
 
     @Resource
     private Setting setting;
+    @Resource
+    private OperationLogService operationLogService;
 
     /**
      * 验证用户名和密码是否匹配
@@ -53,6 +56,7 @@ public class AdminService {
 
             generateAndSetCookies(admin, request, response, String.valueOf(Roles.ADMIN));
 
+            operationLogService.addLog("管理员操作: 管理员登入", username, NetworkUtils.getClientIp(request), OperationLevel.WARNING);
             return Result.success(true);
         } else {
             return Result.fail("用户名或密码错误");
@@ -91,6 +95,7 @@ public class AdminService {
         admin = new Admin(RandomUtil.randomString(10), loginDTO.getUsername(), encipheredPassword, new Date(), new Date());
         adminMapper.insertByDynamicCondition(admin);
         generateAndSetCookies(admin, request, response, String.valueOf(Roles.ADMIN));
+        operationLogService.addLog("管理员操作: 新建管理员", loginDTO.getUsername(), NetworkUtils.getClientIp(request), OperationLevel.IMPORTANT);
         return Result.success(true);
     }
 
@@ -140,7 +145,7 @@ public class AdminService {
         return Result.success(publicKey);
     }
 
-    public Result logout(HttpServletResponse response) {
+    public Result logout(HttpServletRequest request, HttpServletResponse response) {
         Cookie jwtCookie = new Cookie(Setting.TOKEN_HEADER_NAME, null);
         jwtCookie.setMaxAge(0); // 设置过期时间为 0，表示立即删除
         jwtCookie.setPath("/"); // 确保路径一致
@@ -153,6 +158,8 @@ public class AdminService {
         cookie.setPath("/"); // 确保路径一致
         cookie.setHttpOnly(false); // 保持非 HttpOnly 属性
         response.addCookie(cookie);
+
+        operationLogService.addLogFromRequest("管理员操作: 管理员登出", OperationLevel.WARNING, request);
         return Result.success("退出成功!");
     }
 }

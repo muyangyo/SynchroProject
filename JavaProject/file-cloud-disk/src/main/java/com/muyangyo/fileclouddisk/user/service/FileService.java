@@ -3,16 +3,20 @@ package com.muyangyo.fileclouddisk.user.service;
 import com.muyangyo.fileclouddisk.common.component.MountDirComponent;
 import com.muyangyo.fileclouddisk.common.config.Setting;
 import com.muyangyo.fileclouddisk.common.exception.IllegalPath;
+import com.muyangyo.fileclouddisk.common.model.enums.OperationLevel;
 import com.muyangyo.fileclouddisk.common.model.other.FileType;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
 import com.muyangyo.fileclouddisk.common.model.vo.FileInfo;
 import com.muyangyo.fileclouddisk.common.utils.FileUtils;
+import com.muyangyo.fileclouddisk.common.utils.NetworkUtils;
+import com.muyangyo.fileclouddisk.manager.service.OperationLogService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.file.Files;
@@ -35,15 +39,19 @@ public class FileService {
     private static final int REAL_MOUNT_ROOT_PATH_INDEX = 1;
     @Resource
     private MountDirComponent mountDirComponent;
+    @Resource
+    private OperationLogService operationLogService;
 
     /**
      * 获取指定目录下的文件信息
      *
-     * @param path 目录路径
+     * @param path    目录路径
+     * @param request
      * @return 文件信息列表
      */
     @SneakyThrows
-    public LinkedList<FileInfo> getFileInfoList(String path) {
+    public LinkedList<FileInfo> getFileInfoList(String path, HttpServletRequest request) {
+        operationLogService.addLogFromRequest("获取文件列表", OperationLevel.INFO, request);
         if (path.equals(Setting.FE_USER_BASE_URL)) return getRootFileInfo();// 根目录直接返回根目录信息
         // 将path转为绝对路径
         LinkedList<String> linkedList = fakePathConverterToRealPath(path);
@@ -60,7 +68,7 @@ public class FileService {
     }
 
     @SneakyThrows
-    public LinkedList<FileInfo> OutSideGetFileInfoList(String path) {
+    public LinkedList<FileInfo> OutSideGetFileInfoList(String path, HttpServletRequest request) {
         File file = new File(path);
         List<String> list = FileUtils.listFilesInDirectory(file);
         FileUtils.sortFilePaths(list);
@@ -69,6 +77,7 @@ public class FileService {
         for (String s : list) {
             retList.add(initFileInfo(new File(s), path));
         }
+        operationLogService.addLog("外部用户获取文件列表", "unknown", NetworkUtils.getClientIp(request), OperationLevel.INFO);
         return retList;
     }
 
@@ -133,9 +142,10 @@ public class FileService {
      *
      * @param path     文件路径
      * @param response 响应
+     * @param request
      * @throws IOException IO异常
      */
-    public void previewFile(String path, HttpServletResponse response) throws IOException {
+    public void previewFile(String path, HttpServletResponse response, HttpServletRequest request) throws IOException {
         path = FileUtils.normalizePath(path);
 
         File file = new File(path);
@@ -145,6 +155,8 @@ public class FileService {
         }
 
         FileInfo fileInfo = checkFollowRootPathAndGetFileInfo(file);
+
+        operationLogService.addLogFromRequest("预览文件", OperationLevel.INFO, request);
 
         response.setContentType(fileInfo.getFileType().getMimeType());
         response.setHeader("Content-Disposition", "inline; filename=" + "temp." + FileUtils.getFileExtension(file));
@@ -180,7 +192,7 @@ public class FileService {
     }
 
     @SneakyThrows
-    public Result createFolder(String parentPath, String folderName) {
+    public Result createFolder(String parentPath, String folderName, HttpServletRequest request) {
         if (parentPath.equals(Setting.FE_USER_BASE_URL)) {
             return Result.fail("根目录不能创建文件夹");
         }
@@ -195,6 +207,7 @@ public class FileService {
         }
 
         if (file.mkdir()) {
+            operationLogService.addLogFromRequest("创建文件夹", OperationLevel.WARNING, request);
             return Result.success("文件夹创建成功");
         } else {
             return Result.fail("文件夹创建失败,可能存在多级目录");
@@ -254,7 +267,7 @@ public class FileService {
         return fileInfo;
     }
 
-    public void uploadChunk(String parentPath, MultipartFile file, int chunkIndex, String fileName, int totalChunks, String chunkMd5) {
+    public void uploadChunk(String parentPath, MultipartFile file, int chunkIndex, String fileName, int totalChunks, String chunkMd5, HttpServletRequest request) {
         //先将 parentPath 转换为 真路径
         if (parentPath.equals(Setting.FE_USER_BASE_URL)) {
             throw new IllegalPath("根目录不能上传文件");
@@ -277,8 +290,8 @@ public class FileService {
 
             // 检查当前块是否完整
             if (org.apache.commons.codec.digest.DigestUtils.md5Hex(Files.newInputStream(targetFile.toPath())).equals(chunkMd5)) {
-                log.info("当前块文件完整: " + targetFile.getName());
-                log.info("当前块的MD5值: " + chunkMd5);
+                log.trace("当前块文件完整: " + targetFile.getName());
+                log.trace("当前块的MD5值: " + chunkMd5);
             } else {
                 throw new RuntimeException("当前块文件不匹配"); // 抛出异常
             }
@@ -287,6 +300,7 @@ public class FileService {
             if (chunkIndex == totalChunks - 1) {
                 mergeChunks(fileName, totalChunks, parentPath); // 合并文件块
             }
+            operationLogService.addLogFromRequest("上传文件 [" + targetFile.getName() + "]", OperationLevel.WARNING, request);
 
         } catch (Exception e) {
             try {
@@ -313,7 +327,7 @@ public class FileService {
 
         // 创建合并后的文件对象
         File mergedFile = new File(parentPath + "/" + fileName);
-        log.info("开始合并文件: " + fileName);
+        log.trace("开始合并文件: " + fileName);
         try (BufferedOutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(mergedFile.toPath()))) {
             // 遍历每个块文件并将其写入合并文件
             for (File partFile : partFiles) {
@@ -338,6 +352,7 @@ public class FileService {
                 log.error("删除分块文件失败: " + partFile.getName()); // 打印删除错误
             }
         }
+        log.trace("文件合并成功,并成功删除分块文件");
     }
 
 }

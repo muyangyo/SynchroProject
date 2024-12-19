@@ -7,6 +7,7 @@ import cn.hutool.crypto.asymmetric.RSA;
 import com.muyangyo.fileclouddisk.common.config.Setting;
 import com.muyangyo.fileclouddisk.common.exception.IllegalLoginWithoutRSA;
 import com.muyangyo.fileclouddisk.common.model.dto.UserDTO;
+import com.muyangyo.fileclouddisk.common.model.enums.OperationLevel;
 import com.muyangyo.fileclouddisk.common.model.meta.User;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
 import com.muyangyo.fileclouddisk.common.model.vo.UserListVO;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.security.PrivateKey;
 import java.util.*;
 
@@ -37,9 +39,12 @@ public class UserManagerService {
     private UserMapper userMapper;
 
     @Resource
+    private OperationLogService operationLogService;
+
+    @Resource
     private Setting setting;
 
-    public Result getUserList() {
+    public Result getUserList(HttpServletRequest request) {
         User user = new User();
         user.setAccountStatus(1);
         List<User> userList = userMapper.selectByDynamicCondition(user);
@@ -60,6 +65,7 @@ public class UserManagerService {
 
             result.add(userListVO);
         }
+        operationLogService.addLogFromRequest("管理员操作: 获取用户列表", OperationLevel.INFO, request);
         return Result.success(result);
     }
 
@@ -70,9 +76,10 @@ public class UserManagerService {
      * @param username       用户名
      * @param password       密码
      * @param permissionList 权限
+     * @param request
      * @return 创建结果
      */
-    public Result createUser(String username, String password, ArrayList<String> permissionList) {
+    public Result createUser(String username, String password, ArrayList<String> permissionList, HttpServletRequest request) {
         User user = userMapper.selectByUsername(username); // 判断用户名是否存在
 
         if (user != null) {
@@ -92,6 +99,7 @@ public class UserManagerService {
         String encipher = MD5Utils.encipher(password);
         user = new User(RandomUtil.randomString(10), username, encipher, new Date(), new Date(), 1, permission.toString());
         userMapper.insertByDynamicCondition(user);
+        operationLogService.addLogFromRequest("管理员操作: 管理员创建用户[ " + username + " ]", OperationLevel.WARNING, request);
         return Result.success(true);
     }
 
@@ -128,7 +136,7 @@ public class UserManagerService {
         return Result.success(publicKey);
     }
 
-    public Result updateUser(String username, String password, ArrayList<String> permissionList) {
+    public Result updateUser(String username, String password, ArrayList<String> permissionList, HttpServletRequest request) {
         User user = userMapper.selectByUsername(username); // 判断用户名是否存在
         if (user == null) {
             return Result.fail("用户名不存在");
@@ -153,16 +161,18 @@ public class UserManagerService {
         }
 
         userMapper.updateByUserId(user);
+        operationLogService.addLogFromRequest("管理员操作: 管理员更新用户[ " + username + " ]", OperationLevel.WARNING, request);
         return Result.success(true);
     }
 
-    public Result deleteUser(String username) {
+    public Result deleteUser(String username, HttpServletRequest request) {
         User user = userMapper.selectByUsername(username); // 判断用户名是否存在
         if (user == null) {
             return Result.fail("用户名不存在");
         }
         user.setAccountStatus(0);
         userMapper.deleteByUserId(user.getUserId());
+        operationLogService.addLogFromRequest("管理员操作: 管理员删除用户[ " + username + " ]", OperationLevel.IMPORTANT, request);
         return Result.success(true);
     }
 }

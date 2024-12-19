@@ -8,18 +8,18 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 export default defineConfig({
     plugins: [
         vue(),
-        // vueDevTools(), todo: 打包时关闭
+        // vueDevTools(), //todo: 打包时关闭
     ],
     resolve: {
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url))
         },
     },
-    // base:'./' // todo: 打包时打开
+    // base: './' // todo: 打包时打开
 
-    server: { //todo: 打包时关闭
-        proxy: {
-            '/api': 'http://localhost:80'
+        server: { //todo: 打包时关闭 这个就是前端代理(分离的时候)
+            proxy: {
+                '/api': 'http://localhost:80'
+            },
         },
-    },
 })

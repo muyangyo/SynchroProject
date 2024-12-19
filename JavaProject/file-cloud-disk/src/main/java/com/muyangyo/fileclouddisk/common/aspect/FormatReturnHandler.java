@@ -20,7 +20,7 @@ import javax.annotation.Resource;
  * Time: 8:32
  */
 @RestControllerAdvice
-public class FormatReturn implements ResponseBodyAdvice {
+public class FormatReturnHandler implements ResponseBodyAdvice {
     @Resource
     ObjectMapper objectMapper;
 

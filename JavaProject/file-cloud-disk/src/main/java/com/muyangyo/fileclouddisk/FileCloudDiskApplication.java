@@ -39,7 +39,6 @@ public class FileCloudDiskApplication {
             int exitCode = SpringApplication.exit(context);
             System.exit(exitCode); // 确保程序完全退出
         }
-        
     }
 
 }

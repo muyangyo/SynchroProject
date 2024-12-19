@@ -38,19 +38,19 @@ public class ShareFolderController {
         if (filePathDTO != null && StringUtils.hasLength(filePathDTO.getPath())) {
             // 远程添加
             String path = FileUtils.normalizePath(filePathDTO.getPath());
-            return shareFolderService.addNewShareFolderByPath(path);
+            return shareFolderService.addNewShareFolderByPath(path, request);
         } else {
             if (!NetworkUtils.isLocalhost(request)) {
                 return Result.fail("不支持远程操作!");
             }
             // 是本地请求则打开选择框
-            return shareFolderService.addNewShareFolder();
+            return shareFolderService.addNewShareFolder(request);
         }
     }
 
     @GetMapping("/getShareFolderList")
-    public Result getShareFolderList() {
-        return shareFolderService.getShareFolderList();
+    public Result getShareFolderList(HttpServletRequest request) {
+        return shareFolderService.getShareFolderList(request);
     }
 
     @PostMapping("/openFolder")
@@ -62,17 +62,17 @@ public class ShareFolderController {
         String path = filePathDTO.getPath();
         if (StringUtils.hasLength(path)) {
             path = FileUtils.normalizePath(path);
-            return shareFolderService.openFolder(path);
+            return shareFolderService.openFolder(path, request);
         }
         return Result.fail("路径不能为空");
     }
 
     @PostMapping("/deleteShareFolder")
-    public Result deleteShareFolder(@RequestBody FilePathDTO filePathDTO) {
+    public Result deleteShareFolder(@RequestBody FilePathDTO filePathDTO, HttpServletRequest request) {
         String path = filePathDTO.getPath();
         if (StringUtils.hasLength(path)) {
             path = FileUtils.normalizePath(path);
-            return shareFolderService.deleteShareFolder(path);
+            return shareFolderService.deleteShareFolder(path, request);
         }
         return Result.fail("路径不能为空");
     }

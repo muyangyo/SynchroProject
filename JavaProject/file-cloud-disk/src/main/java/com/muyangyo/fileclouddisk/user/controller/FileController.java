@@ -1,20 +1,23 @@
 package com.muyangyo.fileclouddisk.user.controller;
 
 import cn.hutool.core.util.RandomUtil;
-import com.muyangyo.fileclouddisk.common.aspect.HandlerFileBinConfig;
+import com.muyangyo.fileclouddisk.common.aspect.FileBinHandler;
 import com.muyangyo.fileclouddisk.common.aspect.annotations.UserOperationLimit;
 import com.muyangyo.fileclouddisk.common.config.Setting;
 import com.muyangyo.fileclouddisk.common.model.dto.CreateFolderDTO;
 import com.muyangyo.fileclouddisk.common.model.dto.FilePathDTO;
 import com.muyangyo.fileclouddisk.common.model.dto.RenameFileDTO;
 import com.muyangyo.fileclouddisk.common.model.enums.FileCategory;
+import com.muyangyo.fileclouddisk.common.model.enums.OperationLevel;
 import com.muyangyo.fileclouddisk.common.model.meta.ShareFile;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
 import com.muyangyo.fileclouddisk.common.model.vo.DownloadFileInfo;
 import com.muyangyo.fileclouddisk.common.model.vo.FileInfo;
 import com.muyangyo.fileclouddisk.common.model.vo.VideoFileInfo;
 import com.muyangyo.fileclouddisk.common.utils.FileUtils;
+import com.muyangyo.fileclouddisk.common.utils.NetworkUtils;
 import com.muyangyo.fileclouddisk.common.utils.TokenUtils;
+import com.muyangyo.fileclouddisk.manager.service.OperationLogService;
 import com.muyangyo.fileclouddisk.user.service.FileService;
 import com.muyangyo.fileclouddisk.user.service.ShareFileService;
 import lombok.SneakyThrows;
@@ -49,7 +52,10 @@ public class FileController {
     private Setting setting;
 
     @Resource
-    HandlerFileBinConfig handlerFileBinConfig;// 让文件支持range请求
+    FileBinHandler fileBinHandler;// 让文件支持range请求
+
+    @Resource
+    private OperationLogService operationLogService;
 
     /**
      * 使用伪路径
@@ -60,10 +66,10 @@ public class FileController {
     @SneakyThrows
     @UserOperationLimit("r")
     @PostMapping(value = "/getFileList")
-    public Result getFileList(@RequestBody FilePathDTO filePath) {
+    public Result getFileList(@RequestBody FilePathDTO filePath, HttpServletRequest request) {
         String path = URLDecoder.decode(filePath.getPath(), StandardCharsets.UTF_8.toString());// 解码路径(防止中文乱码)
         path = FileUtils.normalizePath(path); // 规范路径
-        LinkedList<FileInfo> fileInfos = fileService.getFileInfoList(path); // 获取文件列表
+        LinkedList<FileInfo> fileInfos = fileService.getFileInfoList(path, request); // 获取文件列表
         return Result.success(fileInfos);
     }
 
@@ -75,12 +81,12 @@ public class FileController {
      */
     @PostMapping("/createFolder")
     @UserOperationLimit("w")
-    public Result createFolder(@RequestBody CreateFolderDTO createFolderDTO) {
+    public Result createFolder(@RequestBody CreateFolderDTO createFolderDTO, HttpServletRequest request) {
         String parentPath = FileUtils.normalizePath(createFolderDTO.getParentPath());
 
 
         if (StringUtils.hasLength(parentPath)) {
-            return fileService.createFolder(parentPath, createFolderDTO.getFolderName());
+            return fileService.createFolder(parentPath, createFolderDTO.getFolderName(), request);
         } else {
             return Result.fail("文件夹路径不能为空");
         }
@@ -94,54 +100,56 @@ public class FileController {
             @RequestParam("chunkIndex") int chunkIndex, // 当前块的索引
             @RequestParam("fileName") String fileName, // 文件名
             @RequestParam("totalChunks") int totalChunks, // 当前文件总块数
-            @RequestParam("chunkMd5") String chunkMd5 // 分块文件的MD5用于验证完整性
+            @RequestParam("chunkMd5") String chunkMd5, // 分块文件的MD5用于验证完整性
+            HttpServletRequest request
     ) {
-        fileService.uploadChunk(parentPath, file, chunkIndex, fileName, totalChunks, chunkMd5);
+        fileService.uploadChunk(parentPath, file, chunkIndex, fileName, totalChunks, chunkMd5, request);
         return Result.success("上传成功!");
     }
 
     @PostMapping(value = "/previewDocx")
     @UserOperationLimit("r")
-    public void previewDocx(@RequestBody FilePathDTO filePath, HttpServletResponse response) throws IOException {
-        fileService.previewFile(filePath.getPath(), response);
+    public void previewDocx(@RequestBody FilePathDTO filePath, HttpServletResponse response, HttpServletRequest request) throws IOException {
+        fileService.previewFile(filePath.getPath(), response, request);
     }
 
     @PostMapping(value = "/previewImage")
     @UserOperationLimit("r")
-    public void previewImage(@RequestBody FilePathDTO filePath, HttpServletResponse response) throws IOException {
-        fileService.previewFile(filePath.getPath(), response);
+    public void previewImage(@RequestBody FilePathDTO filePath, HttpServletResponse response, HttpServletRequest request) throws IOException {
+        fileService.previewFile(filePath.getPath(), response, request);
     }
 
     @UserOperationLimit("r")
     @PostMapping("/previewAudio")
-    public void previewAudio(@RequestBody FilePathDTO filePath, HttpServletResponse response) throws IOException {
-        fileService.previewFile(filePath.getPath(), response);
+    public void previewAudio(@RequestBody FilePathDTO filePath, HttpServletResponse response, HttpServletRequest request) throws IOException {
+        fileService.previewFile(filePath.getPath(), response, request);
     }
 
     @UserOperationLimit("r")
     @PostMapping("/getPreviewAudioInfo")
-    public Result getPreviewAudioName(@RequestBody FilePathDTO filePath) {
+    public Result getPreviewAudioName(@RequestBody FilePathDTO filePath, HttpServletRequest request) {
         String path = FileUtils.normalizePath(filePath.getPath());
         File file = new File(path);
         FileInfo fileInfo = fileService.checkFollowRootPathAndGetFileInfo(file);
+        operationLogService.addLogFromRequest("预览文件", OperationLevel.INFO, request);
         return Result.success(fileInfo);
     }
 
     @UserOperationLimit("r")
     @PostMapping("/previewPdf")
-    public void previewPdf(@RequestBody FilePathDTO filePath, HttpServletResponse response) throws IOException {
-        fileService.previewFile(filePath.getPath(), response);
+    public void previewPdf(@RequestBody FilePathDTO filePath, HttpServletResponse response, HttpServletRequest request) throws IOException {
+        fileService.previewFile(filePath.getPath(), response, request);
     }
 
     @UserOperationLimit("r")
     @PostMapping("/previewTxt")
-    public void previewTxt(@RequestBody FilePathDTO filePath, HttpServletResponse response) throws IOException {
-        fileService.previewFile(filePath.getPath(), response);
+    public void previewTxt(@RequestBody FilePathDTO filePath, HttpServletResponse response, HttpServletRequest request) throws IOException {
+        fileService.previewFile(filePath.getPath(), response, request);
     }
 
     @UserOperationLimit("r")
     @PostMapping("/preparingVideo")
-    public Result preparingVideo(@RequestBody FilePathDTO filePath) {
+    public Result preparingVideo(@RequestBody FilePathDTO filePath, HttpServletRequest request) {
         String path = FileUtils.normalizePath(filePath.getPath());
         File file = new File(path);
         FileInfo fileInfo = fileService.checkFollowRootPathAndGetFileInfo(file);
@@ -157,6 +165,9 @@ public class FileController {
             videoFileInfo.setFilePath(fileInfo.getFilePath());
             videoFileInfo.setMountRootPath(fileInfo.getMountRootPath());
             videoFileInfo.setFileType(fileInfo.getFileType());
+
+            operationLogService.addLogFromRequest("预览文件", OperationLevel.INFO, request);
+
             return Result.success(videoFileInfo);
         }
         return Result.error("无法准备预览该文件");
@@ -171,12 +182,12 @@ public class FileController {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
-
-            request.setAttribute(HandlerFileBinConfig.ATTR_FILE, FileUtils.getAbsolutePath(file));
-            handlerFileBinConfig.handleRequest(request, response);
+            operationLogService.addLogFromRequest("预览文件", OperationLevel.INFO, request);
+            request.setAttribute(FileBinHandler.ATTR_FILE, FileUtils.getAbsolutePath(file));
+            fileBinHandler.handleRequest(request, response);
         } catch (IOException e) {
-            if (e.getMessage().contains("远程主机强迫关闭了一个现有的连接")) {
-                log.info("由于视频拖动导致远程主机强迫关闭了一个现有的连接");
+            if (e.getMessage().contains("远程主机强迫关闭了一个现有的连接") || e.getMessage().contains("你的主机中的软件中止了一个已建立的连接")) {
+                log.trace("由于视频拖动导致远程主机强迫关闭了一个现有的连接");
             } else {
                 e.printStackTrace();
             }
@@ -187,10 +198,11 @@ public class FileController {
     @UserOperationLimit("r")
     @SneakyThrows
     @PostMapping(value = "/preparingDownloadFile")
-    public Result preparingDownloadFile(@RequestBody FilePathDTO filePath) {
+    public Result preparingDownloadFile(@RequestBody FilePathDTO filePath, HttpServletRequest request) {
         String path = FileUtils.normalizePath(filePath.getPath());
         File file = new File(path);
         FileInfo fileInfo = fileService.checkFollowRootPathAndGetFileInfo(file);
+        operationLogService.addLogFromRequest("下载文件", OperationLevel.INFO, request);
         if (fileInfo.getFileType().getCategory() != FileCategory.FOLDER) {
             String fid = RandomUtil.randomString(5);
             setting.getFileCache().put(fid, file);
@@ -213,7 +225,6 @@ public class FileController {
                     tempDestZip.delete(); // 定时删除压缩文件
                 }
             }, (long) setting.getDownloadFileCacheExpireTime() * 60); // 定时删除压缩文件
-
 
             return Result.success(
                     new DownloadFileInfo(FileUtils.getFileName(tempDestZip),
@@ -245,9 +256,10 @@ public class FileController {
         if (!isTempZip) {
             FileInfo fileInfo = fileService.checkFollowRootPathAndGetFileInfo(file);
         }
+        operationLogService.addLogFromRequest("下载文件", OperationLevel.INFO, request);
 
-        request.setAttribute(HandlerFileBinConfig.ATTR_FILE, FileUtils.getAbsolutePath(file));
-        handlerFileBinConfig.handleRequest(request, response);
+        request.setAttribute(FileBinHandler.ATTR_FILE, FileUtils.getAbsolutePath(file));
+        fileBinHandler.handleRequest(request, response);
     }
 
 
@@ -260,7 +272,7 @@ public class FileController {
     @UserOperationLimit("w")
     @SneakyThrows
     @PostMapping("/renameFile")
-    public Result renameFile(@RequestBody RenameFileDTO renameFileDTO) {
+    public Result renameFile(@RequestBody RenameFileDTO renameFileDTO, HttpServletRequest request) {
         String oldPath = FileUtils.normalizePath(renameFileDTO.getOldPath());
 
         if (fileService.isRootPath(oldPath)) {
@@ -277,6 +289,7 @@ public class FileController {
 
         String newName = renameFileDTO.getNewName();// 新名称
 
+        operationLogService.addLogFromRequest("重命名文件", OperationLevel.WARNING, request);
 
         return Result.success(FileUtils.rename(oldPath, newName));
     }
@@ -290,7 +303,7 @@ public class FileController {
     @SneakyThrows
     @UserOperationLimit("d")
     @PostMapping("/deleteFile")
-    public Result deleteFile(@RequestBody FilePathDTO filePathDTO) {
+    public Result deleteFile(@RequestBody FilePathDTO filePathDTO, HttpServletRequest request) {
         String path = FileUtils.normalizePath(filePathDTO.getPath());
 
         if (fileService.isRootPath(path)) {
@@ -307,6 +320,7 @@ public class FileController {
 
 
         if (FileUtils.delete(file)) {
+            operationLogService.addLogFromRequest("删除文件", OperationLevel.IMPORTANT, request);
             return Result.success("文件删除成功");
         } else {
             return Result.error("文件删除失败");
@@ -328,6 +342,7 @@ public class FileController {
 
         if (file.exists()) {
             String shareCode = shareFileService.createShareFile(filePathDTO.getPath(), username);
+            operationLogService.addLogFromRequest("创建分享文件", OperationLevel.WARNING, request);
             return Result.success("shareCode=" + shareCode);
         }
         return Result.fail("文件不存在");
@@ -343,6 +358,7 @@ public class FileController {
         String username = TokenUtils.TokenLoad.fromMap(tokenLoad).getUsername();
 
         shareFileService.deleteShareFileByCode(shareCode, username);
+        operationLogService.addLogFromRequest("删除分享链接", OperationLevel.IMPORTANT, request);
         return Result.success("删除成功");
     }
 
@@ -356,6 +372,7 @@ public class FileController {
         String username = TokenUtils.TokenLoad.fromMap(tokenLoad).getUsername();
 
         shareFileService.batchDeleteShareFileByUsername(isDeleteAll, username);
+        operationLogService.addLogFromRequest("批量删除分享链接", OperationLevel.IMPORTANT, request);
         return Result.success("删除成功");
     }
 
@@ -374,13 +391,15 @@ public class FileController {
         String token = TokenUtils.getTokenFromCookie(request);
         Map<String, String> mapFromToken = TokenUtils.getTokenLoad(token);
         String username = TokenUtils.TokenLoad.fromMap(mapFromToken).getUsername();
+
+        operationLogService.addLogFromRequest("获取分享文件列表", OperationLevel.INFO, request);
         return Result.success(shareFileService.getShareFileListByUsername(username, page - 1, pageSize));// page-1 因为前端传过来的是从1开始的
     }
 
 
     @SneakyThrows
     @GetMapping("/getShareFile") // 访客模式下获取分享文件(1天有效期)
-    public Result getShareFile(@RequestParam String shareCode, @RequestParam(required = false) String parentPath) {
+    public Result getShareFile(@RequestParam String shareCode, @RequestParam(required = false) String parentPath, HttpServletRequest request) {
         if (shareCode == null || shareCode.length() != 10) {
             return Result.fail("分享码不正确!");
         }
@@ -390,14 +409,14 @@ public class FileController {
             if (shareFile.getStatus() == 0) {
                 return Result.fail("分享文件已过期!");
             } else {
-                return Result.success(fileService.OutSideGetFileInfoList(shareFile.getFilePath()));
+                return Result.success(fileService.OutSideGetFileInfoList(shareFile.getFilePath(), request));
             }
         } else {
             String relativePath = URLDecoder.decode(parentPath, StandardCharsets.UTF_8.toString());// 解码路径(防止中文乱码)
             relativePath = FileUtils.normalizePath(relativePath); // 规范路径
             String absolutePath = Setting.USER_SHARE_TEMP_DIR_PATH + "/" + shareCode + "/" + relativePath;
             try {
-                return Result.success(fileService.OutSideGetFileInfoList(absolutePath));
+                return Result.success(fileService.OutSideGetFileInfoList(absolutePath, request));
             } catch (IllegalArgumentException e) {
                 return Result.fail("分享文件已过期!");
             }
@@ -443,7 +462,8 @@ public class FileController {
             file = tempDestZip;
         }
 
-        request.setAttribute(HandlerFileBinConfig.ATTR_FILE, FileUtils.getAbsolutePath(file));
-        handlerFileBinConfig.handleRequest(request, response);
+        operationLogService.addLog("外部用户下载文件", "unknown", NetworkUtils.getClientIp(request), OperationLevel.INFO);
+        request.setAttribute(FileBinHandler.ATTR_FILE, FileUtils.getAbsolutePath(file));
+        fileBinHandler.handleRequest(request, response);
     }
 }

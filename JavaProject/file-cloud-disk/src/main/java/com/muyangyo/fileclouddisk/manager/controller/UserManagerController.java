@@ -31,8 +31,8 @@ public class UserManagerController {
     private Setting setting;
 
     @GetMapping("/getUserList")
-    public Result getUserList() {
-        return userManagerService.getUserList();
+    public Result getUserList(HttpServletRequest request) {
+        return userManagerService.getUserList(request);
     }
 
     @PostMapping("/addUser")
@@ -48,14 +48,14 @@ public class UserManagerController {
             if (userDTO.getPassword().length() > 32) {
                 return Result.fail("创建新用户失败!密码不能超过32个字符!", 401);
             }
-            return userManagerService.createUser(userDTO.getUsername(), userDTO.getPassword(), userDTO.getPermissions());
+            return userManagerService.createUser(userDTO.getUsername(), userDTO.getPassword(), userDTO.getPermissions(), request);
         }
         return Result.fail("创建新用户失败!用户名或密码为空!", 401);
     }
 
     @DeleteMapping("/deleteUser")
-    public Result deleteUser(@RequestParam("username") String username) {
-        return userManagerService.deleteUser(username);
+    public Result deleteUser(@RequestParam("username") String username, HttpServletRequest request) {
+        return userManagerService.deleteUser(username, request);
     }
 
     @PostMapping("/updateUser")
@@ -69,7 +69,7 @@ public class UserManagerController {
             if (StringUtils.hasLength(userDTO.getPassword()) && userDTO.getPassword().length() > 32) {
                 return Result.fail("更新用户失败!密码不能超过32个字符!", 401);
             }
-            return userManagerService.updateUser(userDTO.getUsername(), userDTO.getPassword(), userDTO.getPermissions());
+            return userManagerService.updateUser(userDTO.getUsername(), userDTO.getPassword(), userDTO.getPermissions(), request);
         }
         return Result.fail("更新用户失败!用户名为空!", 401);
     }

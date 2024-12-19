@@ -9,11 +9,9 @@
     <div class="table-container">
       <el-table :data="directories" style="width: 100%" max-height="200px">
 
-        <el-table-column label="路径" prop="path" min-width="180px" sortable>
+        <el-table-column label="路径" prop="path" min-width="180px" :show-overflow-tooltip="true" sortable>
           <template #default="scope">
-            <el-tooltip :content="scope.row" placement="top">
-              <span @click="openFolder(scope.row)" style="cursor: pointer;">{{ scope.row }}</span>
-            </el-tooltip>
+            <span @click="openFolder(scope.row)" style="cursor: pointer;">{{ scope.row }}</span>
           </template>
         </el-table-column>
 

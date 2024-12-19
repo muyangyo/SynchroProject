@@ -85,7 +85,7 @@ public class AdminController {
     }
 
     @RequestMapping("/logout")
-    public Result logout(HttpServletResponse response) {
-        return adminService.logout(response);
+    public Result logout(HttpServletRequest request, HttpServletResponse response) {
+        return adminService.logout(request, response);
     }
 }

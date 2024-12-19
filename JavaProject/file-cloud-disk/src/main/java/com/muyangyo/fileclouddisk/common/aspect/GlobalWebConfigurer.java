@@ -18,9 +18,9 @@ import java.util.List;
  * Time: 21:48
  */
 @Component
-public class GlobalInterceptor implements WebMvcConfigurer {
+public class GlobalWebConfigurer implements WebMvcConfigurer {
     @Resource
-    VerifyLogin verifyLogin;
+    VerifyLoginInterceptor verifyLoginInterceptor;
     @Resource
     Setting setting;
 
@@ -29,7 +29,9 @@ public class GlobalInterceptor implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(verifyLogin).addPathPatterns("/**").excludePathPatterns(EXTERNALLY_ACCESSIBLE_PATHS).
+        registry.addInterceptor(verifyLoginInterceptor)
+                .addPathPatterns("/**")
+                .excludePathPatterns(EXTERNALLY_ACCESSIBLE_PATHS).
                 excludePathPatterns("/static/**"); // 放行静态资源;
     }
 }

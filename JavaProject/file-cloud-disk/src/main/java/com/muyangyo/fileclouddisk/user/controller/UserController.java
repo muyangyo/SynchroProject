@@ -61,7 +61,7 @@ public class UserController {
     }
 
     @RequestMapping("/logout")
-    public Result logout(HttpServletResponse response) {
-        return userService.logout(response);
+    public Result logout(HttpServletRequest request, HttpServletResponse response) {
+        return userService.logout(request, response);
     }
 }

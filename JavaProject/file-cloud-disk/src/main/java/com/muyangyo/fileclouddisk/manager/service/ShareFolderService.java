@@ -1,5 +1,6 @@
 package com.muyangyo.fileclouddisk.manager.service;
 
+import com.muyangyo.fileclouddisk.common.model.enums.OperationLevel;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
 import com.muyangyo.fileclouddisk.common.utils.FileUtils;
 import com.muyangyo.fileclouddisk.manager.mapper.ShareFolderMapper;
@@ -8,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
@@ -25,9 +27,11 @@ public class ShareFolderService {
 
     @Resource
     private ShareFolderMapper shareFolderMapper;
+    @Resource
+    private OperationLogService operationLogService;
 
     @SneakyThrows
-    public Result addNewShareFolder() {
+    public Result addNewShareFolder(HttpServletRequest request) {
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); // 设置主题
         JFileChooser fileChooser = new JFileChooser();// 创建文件选择器
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY); // 设置为选择文件夹
@@ -41,18 +45,20 @@ public class ShareFolderService {
             File selectedFolder = fileChooser.getSelectedFile();
             String path = FileUtils.getAbsolutePath(selectedFolder); // 格式化绝对路径
             shareFolderMapper.insertNewShareFolder(path);
+            operationLogService.addLogFromRequest("管理员操作: 添加共享文件夹[ " + path + " ]", OperationLevel.IMPORTANT, request);
             return Result.success(true);
         } else {
             return Result.fail("用户未选中文件夹");
         }
     }
 
-    public Result getShareFolderList() {
+    public Result getShareFolderList(HttpServletRequest request) {
+        operationLogService.addLogFromRequest("管理员操作: 查看挂载路径列表", OperationLevel.IMPORTANT, request);
         return Result.success(shareFolderMapper.getShareFolderList());
     }
 
     @SneakyThrows
-    public Result openFolder(String path) {
+    public Result openFolder(String path, HttpServletRequest request) {
         if (shareFolderMapper.getShareFolderList().contains(path)) {
 
             // 创建File对象
@@ -68,6 +74,7 @@ public class ShareFolderService {
                 Desktop desktop = Desktop.getDesktop();
                 // 打开文件夹
                 desktop.open(folder);
+                operationLogService.addLogFromRequest("管理员操作: 打开共享文件夹[ " + path + " ]", OperationLevel.WARNING, request);
                 return Result.success(true);
             } else {
                 log.error("当前平台不支持Desktop API");
@@ -78,19 +85,21 @@ public class ShareFolderService {
         return Result.fail("该文件夹不在共享文件夹列表中!");
     }
 
-    public Result deleteShareFolder(String path) {
+    public Result deleteShareFolder(String path, HttpServletRequest request) {
         if (shareFolderMapper.getShareFolderList().contains(path)) {
             shareFolderMapper.deleteShareFolder(path);
+            operationLogService.addLogFromRequest("管理员操作: 删除共享文件夹[ " + path + " ]", OperationLevel.IMPORTANT, request);
             return Result.success(true);
         } else {
             return Result.fail("该文件夹不在共享文件夹列表中!");
         }
     }
 
-    public Result addNewShareFolderByPath(String path) {
+    public Result addNewShareFolderByPath(String path, HttpServletRequest request) {
         File newFolder = new File(path);
         if (newFolder.exists() && newFolder.isDirectory()) {
             shareFolderMapper.insertNewShareFolder(path);
+            operationLogService.addLogFromRequest("管理员操作: 添加共享文件夹[ " + path + " ]", OperationLevel.WARNING, request);
             return Result.success(true);
         } else {
             return Result.fail("非法路径!");

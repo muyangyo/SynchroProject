@@ -25,7 +25,7 @@ import java.util.List;
  */
 @Component
 @Slf4j
-public class VerifyLogin implements HandlerInterceptor {
+public class VerifyLoginInterceptor implements HandlerInterceptor {
     @Resource
     private Setting setting;
 
