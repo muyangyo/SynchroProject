@@ -13,6 +13,8 @@ import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import '@/style/GlobalStyle.scss'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
+// 导入 iconfont
+import '@/assets/iconfont.js'
 
 // 创建 Vue 应用实例
 const app = createApp(App);
