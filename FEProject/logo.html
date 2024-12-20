@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>沐阳 Logo</title>
+</head>
+<body>
+<div class="logo-container">
+    <div class="logo">沐阳</div>
+</div>
+</body>
+<style>
+    /* styles.css */
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: white;
+    }
+
+    .logo-container {
+        width: 240px;
+        height: 240px;
+        background: linear-gradient(to bottom, #f1f174, #b86ce5, #00BFFF); /* 从上到下的渐变 */
+        border-radius: 20px; /* 圆角 */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+    }
+
+    .logo {
+        font-family: "PingFang SC", sans-serif;
+        font-size: 99px;
+        font-weight: 800;
+        color: rgba(215, 210, 210, 0.90);
+        text-shadow: 2px 2px 4px rgba(121, 114, 114, 0.20);
+    }
+
+    /* 可选：太阳光芒元素 */
+    .sun-rays {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .sun-rays::before,
+    .sun-rays::after {
+        content: '';
+        position: absolute;
+        width: 50%;
+        height: 5px;
+        background-color: #FFD700;
+        transform: rotate(45deg);
+    }
+
+    .sun-rays::after {
+        transform: rotate(-45deg);
+    }
+</style>
+</html>

@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
  * Time: 19:59
  */
 @RestController
-@RequestMapping("/shareFolderManager")
+@RequestMapping("/api/shareFolderManager")
 @LocalOperation
 @AdminRequired
 public class ShareFolderController {

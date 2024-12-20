@@ -15,7 +15,7 @@ import javax.annotation.Resource;
  * Date: 2024/12/18
  * Time: 15:59
  */
-@RequestMapping("/operationLog")
+@RequestMapping("/api/operationLog")
 @RestController
 @LocalOperation
 @AdminRequired

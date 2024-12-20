@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 @RestController
 @Slf4j
-@RequestMapping("/userManager")
+@RequestMapping("/api/userManager")
 @AdminRequired
 public class UserManagerController {
     @Resource

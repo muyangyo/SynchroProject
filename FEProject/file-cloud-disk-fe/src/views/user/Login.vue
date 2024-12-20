@@ -25,11 +25,10 @@ import {ref} from 'vue';
 import {ElMessage} from 'element-plus';
 import {useRouter} from 'vue-router';
 import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
-import {useKeyStore} from "@/stores/keyStore.js";
 import {UserSession, ROLES} from "@/utils/UserLocalStoreUtils.js";
+import {rsaEncryptUtil} from "@/utils/RSAEncryptUtils.js";
 
 const router = useRouter();// 路由
-const keyStore = useKeyStore(); // 密钥存储
 
 const loginForm = ref(null);// 登录表单
 
@@ -49,12 +48,12 @@ const submitForm = () => {
   loginForm.value.validate(async (valid) => {
     if (valid) {
       let keyResponse = await easyRequest(RequestMethods.GET, '/user/getPublicKey', "");
-      keyStore.setPublicKey(keyResponse.data); // 保存公钥
+      rsaEncryptUtil.setPublicKey(keyResponse.data); // 保存公钥
 
       // Rsa 加密
       const RequestData = {
-        username: keyStore.encryptData(form.value.username),
-        password: keyStore.encryptData(form.value.password),
+        username: rsaEncryptUtil.encryptData(form.value.username),
+        password: rsaEncryptUtil.encryptData(form.value.password),
       };
 
       try {

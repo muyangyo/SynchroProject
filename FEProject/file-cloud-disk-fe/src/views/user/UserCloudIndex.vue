@@ -206,16 +206,9 @@ import {
   Download,
   EditPen,
   FolderAdd,
-  Share, SuitcaseLine,
+  Share,
   UploadFilled
 } from '@element-plus/icons-vue';
-import VideoPreview from "@/components/user/videoPreview.vue";
-import AudioPreview from "@/components/user/audioPreview.vue";
-import TextPreview from "@/components/user/textPreview.vue";
-import ImagePreview from "@/components/user/imagePreview.vue";
-import DocxPreview from "@/components/user/docxPreview.vue";
-import PdfPreview from "@/components/user/pdfPreview.vue";
-import IconFromDIY from "@/components/common/iconFromDIY.vue";
 import {easyRequest, optionalRequest, RequestMethods} from "@/utils/RequestTool.js";
 import {useRoute} from "vue-router";
 import {config} from "@/GlobalConfig.js";
@@ -223,9 +216,16 @@ import router, {deleteCookie, tokenName} from "@/router/RouterSetting.js";
 import {sizeTostr} from "@/utils/FileSizeConverter.js";
 import {ElLoading, ElMessage, ElMessageBox} from 'element-plus';
 import useClipboard from 'vue-clipboard3'; // 引入 vue-clipboard3
-import UserShareManager from "@/components/user/UserShareManager.vue";
 import SparkMD5 from 'spark-md5';
 import {UserSession} from "@/utils/UserLocalStoreUtils.js";
+import VideoPreview from "@/components/user/videoPreview.vue";
+import AudioPreview from "@/components/user/audioPreview.vue";
+import TextPreview from "@/components/user/textPreview.vue";
+import ImagePreview from "@/components/user/imagePreview.vue";
+import DocxPreview from "@/components/user/docxPreview.vue";
+import PdfPreview from "@/components/user/pdfPreview.vue";
+import IconFromDIY from "@/components/common/iconFromDIY.vue";
+import UserShareManager from "@/components/user/UserShareManager.vue";
 
 // 权限相关变量
 const haveDeletePermission = ref(UserSession.getPermissions().includes("d"));
@@ -272,7 +272,7 @@ const route = useRoute();
 
 // 初次加载页面时，获取根目录即可
 onMounted(() => {
-  if (location.pathname !== config.userRouterBaseUrl) {
+  if (config.userRouterBaseUrl !== route.fullPath) {
     router.push(config.userRouterBaseUrl);
     return;
   }
@@ -729,7 +729,7 @@ const handleShare = (index, row) => {
 
   easyRequest(RequestMethods.POST, "/file/createShareFile", {path: row.filePath}, false, true).then(response => {
     if (response.statusCode === "SUCCESS" && response.data) {
-      shareLink.value = location.origin + "/share?" + response.data + " 链接有效期一天,请及时下载";
+      shareLink.value = location.origin + "/#/share?" + response.data + " 链接有效期一天,请及时下载";
     } else {
       ElMessage.error(response.errMsg);
     }

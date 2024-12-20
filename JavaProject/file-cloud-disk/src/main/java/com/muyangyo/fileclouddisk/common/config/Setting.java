@@ -37,12 +37,13 @@ public class Setting {
     private Integer port;
     @Value("${spring.application.name}")
     private String applicationName;
+    @Value("${server.ssl.enabled:false}")
+    private boolean sslEnabled; // 是否开启ssl(http/https)
 
     private SystemType systemType;
     private String serverIP;
-    @Value("${server.servlet.context-path}")
-    private String contextPath;
-    private String completeServerURL;
+    private String completePublicServerURL;// 公网服务器地址
+    private String completeLocalServerURL;// 本地服务器地址
     @Value("${invitationCode}")
     private String invitationCode;
 
@@ -85,11 +86,13 @@ public class Setting {
     // 全局
     private ExecutorService settingThreadPool; // 线程池
 
+
     @PostConstruct
     public void init() {
         this.systemType = OSUtils.getSystemType();
         this.serverIP = NetworkUtils.getServerIP();
-        this.completeServerURL = "http://" + serverIP + ":" + port + contextPath;
+        this.completePublicServerURL = (sslEnabled ? "https://" : "http://") + serverIP + ":" + port;
+        this.completeLocalServerURL = (sslEnabled ? "https://" : "http://") + "127.0.0.1" + ":" + port;
         this.loginAndRegisterTimeCache = new EasyTimedCache<>(CACHE_SIZE, LIMIT_TIME, true);// 登录和注册时间缓存
         this.rasCache = new EasyTimedCache<>(CACHE_SIZE, RSA_USEFUL_TIME, true);// RSA密钥缓存
 
@@ -141,7 +144,7 @@ public class Setting {
 
     private boolean isConfigInvalid() {
         return Stream.of(
-                port, applicationName, systemType, serverIP, completeServerURL, invitationCode,
+                port, applicationName, systemType, serverIP, completePublicServerURL, invitationCode,
                 loginAndRegisterTimeCache, rasCache, maxNumberOfAttempts, signature, tokenLifeTime, videoCache, fileCache
                 , videoCacheSize, downloadFileCacheSize, downloadFileCacheExpireTime, settingThreadPool, maximumSurvivalTimeOfSharedFile,
                 localOperationOnly

@@ -3,6 +3,7 @@ export const ROLES = {
     user: "user"
 };
 
+// UserSession 类: 用于管理用户的登录状态、权限、角色等信息
 export class UserSession {
     // 从本地存储中获取数据
     static getFromLocalStorage(key) {

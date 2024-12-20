@@ -19,7 +19,7 @@ const requestTool = axios.create({
 // 请求拦截器
 requestTool.interceptors.request.use(config => {
     // 在请求发送前处理请求配置
-    // console.log('发出的请求为:', config); todo: 调试用
+    console.log('发出的请求为:', config); //todo: 调试用
     return config;
 }, error => {
     // 处理请求错误
@@ -30,7 +30,7 @@ requestTool.interceptors.request.use(config => {
 // 响应拦截器
 requestTool.interceptors.response.use(response => {
     // 处理响应数据
-    // console.log('收到的响应为:', response.data); todo: 调试用
+    console.log('收到的响应为:', response.data); //todo: 调试用
     return response.data;
 }, error => {
     // 处理响应错误

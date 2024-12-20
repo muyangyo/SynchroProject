@@ -51,7 +51,8 @@ public class ConfigInitializer {
             throw new InitFailedException("系统类型不受支持,目前只支持Windows、Linux系统");
         }
         log.info("成功识别系统类型: {} ", systemType);
-        log.info("网页服务成功启动于: " + setting.getCompleteServerURL());
+        log.info("网页服务成功启动于: " + setting.getCompletePublicServerURL());
+        log.info("本地服务地址为: " + setting.getCompleteLocalServerURL());
     }
 
     public static void init() throws IOException {

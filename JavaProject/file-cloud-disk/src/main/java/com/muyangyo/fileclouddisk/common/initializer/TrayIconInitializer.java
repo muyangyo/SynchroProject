@@ -18,6 +18,8 @@ import java.util.prefs.Preferences;
 public class TrayIconInitializer {
     @Resource
     private Setting setting; // 注入配置设置
+    public static final String MANAGER_RELATIVE_PATH = "/#/manager"; // 管理页面相对路径
+    public static final String USER_RELATIVE_PATH = "/#/usr"; // 用户页面相对路径
 
     // 应用启动时触发的事件
     public void onApplicationReady() {
@@ -87,7 +89,7 @@ public class TrayIconInitializer {
 
     private void openManagePage() {
         try {
-            Desktop.getDesktop().browse(java.net.URI.create(setting.getCompleteServerURL())); // 使用系统浏览器打开网址
+            Desktop.getDesktop().browse(java.net.URI.create(setting.getCompleteLocalServerURL() + MANAGER_RELATIVE_PATH)); // 使用系统浏览器打开网址
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -96,7 +98,7 @@ public class TrayIconInitializer {
     // 打开项目网址的方法
     private void openUrl() {
         try {
-            Desktop.getDesktop().browse(java.net.URI.create(setting.getCompleteServerURL())); // 使用系统浏览器打开网址
+            Desktop.getDesktop().browse(java.net.URI.create(setting.getCompletePublicServerURL() + USER_RELATIVE_PATH)); // 使用系统浏览器打开网址
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

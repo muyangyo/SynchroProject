@@ -25,13 +25,16 @@ public class GlobalWebConfigurer implements WebMvcConfigurer {
     Setting setting;
 
     private static final List<String> EXTERNALLY_ACCESSIBLE_PATHS = new LinkedList<>(
-            Arrays.asList("/file/getShareFile", "/file/OutsideFileDownload")); // 这里不需要/api,不是全路径判断的
+            Arrays.asList("/api/file/getShareFile", "/api/file/OutsideFileDownload"));
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(verifyLoginInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns(EXTERNALLY_ACCESSIBLE_PATHS).
-                excludePathPatterns("/static/**"); // 放行静态资源;
+                .excludePathPatterns(EXTERNALLY_ACCESSIBLE_PATHS)
+                .excludePathPatterns(STATIC_RESOURCE_PATHS); // 放行静态资源;
     }
+
+    private static final List<String> STATIC_RESOURCE_PATHS = new LinkedList<>(
+            Arrays.asList("/*.html", "/*.ico", "/assets/**", "/"));
 }

@@ -40,7 +40,7 @@ import java.util.TimerTask;
 
 @RestController
 @Slf4j
-@RequestMapping("/file")
+@RequestMapping("/api/file")
 public class FileController {
     @Resource
     private FileService fileService;
@@ -406,7 +406,7 @@ public class FileController {
 
         ShareFile shareFile = shareFileService.getSingleShareFileByCode(shareCode);
         if (!StringUtils.hasLength(parentPath)) {
-            if (shareFile.getStatus() == 0) {
+            if (shareFile == null || shareFile.getStatus() == 0) {
                 return Result.fail("分享文件已过期!");
             } else {
                 return Result.success(fileService.OutSideGetFileInfoList(shareFile.getFilePath(), request));

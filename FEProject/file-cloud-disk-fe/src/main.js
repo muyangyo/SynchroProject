@@ -1,6 +1,5 @@
 // 导入 Vue 相关的模块
 import {createApp} from 'vue'
-import {createPinia} from 'pinia'
 
 // 导入应用的主组件和路由
 import App from './App.vue'
@@ -19,10 +18,6 @@ import '@/assets/iconfont.js'
 // 创建 Vue 应用实例
 const app = createApp(App);
 
-// 创建 Pinia 状态管理实例
-const pinia = createPinia();
-// 使用 Pinia 状态管理
-app.use(pinia);
 
 // 使用 Element Plus 组件库
 app.use(ElementPlus)

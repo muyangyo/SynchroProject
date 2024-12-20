@@ -102,7 +102,7 @@ import {
 } from 'element-plus';
 import {easyRequest, optionalRequest, RequestMethods} from "@/utils/RequestTool.js";
 import isLocalhost from "@/utils/IsLocalHost.js";
-import {useKeyStore} from "@/stores/keyStore.js";
+import {rsaEncryptUtil} from "@/utils/RSAEncryptUtils.js";
 
 // 共享目录列表数据
 const directories = ref([]);
@@ -274,21 +274,20 @@ const handleEditUser = (user) => {
   dialogVisible.value = true;
 };
 
-const keyStore = useKeyStore(); // 密钥存储
 const confirmUserChangeAction = () => {
   userForm.value.validate((valid) => {
     if (valid) {
       easyRequest(RequestMethods.GET, '/userManager/getPublicKey', "").then((response) => {
-        keyStore.setPublicKey(response.data); // 保存公钥
+        rsaEncryptUtil.setPublicKey(response.data); // 保存公钥
 
         const userData = {
-          username: keyStore.encryptData(currentUser.value.username), // 加密用户名
+          username: rsaEncryptUtil.encryptData(currentUser.value.username), // 加密用户名
           permissions: currentUser.value.permissions,
         };
 
         // 如果密码不为空，则添加密码字段
         if (currentUser.value.password) {
-          userData.password = keyStore.encryptData(currentUser.value.password); // 加密密码
+          userData.password = rsaEncryptUtil.encryptData(currentUser.value.password); // 加密密码
         }
 
 

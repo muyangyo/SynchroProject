@@ -1,54 +1,31 @@
-import {createRouter, createWebHistory} from 'vue-router'
-import NotFound from '@/views/common/NotFound.vue';
+import {createRouter, createWebHashHistory} from 'vue-router'
 import {config} from '@/GlobalConfig.js';
-import userCloudIndex from '@/views/user/UserCloudIndex.vue';
-import managerIndex from '@/views/manager/ManagerIndex.vue';
-import syncSettingManager from '@/views/manager/sync_manager/SettingManager.vue';
-import syncFileManager from '@/views/manager/sync_manager/FileManager.vue';
-
-import cloudSettingManager from '@/views/manager/cloud_manager/SettingManager.vue';
-import operationLog from '@/views/manager/cloud_manager/OperationLog.vue';
-import outSideShareIndex from "@/views/user/OutsideshareIndex.vue";
 import {ROLES} from "@/utils/UserLocalStoreUtils.js";
 
 
-/**
- * 创建路由数组
- * @param basePath 基础路径
- * @param routes 路由配置数组
- * @returns {路由配置数组}
- */
-// const createRoutes = (basePath, routes) => {
-//     return routes.map(route => {
-//         return {
-//             ...route,// 保留原有属性
-//             path: `${basePath}${route.path}`
-//         };
-//     });
-// }; // 目前暂时不需要
 // 管理端路由配置
 const mangerUrlBaseRoutes = [
         // 路由配置
         {
             path: config.managerRouterBaseUrl,
-            component: managerIndex,
+            component: () => import('@/views/manager/ManagerIndex.vue'),
             redirect: '/manager/cloud_manager/cloud_setting_manager',
             // redirect: '/manager/sync_manager/sync_file_manager',
             children: [
-                /* {
-                     path: 'sync_manager/sync_file_manager', //同步文件管理
-                     component: syncFileManager,
-                 },
-                 {
-                     path: 'sync_manager/sync_setting_manager', //同步设置管理
-                     component: syncSettingManager,
-                 },*/
+                /*  {
+                      path: 'sync_manager/sync_file_manager', //同步文件管理
+                      component: ()=>import('@/views/manager/sync_manager/FileManager.vue'),
+                  },
+                  {
+                      path: 'sync_manager/sync_setting_manager', //同步设置管理
+                      component: ()=>import('@/views/manager/sync_manager/SettingManager.vue'),
+                  },*/
                 {
                     path: 'cloud_manager/cloud_log_manager', //操作日志
-                    component: operationLog,
+                    component: () => import('@/views/manager/cloud_manager/OperationLog.vue'),
                 }, {
                     path: 'cloud_manager/cloud_setting_manager', //云盘设置管理
-                    component: cloudSettingManager,
+                    component: () => import('@/views/manager/cloud_manager/SettingManager.vue'),
                 },
             ]
         }, {
@@ -64,29 +41,32 @@ const userUrlBaseRoutes = [
     // 路由配置
     {
         path: '/share', // 分享文件路由
-        component: outSideShareIndex,
+        component: () => import('@/views/user/OutsideshareIndex.vue'),
         meta: {
             requiresAuth: false // 不需要登录验证
         }
     },
     {
         path: config.userRouterBaseUrl,
-        component: userCloudIndex,
+        component: () => import('@/views/user/UserCloudIndex.vue'),
     }, {
         path: config.userRouterBaseUrl + '/login',
         component: () => import('@/views/user/Login.vue'),
     },
     {
-        path: config.userRouterBaseUrl + '/:pathMatch(.*)*'
-        , component: userCloudIndex
+        path: config.userRouterBaseUrl + '/:pathMatch(.*)*',
+        component: () => import('@/views/user/UserCloudIndex.vue')
     }
 ];
 
 const routes = userUrlBaseRoutes.concat(mangerUrlBaseRoutes); // 合并路由配置
-routes.push({path: '/:pathMatch(.*)*', component: NotFound}) //单独添加 404
+routes.push({
+    path: '/:pathMatch(.*)*',
+    component: () => import('@/views/common/NotFound.vue')
+}) //单独添加 404
 
 const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHashHistory(),
     routes,
 });
 

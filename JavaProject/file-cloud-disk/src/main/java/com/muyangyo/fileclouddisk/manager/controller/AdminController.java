@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
  * Time: 15:34
  */
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("/api/admin")
 public class AdminController {
 
     @Resource
