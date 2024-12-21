@@ -37,7 +37,7 @@ public class ShareFolderController {
     public Result addShareFolder(@RequestBody(required = false) FilePathDTO filePathDTO, HttpServletRequest request) {
         if (filePathDTO != null && StringUtils.hasLength(filePathDTO.getPath())) {
             // 远程添加
-            String path = FileUtils.normalizePath(filePathDTO.getPath());
+            String path = FileUtils.normalizePath(filePathDTO.getPath()).trim(); // 去除首尾空格和斜杠
             return shareFolderService.addNewShareFolderByPath(path, request);
         } else {
             if (!NetworkUtils.isLocalhost(request)) {

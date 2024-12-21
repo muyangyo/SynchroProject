@@ -151,16 +151,21 @@ const addShareDirectory = () => {
       inputPattern: /^(\/|\/?(?:[^\/\*?"<>|]+\/)*[^\/\*?"<>|]*)$/,
       inputErrorMessage: '路径格式不正确'
     }).then(({value}) => {
-      easyRequest(RequestMethods.POST, "/shareFolderManager/addShareFolder", {path: value}, false, true).then(
-          (response) => {
-            if (response.data === true && response.statusCode === "SUCCESS") {
-              ElMessage.success('添加成功');
-              getShareFolderList(); // 更新目录列表
-            } else {
-              ElMessage.error(response.errMsg ? response.errMsg : '添加失败');
+      if (value !== null && value.length > 0) {
+        value = value.trim();
+        easyRequest(RequestMethods.POST, "/shareFolderManager/addShareFolder", {path: value}, false, true).then(
+            (response) => {
+              if (response.data === true && response.statusCode === "SUCCESS") {
+                ElMessage.success('添加成功');
+                getShareFolderList(); // 更新目录列表
+              } else {
+                ElMessage.error(response.errMsg ? response.errMsg : '添加失败');
+              }
             }
-          }
-      );
+        );
+      } else {
+        ElMessage.error('路径不能为空!');
+      }
     }).catch();
   }
 };
