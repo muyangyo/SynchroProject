@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
@@ -187,9 +188,9 @@ public class FileController {
             fileBinHandler.handleRequest(request, response);
         } catch (IOException e) {
             if (e.getMessage().contains("远程主机强迫关闭了一个现有的连接") || e.getMessage().contains("你的主机中的软件中止了一个已建立的连接")) {
-                log.trace("由于视频拖动导致远程主机强迫关闭了一个现有的连接");
+                log.warn("由于视频拖动导致客户端强迫关闭了一个现有的连接 {}", e.getMessage());
             } else {
-                e.printStackTrace();
+                log.error("预览视频过程中出现异常", e);
             }
         }
     }
@@ -202,7 +203,7 @@ public class FileController {
         String path = FileUtils.normalizePath(filePath.getPath());
         File file = new File(path);
         FileInfo fileInfo = fileService.checkFollowRootPathAndGetFileInfo(file);
-        operationLogService.addLogFromRequest("下载文件", OperationLevel.INFO, request);
+        operationLogService.addLogFromRequest("准备下载文件", OperationLevel.INFO, request);
         if (fileInfo.getFileType().getCategory() != FileCategory.FOLDER) {
             String fid = RandomUtil.randomString(5);
             setting.getFileCache().put(fid, file);
@@ -233,10 +234,10 @@ public class FileController {
         }
     }
 
-    @UserOperationLimit("r")
+/*    @UserOperationLimit("r")
     @SneakyThrows
-    @GetMapping(value = "/download")
-    public void downloadFile(@RequestParam String fid, HttpServletResponse response, HttpServletRequest request) {
+    @GetMapping(value = "/download/{fid}") // 下载文件老版本(@deprecated)
+    public void downloadFile(@PathVariable String fid, HttpServletResponse response, HttpServletRequest request) {
         File file = setting.getFileCache().get(fid);
 
         if (!file.exists()) {
@@ -260,6 +261,36 @@ public class FileController {
 
         request.setAttribute(FileBinHandler.ATTR_FILE, FileUtils.getAbsolutePath(file));
         fileBinHandler.handleRequest(request, response);
+    }*/
+
+    @UserOperationLimit("r")
+    @SneakyThrows
+    @GetMapping(value = "/download")
+    public void downloadFile(@RequestParam String fid, HttpServletRequest request, HttpServletResponse response) {
+        File file = setting.getFileCache().get(fid);
+
+        // 校验文件是否合法
+        if (!file.exists()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        // 1.如果压缩文件在临时文件夹中通过,如果没有则再判断是否存在于挂载目录中
+        boolean isTempZip = false;
+        if (FileUtils.getFileExtension(file).equals("zip")) {
+            if (new File(Setting.USER_DOWNLOAD_TEMP_DIR_PATH, FileUtils.getFileName(file)).exists()) {
+                isTempZip = true;
+            }
+        }
+
+        // 2. 如果是其他的文件,或者原本就在挂载目录下的压缩文件,则需要再判断一次
+        if (!isTempZip) {
+            FileInfo fileInfo = fileService.checkFollowRootPathAndGetFileInfo(file);
+        }
+        operationLogService.addLogFromRequest("下载文件", OperationLevel.INFO, request);
+
+        // 下载文件
+        fileService.downloadFile(file, request, response);
     }
 
 
@@ -397,9 +428,8 @@ public class FileController {
     }
 
 
-    @SneakyThrows
     @GetMapping("/getShareFile") // 访客模式下获取分享文件(1天有效期)
-    public Result getShareFile(@RequestParam String shareCode, @RequestParam(required = false) String parentPath, HttpServletRequest request) {
+    public Result getShareFile(@RequestParam String shareCode, @RequestParam(required = false) String parentPath, HttpServletRequest request) throws UnsupportedEncodingException {
         if (shareCode == null || shareCode.length() != 10) {
             return Result.fail("分享码不正确!");
         }
@@ -423,10 +453,10 @@ public class FileController {
         }
     }
 
-    @SneakyThrows
-    @GetMapping("/OutsideFileDownload") // 访客模式下下载文件
-    public void OutsideFileDownload(@RequestParam String shareCode, @RequestParam(required = false) String parentPath
-            , @RequestParam(required = true) String fileName, HttpServletResponse response, HttpServletRequest request) {
+    @GetMapping("/preparingDownloadShareFile") // 访客模式下准备下载文件
+    public Result OutsideFileDownload(@RequestParam String shareCode, @RequestParam(required = false) String parentPath
+            , @RequestParam String fileName, HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
+        // 校验文件是否合法
         if (StringUtils.hasLength(parentPath)) {
             parentPath = FileUtils.normalizePath(parentPath);// 规范路径
             parentPath = URLDecoder.decode(parentPath, StandardCharsets.UTF_8.toString());// 解码路径(防止中文乱码)
@@ -438,32 +468,57 @@ public class FileController {
         File file = new File(realFilePath);
 
         if (!file.exists()) {
+            return Result.error("文件不存在");
+        }
+
+        operationLogService.addLog("外部用户准备下载文件[ " + file.getName() + " ]", "unknown", NetworkUtils.getClientIp(request), OperationLevel.INFO);
+        if (!file.isDirectory()) {
+            String fid = RandomUtil.randomString(5);
+            setting.getShareFileCache().put(fid, file);
+            return Result.success(new DownloadFileInfo(file.getName(), "/file/downloadShareFile?fid=" + fid, file.length()));// 只能返回相对地址
+        } else {
+            try {
+                // 如果是文件夹,则压缩为zip文件
+                FileUtils.createHiddenDirectory(Setting.USER_DOWNLOAD_TEMP_DIR_PATH);
+                File tempDestZip = new File(Setting.USER_DOWNLOAD_TEMP_DIR_PATH, RandomUtil.randomString(5) + ".zip");
+
+                log.info("开始压缩文件夹：" + realFilePath);
+                FileUtils.zip(realFilePath, tempDestZip);
+                log.info("压缩文件成功：" + FileUtils.getAbsolutePath(tempDestZip));
+
+                // 定时删除压缩文件
+                setting.getCustomTimer().scheduleTask(new TimerTask() {
+                    @Override
+                    public void run() {
+                        tempDestZip.delete(); // 定时删除压缩文件
+                    }
+                }, setting.getDownloadFileCacheExpireTime() * 60L); // 定时删除压缩文件
+
+                file = tempDestZip;
+                setting.getShareFileCache().put(FileUtils.getFileNameWithoutExtension(file), file);
+                return Result.success(new DownloadFileInfo(FileUtils.getFileName(file), "/file/downloadShareFile?fid=" + FileUtils.getFileNameWithoutExtension(file), file.length()));// 只能返回相对地址
+
+            } catch (IOException e) {
+                log.error("压缩文件失败", e);
+                return Result.fail("压缩文件失败");
+            }
+        }
+    }
+
+    @GetMapping(value = "/downloadShareFile")
+    public void downloadShareFile(@RequestParam String fid, HttpServletRequest request, HttpServletResponse response) {
+        File file = setting.getShareFileCache().get(fid);
+
+        if (!file.exists()) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
-        // 如果是文件夹,则压缩为zip文件
-        if (file.isDirectory()) {
-            FileUtils.createHiddenDirectory(Setting.USER_DOWNLOAD_TEMP_DIR_PATH);
-            File tempDestZip = new File(Setting.USER_DOWNLOAD_TEMP_DIR_PATH, RandomUtil.randomString(5) + ".zip");
-
-            log.info("开始压缩文件夹：" + realFilePath);
-            FileUtils.zip(realFilePath, tempDestZip);
-            log.info("压缩文件成功：" + FileUtils.getAbsolutePath(tempDestZip));
-
-            // 定时删除压缩文件
-            setting.getCustomTimer().scheduleTask(new TimerTask() {
-                @Override
-                public void run() {
-                    tempDestZip.delete(); // 定时删除压缩文件
-                }
-            }, 30 * 60); // 定时删除压缩文件(30分钟,外部用户的时间短点)
-
-            file = tempDestZip;
-        }
-
         operationLogService.addLog("外部用户下载文件", "unknown", NetworkUtils.getClientIp(request), OperationLevel.INFO);
-        request.setAttribute(FileBinHandler.ATTR_FILE, FileUtils.getAbsolutePath(file));
-        fileBinHandler.handleRequest(request, response);
+
+        // 下载文件
+        fileService.downloadFile(file, request, response);
     }
+
+
 }

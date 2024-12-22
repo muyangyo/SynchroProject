@@ -165,7 +165,7 @@ watch(() => route.query.parentPath, () => {
 })
 const handleDownload = (index, row) => {
   let messageBoxInstance = null;
-  let loading = null;
+  // let loading = null;
 
   if (row.fileType.category === FILE_CATEGORY.FOLDER) {
     messageBoxInstance = ElMessageBox.alert('正在生成压缩包，请耐心等待!', '提示', {
@@ -180,40 +180,53 @@ const handleDownload = (index, row) => {
   }
 
   const parentPath = route.query.parentPath || '';
-  optionalRequest({
-    method: RequestMethods.GET,
-    url: `/file/OutsideFileDownload?shareCode=${shareCode}&fileName=${row.fileName}&parentPath=${parentPath}`,
-    responseType: 'blob',
-    dataTypes: 'blob',
-    timeout: 60000 // 超时时间 60s
-  })
+
+
+  easyRequest(RequestMethods.GET, `/file/preparingDownloadShareFile?shareCode=${shareCode}&fileName=${row.fileName}&parentPath=${parentPath}`,
+      "", false, false, 60000)
       .then(response => {
+
         if (messageBoxInstance) {
           ElMessageBox.close(); // 关闭提示框
         }
-        loading = ElLoading.service({
-          lock: true,
-          text: '文件下载中，请稍候...',
-          background: 'rgba(32,31,31,0.7)',
-        });
 
-        const url = window.URL.createObjectURL(response);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', row.fileName); // 设置下载文件的名称
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url); // 释放 URL
-        loading.close();
+        if (response.statusCode === "SUCCESS" && response.data) {
+          const downloadUrl = response.data.url;
+          const fileName = response.data.fileName;
+
+          let completeUrl = `${location.origin}/api${downloadUrl}`;
+          const link = document.createElement('a');
+          link.href = completeUrl;
+          link.setAttribute('download', fileName);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link)
+        }
+
+
+        /*        loading = ElLoading.service({
+                  lock: true,
+                  text: '文件下载中，请稍候...',
+                  background: 'rgba(32,31,31,0.7)',
+                });
+
+                const url = window.URL.createObjectURL(response);
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', row.fileName); // 设置下载文件的名称
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url); // 释放 URL
+                loading.close();*/
       })
       .catch(error => {
         if (messageBoxInstance) {
           ElMessageBox.close(); // 关闭提示框
         }
-        if (loading) {
-          loading.close();
-        }
+        /*        if (loading) {
+                  loading.close();
+                }*/
         console.error('文件下载失败', error);
       });
 };

@@ -73,6 +73,7 @@ public class Setting {
     //文件模块的配置
     private ConcurrentLRUCache<String, File> videoCache; // 视频缓存
     private ConcurrentLRUCache<String, File> fileCache; // 文件缓存
+    private ConcurrentLRUCache<String, File> ShareFileCache; // 访客文件缓存
     @Value("${Cache.videoCacheSize}")
     private int videoCacheSize; // 视频缓存大小
     @Value("${Cache.downloadFileCacheSize}")
@@ -98,6 +99,7 @@ public class Setting {
 
         this.videoCache = new ConcurrentLRUCache<>(this.videoCacheSize); // 缓存视频
         this.fileCache = new ConcurrentLRUCache<>(this.downloadFileCacheSize, this.downloadFileCacheExpireTime, TimeUnit.MINUTES); // 缓存文件(30分钟)
+        this.ShareFileCache = new ConcurrentLRUCache<>(3, this.downloadFileCacheExpireTime, TimeUnit.MINUTES); // 缓存访客文件(30分钟)
         this.customTimer = new CustomTimer();
         this.settingThreadPool = Executors.newCachedThreadPool(); // 线程池
 
@@ -145,7 +147,7 @@ public class Setting {
     private boolean isConfigInvalid() {
         return Stream.of(
                 port, applicationName, systemType, serverIP, completePublicServerURL, invitationCode,
-                loginAndRegisterTimeCache, rasCache, maxNumberOfAttempts, signature, tokenLifeTime, videoCache, fileCache
+                loginAndRegisterTimeCache, rasCache, maxNumberOfAttempts, signature, tokenLifeTime, videoCache, fileCache, ShareFileCache
                 , videoCacheSize, downloadFileCacheSize, downloadFileCacheExpireTime, settingThreadPool, maximumSurvivalTimeOfSharedFile,
                 localOperationOnly
         ).anyMatch(value -> {
@@ -172,6 +174,7 @@ public class Setting {
         settingThreadPool.shutdownNow();
         videoCache.shutdown();
         fileCache.shutdown();
+        ShareFileCache.shutdown();
         loginAndRegisterTimeCache.shutdown();
         rasCache.shutdown();
         log.info("缓存释放完毕!");

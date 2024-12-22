@@ -34,23 +34,29 @@ public class LocalOperationAspect {
 
     @Around("@annotation(com.muyangyo.fileclouddisk.common.aspect.annotations.LocalOperation) || @within(com.muyangyo.fileclouddisk.common.aspect.annotations.LocalOperation)")
     public Object checkLocalRequest(ProceedingJoinPoint joinPoint) throws Throwable {
-        // 检查是否限制本地操作
-        if (!setting.isLocalOperationOnly()) {
-            return joinPoint.proceed(); // 如果不限制，直接执行目标方法
+        try{
+            // 检查是否限制本地操作
+            if (!setting.isLocalOperationOnly()) {
+                return joinPoint.proceed(); // 如果不限制，直接执行目标方法
+            }
+
+            log.trace("由于开启了本地操作限制，{} 的 {} 本方法只能在本地进行", joinPoint.getSignature().getDeclaringTypeName(), joinPoint.getSignature().getName());
+
+            // 获取当前请求的 HttpServletRequest
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+
+            // 检查是否是回环地址
+            if (NetworkUtils.isLocalhost(request)) {
+                // 如果是回环地址，继续执行目标方法
+                return joinPoint.proceed();
+            } else {
+                // 如果不是回环地址，返回统一的错误信息
+                return Result.fail(FORBIDDEN_RESPONSE);
+            }
+        }catch (Exception e){
+            log.error("本地操作限制出现异常", e);
+            return Result.fail("系统异常，请联系管理员!");
         }
 
-        log.trace("由于开启了本地操作限制，{} 的 {} 本方法只能在本地进行", joinPoint.getSignature().getDeclaringTypeName(), joinPoint.getSignature().getName());
-
-        // 获取当前请求的 HttpServletRequest
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-
-        // 检查是否是回环地址
-        if (NetworkUtils.isLocalhost(request)) {
-            // 如果是回环地址，继续执行目标方法
-            return joinPoint.proceed();
-        } else {
-            // 如果不是回环地址，返回统一的错误信息
-            return Result.fail(FORBIDDEN_RESPONSE);
-        }
     }
 }

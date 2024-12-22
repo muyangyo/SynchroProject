@@ -392,7 +392,6 @@ const startUpload = async (file) => {
     // 文件大于200MB，分片大小16MB
     chunkSize = 1024 * 1024 * 16;
   }
-
   // 2.计算分片数量
   const totalChunks = Math.ceil(file.size / chunkSize);
 
@@ -638,45 +637,56 @@ const handleDownload = (index, row) => {
 
         if (response.statusCode === "SUCCESS" && response.data) {
           const downloadUrl = response.data.url;
-          // const fileName = response.data.fileName;
+          const fileName = response.data.fileName;
 
-          loading = ElLoading.service({
-            lock: true,
-            text: '文件下载中，请稍候...',
-            background: 'rgba(32,31,31,0.7)',
-          });
+          let completeUrl = `${location.origin}/api${downloadUrl}`;
+          const link = document.createElement('a');
+          link.href = completeUrl;
+          link.setAttribute('download', fileName);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link)
 
-          optionalRequest({
-            method: RequestMethods.GET,
-            responseType: 'blob',
-            url: downloadUrl,
-            dataTypes: 'blob',
-            timeout: 60000 // 设置较长的超时时间
-          }).then(response => {
-            const url = window.URL.createObjectURL(response);
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', row.fileName); // 设置下载文件的名称
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url); // 释放 URL
-          }).catch(error => {
-            console.error('文件下载失败', error);
-          }).finally(() => {
-            if (loading) {
-              loading.close(); // 关闭加载提示
-            }
-          });
+
+          /*    (手机不支持,内存占用较大)      loading = ElLoading.service({
+                      lock: true,
+                      text: '文件下载中，请稍候...',
+                      background: 'rgba(32,31,31,0.7)',
+                    });
+                    // const fileName = response.data.fileName;
+
+                    optionalRequest({
+                      method: RequestMethods.GET,
+                      responseType: 'blob',
+                      url: downloadUrl,
+                      dataTypes: 'blob',
+                      timeout: 60000 // 设置较长的超时时间
+                    }).then(response => {
+                      const url = window.URL.createObjectURL(response);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.setAttribute('download', row.fileName); // 设置下载文件的名称
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      window.URL.revokeObjectURL(url); // 释放 URL
+                    }).catch(error => {
+                      console.error('文件下载失败', error);
+                    }).finally(() => {
+                      if (loading) {
+                        loading.close(); // 关闭加载提示
+                      }
+                    });*/
+
         }
       })
       .catch(error => {
         if (messageBoxInstance) {
           ElMessageBox.close(); // 关闭提示框
         }
-        if (loading) {
-          loading.close(); // 关闭加载提示
-        }
+        /* if (loading) {
+           loading.close(); // 关闭加载提示
+         }*/
         console.error('文件下载失败', error);
       });
 };
@@ -987,6 +997,7 @@ const showShareLinkList = () => {
 .file-name {
   white-space: nowrap;
   overflow: hidden;
+  cursor: pointer;
   text-overflow: ellipsis;
   max-width: 200px;
 }

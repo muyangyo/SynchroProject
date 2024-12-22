@@ -12,6 +12,8 @@ import com.muyangyo.fileclouddisk.common.utils.NetworkUtils;
 import com.muyangyo.fileclouddisk.manager.service.OperationLogService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.connector.ClientAbortException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,8 +21,13 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.URLEncoder;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -355,4 +362,63 @@ public class FileService {
         log.trace("文件合并成功,并成功删除分块文件");
     }
 
+
+    /**
+     * 下载文件(支持多线程)
+     *
+     * @param file     文件
+     * @param request  请求
+     * @param response 响应
+     */
+    @SneakyThrows
+    public void downloadFile(File file, HttpServletRequest request, HttpServletResponse response) {
+        // 下载文件
+        long fileSize = file.length();
+        long start = 0, end = fileSize - 1; // 默认下载全部(浏览器)
+
+        String rangeHeader = request.getHeader(HttpHeaders.RANGE);
+        if (rangeHeader != null && rangeHeader.startsWith("bytes=")) { // 如果是range 请求
+            String[] ranges = rangeHeader.substring("bytes=".length()).split("-");
+            start = Long.parseLong(ranges[0]); // 开始位置
+            end = ranges.length > 1 && !ranges[1].isEmpty() ? Long.parseLong(ranges[1]) : fileSize - 1; // 结束位置
+
+            // 检查 Range 是否有效
+            if (start < 0 || end >= fileSize || start > end) {
+                response.setStatus(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
+                return;
+            }
+        }
+
+        long count = end - start + 1;// 计算传输的长度
+
+        // 这个是避免文件名是特殊字符
+        String fileName = file.getName();
+        String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.name())
+                .replace("+", "%20");
+
+        response.setHeader(HttpHeaders.CONTENT_TYPE, "application/octet-stream"); // 设置响应类型
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + encodedFileName);
+        response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(count)); // 设置响应长度
+
+        // 如果是range 请求,则设置 range 响应头
+        if (start > 0 || end < fileSize - 1) {
+            response.setHeader(HttpHeaders.CONTENT_RANGE, "bytes " + start + "-" + end + "/" + fileSize);
+            response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+        }
+
+        // 使用 FileChannel 和 transferTo 方法高效传输文件内容
+        try (FileChannel fileChannel = FileChannel.open(file.toPath(), StandardOpenOption.READ);
+             OutputStream outputStream = response.getOutputStream()) {
+            // 使用 transferTo 方法直接传输文件内容
+            fileChannel.transferTo(start, count, Channels.newChannel(outputStream));
+        } catch (IOException e) {
+            if (e.getMessage().contains("远程主机强迫关闭了一个现有的连接") || e.getMessage().contains("你的主机中的软件中止了一个已建立的连接")) {
+                log.warn("由于多线程下载文件导致主机强迫关闭了一个现有的连接");
+            } else if (e instanceof ClientAbortException || e.getMessage().contains("SocketTimeoutException")) {
+                log.warn("客户端主动关闭连接或网络超时 {}", e.getMessage());
+            } else {
+                log.error("下载文件过程中出现异常", e);
+            }
+        }
+    }
 }
