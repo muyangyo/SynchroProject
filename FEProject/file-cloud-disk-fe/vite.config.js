@@ -14,11 +14,11 @@ export default defineConfig({
             '@': fileURLToPath(new URL('./src', import.meta.url))
         },
     },
-    base: './' // todo: 打包时打开
+    // base: './' // todo: 打包时打开
 
-/*    server: { //todo: 打包时关闭 这个就是前端代理(分离的时候)
+    server: { //todo: 打包时关闭 这个就是前端代理(分离的时候)
         proxy: {
             '/api': 'http://localhost:80'
         },
-    },*/
+    },
 })

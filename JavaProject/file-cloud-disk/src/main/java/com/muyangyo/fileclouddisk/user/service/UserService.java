@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.PrivateKey;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * UserService 服务层，处理用户相关的业务逻辑。
@@ -80,7 +81,7 @@ public class UserService {
             response.addCookie(cookie);// 给前端验证token是否存在的
 
             operationLogService.addLog("登入", username, NetworkUtils.getClientIp(request), OperationLevel.INFO);
-            return Result.success(user.getPermissions());
+            return Result.success(true);
         } else {
             return Result.fail("用户名或密码错误");
         }
@@ -142,5 +143,19 @@ public class UserService {
 
         operationLogService.addLogFromRequest("登出", OperationLevel.INFO, request);
         return Result.success("退出成功!");
+    }
+
+    public Result getPermissions(HttpServletRequest request) {
+        Map<String, String> tokenLoad = TokenUtils.getTokenLoad(TokenUtils.getTokenFromCookie(request));
+        if (tokenLoad == null) {
+            return Result.fail("请先登录!");
+        }
+        TokenUtils.TokenLoad load = TokenUtils.TokenLoad.fromMap(tokenLoad);
+        User user = userMapper.selectByUserId(load.getUserId());
+
+        if (user != null) {
+            return Result.success(user.getPermissions());
+        }
+        return Result.fail("用户不存在!");
     }
 }

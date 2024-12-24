@@ -14,6 +14,13 @@ import '@/style/GlobalStyle.scss'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 // 导入 iconfont
 import '@/assets/iconfont.js'
+/*
+
+import VConsole from 'vconsole';
+
+const vConsole = new VConsole();
+*/
+
 
 // 创建 Vue 应用实例
 const app = createApp(App);

@@ -194,4 +194,6 @@ public class Setting {
     public static final String USER_DOWNLOAD_TEMP_DIR_PATH = "./downloadTemp"; // 用户下载临时目录
     public static final String USER_SHARE_TEMP_DIR_PATH = "./shareTemp"; // 用户分享临时目录
     public static final String USER_UPLOAD_TEMP_DIR_PATH = "./uploadTemp"; // 用户上传临时目录
+    public static final String MANAGER_RELATIVE_PATH = "/#/manager"; // 管理页面相对路径
+    public static final String USER_RELATIVE_PATH = "/#/usr"; // 用户页面相对路径
 }

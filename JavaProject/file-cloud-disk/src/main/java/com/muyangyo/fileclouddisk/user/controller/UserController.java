@@ -7,10 +7,7 @@ import com.muyangyo.fileclouddisk.common.model.other.Result;
 import com.muyangyo.fileclouddisk.common.utils.NetworkUtils;
 import com.muyangyo.fileclouddisk.user.service.UserService;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -51,6 +48,10 @@ public class UserController {
         return Result.fail("登录失败!用户名或密码为空!", 401);
     }
 
+    @GetMapping("/getPermissions")
+    public Result getPermissions(HttpServletRequest request) {
+        return userService.getPermissions(request);
+    }
 
     @RequestMapping(value = "/getPublicKey", method = RequestMethod.GET)
     public Result getPublicKey(HttpServletRequest request) {

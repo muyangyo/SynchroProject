@@ -197,7 +197,7 @@
 
 </template>
 <script setup>
-import {markRaw, onMounted, reactive, ref, watch} from 'vue';
+import {markRaw, onMounted, reactive, ref, warn, watch} from 'vue';
 import {
   Close,
   DataAnalysis,
@@ -272,38 +272,65 @@ const route = useRoute();
 
 // 初次加载页面时，获取根目录即可
 onMounted(() => {
+  // 当有面包屑的时候,刷新掉,要不然会冲突,没有的话则不需要
   if (config.userRouterBaseUrl !== route.fullPath) {
     router.push(config.userRouterBaseUrl);
     return;
   }
 
-  if (haveReadPermission.value) {
-    easyRequest(RequestMethods.POST, "/file/getFileList", {path: config.userRouterBaseUrl}, false, true).then(response => {
-      response.data.forEach((item) => {
-        if (item.fileType.category === FILE_CATEGORY.FOLDER) {
-          item.fileSize = ''; // 目录不显示大小
-        }
-      }); // 先处理一下目录
-      tableData.value = response.data;
-    });
-  } else {
-    console.warn("没有读取权限，无法获取文件列表!")
-  }
+  // 获取权限
+  easyRequest(RequestMethods.GET, "/user/getPermissions", {}, false, false).then((response) => {
+    UserSession.setPermissions(response.data);
+    // 权限相关变量
+    haveDeletePermission.value = response.data.includes("d");
+    haveWritePermission.value = response.data.includes("w");
+    haveReadPermission.value = response.data.includes("r");
+
+    if (haveReadPermission.value) {
+      easyRequest(RequestMethods.POST, "/file/getFileList", {path: config.userRouterBaseUrl}, false, true).then(response => {
+        response.data.forEach((item) => {
+          if (item.fileType.category === FILE_CATEGORY.FOLDER) {
+            item.fileSize = ''; // 目录不显示大小
+          }
+        }); // 先处理一下目录
+        tableData.value = response.data;
+      });
+    } else {
+      console.warn("没有读取权限，无法获取文件列表!")
+    }
+  })
 });
 
 watch(() => route.fullPath, () => {
   //如果是根目录
-  if (route.fullPath === config.userRouterBaseUrl) {
-    // 非首次加载页面，更新数据
-    easyRequest(RequestMethods.POST, "/file/getFileList", {path: route.fullPath}, false, true).then((response) => {
-      handleResponse(response);
-    });
-  } else {
-    // 非根目录，更新数据
-    easyRequest(RequestMethods.POST, "/file/getFileList", {path: route.fullPath}, false, true).then((response) => {
-      handleResponse(response);
-    });
-  }
+  /*  if (route.fullPath === config.userRouterBaseUrl) {
+      // 非首次加载页面，更新数据
+      easyRequest(RequestMethods.POST, "/file/getFileList", {path: route.fullPath}, false, true).then((response) => {
+        handleResponse(response);
+      });
+    } else {
+      // 非根目录，更新数据
+      easyRequest(RequestMethods.POST, "/file/getFileList", {path: route.fullPath}, false, true).then((response) => {
+        handleResponse(response);
+      });
+    }*/
+
+  easyRequest(RequestMethods.GET, "/user/getPermissions", {}, false, false).then((response) => {
+    UserSession.setPermissions(response.data);
+    // 权限相关变量
+    haveDeletePermission.value = response.data.includes("d");
+    haveWritePermission.value = response.data.includes("w");
+    haveReadPermission.value = response.data.includes("r");
+
+    if (haveReadPermission.value) {
+      easyRequest(RequestMethods.POST, "/file/getFileList", {path: route.fullPath}, false, true).then((response) => {
+        handleResponse(response);
+      });
+    } else {
+      console.warn("没有读取权限，无法获取文件列表!")
+    }
+  })
+
   // 面包屑更新
   let temp = config.userRouterBaseUrl.substring(1, config.userRouterBaseUrl.length);
   pathPartsForBreadCrumb.value = (route.fullPath.split('/').filter((item) => item !== '' && item !== temp));
@@ -362,6 +389,8 @@ const handleUploadFile = () => {
   input.type = 'file'; // 设置input类型为file
 
   input.onchange = (e) => {  //注册 onchange 事件
+    e.preventDefault(); // 阻止默认行为
+    input.style.display = 'none'; // 隐藏 input 元素
     upLoadFile.value = e.target.files[0]; // 获取选择的文件
     if (upLoadFile.value) {
       startUpload(upLoadFile.value); // 开始上传
@@ -438,10 +467,11 @@ const startUpload = async (file) => {
     uploadDialog.visible = false;
   }
 
+  upLoadFile.value = null; // 上传完毕，清空文件选择框
   setTimeout(() => {
     uploadProgress.value = 0;
-    uploadSpeed.value = 0;
-  }, 1000);
+    uploadSpeed.value = "0";
+  }, 500);
 };
 // 上传分片
 const uploadChunk = async (chunk, chunkIndex, totalChunks, chunkMd5, fileName) => {

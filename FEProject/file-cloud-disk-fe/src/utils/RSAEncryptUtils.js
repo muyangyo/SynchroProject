@@ -18,7 +18,6 @@ class RSAEncryptUtil {
         if (!key || typeof key !== 'string') {
             throw new Error("公钥应为有效的非空字符串");
         }
-        console.warn("开启加密功能,公钥为:" + key);
         this.publicKey = key;
     }
 
@@ -29,12 +28,9 @@ class RSAEncryptUtil {
                 throw new Error("请先设置公钥!");
             }
 
-            console.warn("正在加密数据:" + data);
             const encryptor = new JSEncrypt();
             encryptor.setPublicKey(this.publicKey);
-            const encryptedData = encryptor.encrypt(data);
-            console.warn("加密后的数据:" + encryptedData);
-            return encryptedData;
+            return encryptor.encrypt(data);
         } else {
             return data;
         }

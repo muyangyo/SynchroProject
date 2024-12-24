@@ -5,6 +5,7 @@ import com.muyangyo.fileclouddisk.common.config.Setting;
 import com.muyangyo.fileclouddisk.common.exception.CanNotCreateFolderException;
 import com.muyangyo.fileclouddisk.common.exception.InitFailedException;
 import com.muyangyo.fileclouddisk.common.model.enums.SystemType;
+import com.muyangyo.fileclouddisk.common.utils.NetworkUtils;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Encoders;
 import io.jsonwebtoken.security.Keys;
@@ -17,9 +18,11 @@ import org.springframework.context.event.EventListener;
 
 import javax.annotation.Resource;
 import javax.crypto.SecretKey;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ServerSocket;
 import java.net.URL;
 
 /**
@@ -33,7 +36,6 @@ import java.net.URL;
 @Data
 @Slf4j
 public class ConfigInitializer {
-
     @Resource
     private Setting setting;//postStruct时就有
 
@@ -57,6 +59,7 @@ public class ConfigInitializer {
 
     public static void init() throws IOException {
         File configFile = new File("./config/setting.yml");
+        boolean isFirstStart = false; // 是否是第一次启动
         if (!configFile.exists()) {
             log.warn("配置文件不存在, 尝试创建配置文件...");
             File parentFile = configFile.getParentFile();
@@ -70,6 +73,36 @@ public class ConfigInitializer {
             // 复制资源文件到目标路径
             copyResourceToConfigFolder("/setting-default.yml", "./config/setting.yml");
             writeSignatureToYml(configFile, generateRandomSignature());// 生成随机签名并写入配置文件
+            //没有配置文件则默认是第一次启动,则需要打开管理页面
+            isFirstStart = true;
+        }
+
+        // 判断程序是否已经启动或者说端口是否被占用
+        int port = getServerPort(configFile);
+        boolean isSupportBrowser = Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
+        String url = isFirstStart ? ("http://127.0.0.1" + ":" + port + Setting.MANAGER_RELATIVE_PATH) : ("http://" + NetworkUtils.getServerIP() + ":" + port + Setting.USER_RELATIVE_PATH);
+        log.info("正在启动服务, 监听端口: " + port);
+        if (isPortInUse(port)) {
+            if (isSupportBrowser) {
+                try {
+                    Desktop.getDesktop().browse(java.net.URI.create(url)); // 打开浏览器
+                } catch (IOException e) {
+                    log.error("打开浏览器失败: {}", e.getMessage());
+                }
+            }
+            log.error("端口已被占用或者已经启动!!!请检查端口配置!");
+            System.exit(0);
+            return;
+        }
+
+        //如果端口号没有被占用,则正常启动服务,根据是否是第一次启动打开不同的页面
+        if (isSupportBrowser) {
+            try {
+                Desktop.getDesktop().browse(java.net.URI.create(url)); // 打开浏览器
+                log.trace("打开浏览器成功 [{}]", url);
+            } catch (IOException e) {
+                log.error("打开浏览器失败: {}", e.getMessage());
+            }
         }
 
         // 清理缓存文件夹
@@ -82,6 +115,30 @@ public class ConfigInitializer {
         if (uploadTempFolder.exists()) {
             log.info("清理上传缓存文件夹: {}", uploadTempFolder.getPath());
             com.muyangyo.fileclouddisk.common.utils.FileUtils.delete(uploadTempFolder);
+        }
+    }
+
+    /**
+     * 从 YAML 文件中获取服务器端口
+     *
+     * @param yamlFile YAML 文件对象
+     * @return 服务器端口，默认返回 8080
+     */
+    public static int getServerPort(File yamlFile) throws IOException {
+        String content = com.muyangyo.fileclouddisk.common.utils.FileUtils.readFileToStr(yamlFile.getPath());
+        int indexOfPort = content.indexOf("port:") + 6;
+        String substring = content.substring(indexOfPort, content.indexOf(" ", indexOfPort));
+        return Integer.parseInt(substring.trim());
+    }
+
+    /**
+     * 检查端口是否被占用
+     */
+    private static boolean isPortInUse(int port) {
+        try (ServerSocket socket = new ServerSocket(port)) {
+            return false; // 端口未被占用
+        } catch (IOException e) {
+            return true; // 端口已被占用
         }
     }
 

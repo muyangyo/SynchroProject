@@ -58,11 +58,10 @@ export class UserSession {
     }
 
     // 登录方法
-    static login(role, username, permissions) {
+    static login(role, username) {
         this.setLoginStatus(true);
         this.setRole(role);
         this.setUserName(username);
-        this.setPermissions(permissions);
     }
 
     // 登出方法

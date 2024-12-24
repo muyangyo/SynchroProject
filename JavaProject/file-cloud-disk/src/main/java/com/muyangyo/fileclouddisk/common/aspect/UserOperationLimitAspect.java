@@ -30,45 +30,38 @@ public class UserOperationLimitAspect {
     private UserMapper userMapper;
 
     @Around("@annotation(com.muyangyo.fileclouddisk.common.aspect.annotations.UserOperationLimit) || @within(com.muyangyo.fileclouddisk.common.aspect.annotations.UserOperationLimit)")
-    public Object checkUserOperation(ProceedingJoinPoint joinPoint) {
-        try {
-            // 获取当前请求的 HttpServletRequest
-            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-            // 从注解中获取所需权限
-            String requiredPermission = getRequiredPermission(joinPoint);
+    public Object checkUserOperation(ProceedingJoinPoint joinPoint) throws Throwable {
+        // 获取当前请求的 HttpServletRequest
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        // 从注解中获取所需权限
+        String requiredPermission = getRequiredPermission(joinPoint);
 
-            // 从请求头中获取 token 的载荷
-            String token = TokenUtils.getTokenFromCookie(request);
-            TokenUtils.TokenLoad tokenLoad = TokenUtils.TokenLoad.fromMap(TokenUtils.getTokenLoad(token));
+        // 从请求头中获取 token 的载荷
+        String token = TokenUtils.getTokenFromCookie(request);
+        TokenUtils.TokenLoad tokenLoad = TokenUtils.TokenLoad.fromMap(TokenUtils.getTokenLoad(token));
 
-            // 判断当前用户是否是用户
-            if (!tokenLoad.getRole().equals(String.valueOf(Roles.USER))) {
-                log.warn("当前用户未注册，无权进行此操作");
-                return Result.fail("无权限进行此操作");
-            }
+        // 判断当前用户是否是用户
+        if (!tokenLoad.getRole().equals(String.valueOf(Roles.USER))) {
+            log.warn("当前用户未注册，无权进行此操作");
+            return Result.fail("无权限进行此操作");
+        }
 
-            // 获取当前用户
-            User user = userMapper.selectByUserId(tokenLoad.getUserId());
-            if (user == null) {
-                log.warn("当前用户不存在");
-                return Result.fail("无权限进行此操作");
-            }
+        // 获取当前用户
+        User user = userMapper.selectByUserId(tokenLoad.getUserId());
+        if (user == null) {
+            log.warn("当前用户不存在");
+            return Result.fail("无权限进行此操作");
+        }
 
-            // 检查用户是否拥有所需权限
-            if (hasPermission(user, requiredPermission)) {
-                // 如果有权限，继续执行目标方法
-                return joinPoint.proceed();
-            } else {
-                // 如果没有权限，返回统一的错误信息
-                log.warn("{} 的 {} 方法需要 [{}] 权限,当前用户 [{}] 没有权限进行此操作",
-                        joinPoint.getSignature().getDeclaringTypeName(), joinPoint.getSignature().getName(), requiredPermission, user.getUsername());
-                return Result.fail("无权限进行此操作");
-            }
-        } catch (Exception e) {
-            log.error("用户操作权限检查异常", e);
-            return Result.fail("系统异常，请联系管理员!");
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
+        // 检查用户是否拥有所需权限
+        if (hasPermission(user, requiredPermission)) {
+            // 如果有权限，继续执行目标方法
+            return joinPoint.proceed();
+        } else {
+            // 如果没有权限，返回统一的错误信息
+            log.warn("{} 的 {} 方法需要 [{}] 权限,当前用户 [{}] 没有权限进行此操作",
+                    joinPoint.getSignature().getDeclaringTypeName(), joinPoint.getSignature().getName(), requiredPermission, user.getUsername());
+            return Result.fail("无权限进行此操作");
         }
     }
 
