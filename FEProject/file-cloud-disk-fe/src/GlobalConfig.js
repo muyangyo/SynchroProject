@@ -1,7 +1,7 @@
 import {useDark, useToggle} from "@vueuse/core";
 
 const config = {
-    theme: "system", // "system" 跟随系统主题, "dark" 黑色主题, "light" 白色主题
+    theme: "dark", // "system" 跟随系统主题, "dark" 黑色主题, "light" 白色主题
     hostUrl: "/api", // 后端 API 基地址
     userRouterBaseUrl: "/user",
     managerRouterBaseUrl: "/manager"
