@@ -105,17 +105,21 @@ const resetForm = () => {
   transform: scale(1.05);
 }
 
-/* 亮色主题样式 */
-@media (prefers-color-scheme: light) {
-  .login-box {
-    background-color: #fff; /* 保持背景颜色 */
-  }
+.login-box {
+  background-color: rgba(41, 42, 48, 0.36); /* 保持背景颜色 */
 }
 
-/* 暗色主题样式 */
-@media (prefers-color-scheme: dark) {
+/*!* 亮色主题样式 *!
+@media (prefers-color-scheme: light) {
   .login-box {
-    background-color: rgba(41, 42, 48, 0.36); /* 保持背景颜色 */
+    background-color: #fff; !* 保持背景颜色 *!
   }
-}
+}*/
+
+/* 暗色主题样式 */
+/*@media (prefers-color-scheme: dark) {
+  .login-box {
+    background-color: rgba(41, 42, 48, 0.36); !* 保持背景颜色 *!
+  }
+}*/
 </style>
