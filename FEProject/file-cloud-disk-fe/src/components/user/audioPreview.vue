@@ -72,12 +72,13 @@ const getFileAndInitPlayer = () => {
   easyRequest(RequestMethods.POST, "/file/getPreviewAudioInfo", {path: props.sourceFilePath}, false, true).then(response => {
     file.value.name = response.data.fileName;
     file.value.mime = response.data.mime;
-  });
-  getBlobData('/previewAudio', {path: props.sourceFilePath}).then(response => {
-    file.value.realFile = window.URL.createObjectURL(new Blob([response]));
-    initPlayer();
-  })
 
+    getBlobData('/previewAudio', {path: props.sourceFilePath}).then(response => {
+      file.value.realFile = window.URL.createObjectURL(new Blob([response]));
+      initPlayer();
+    })
+
+  });
 };
 
 const closePlayer = () => {

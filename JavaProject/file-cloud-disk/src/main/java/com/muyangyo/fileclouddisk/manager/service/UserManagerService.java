@@ -116,9 +116,9 @@ public class UserManagerService {
                 userDTO.setPassword(rsa.decryptStr(userDTO.getPassword(), KeyType.PrivateKey));
             }
         } catch (Exception e) {
-            throw new IllegalLoginWithoutRSA("登录信息解密失败，请检查RSA私钥是否正确！");
+            throw new IllegalLoginWithoutRSA("修改用户信息时解密失败，请检查RSA私钥是否正确！");
         }
-        log.info("登录信息解密成功!");
+        log.info("新的用户信息解密成功!");
     }
 
     /**

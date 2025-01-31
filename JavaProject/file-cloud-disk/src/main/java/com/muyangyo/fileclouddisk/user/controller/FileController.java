@@ -187,7 +187,7 @@ public class FileController {
             request.setAttribute(FileBinHandler.ATTR_FILE, FileUtils.getAbsolutePath(file));
             fileBinHandler.handleRequest(request, response);
         } catch (IOException e) {
-            if (e.getMessage().contains("远程主机强迫关闭了一个现有的连接") || e.getMessage().contains("你的主机中的软件中止了一个已建立的连接")) {
+            if (e.getMessage().contains("远程主机强迫关闭了一个现有的连接") || e.getMessage().contains("你的主机中的软件中止了一个已建立的连接") || e.getMessage().contains("Broken pipe")) {
                 log.warn("由于视频拖动导致客户端强迫关闭了一个现有的连接 {}", e.getMessage());
             } else {
                 log.error("预览视频过程中出现异常", e);
