@@ -21,6 +21,7 @@ import APlayer from 'aplayer';
 import 'aplayer/dist/APlayer.min.css';
 import getBlobData from "@/utils/getBlobData.js";
 import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
+import {ElMessage} from "element-plus";
 
 const playerDiv = ref(null); // 音乐播放器容器
 const player = ref(null); // 音乐播放器实例
@@ -67,13 +68,27 @@ const initPlayer = () => {
   });
 };
 
+const errorMsgCallback = (errorMsg) => {
+  let msg = null;
+
+  if (errorMsg.includes('timeout')) {
+    msg = '请求超时,导致链接中断!建议提升下服务器带宽或稍后再试!';
+  }
+
+  ElMessage.error({
+    message: msg ? msg : `<p>加载<strong>音频预览组件</strong>失败! 请检查网络连接!</p>错误信息: ${errorMsg}`,
+    dangerouslyUseHTMLString: true
+  });
+
+  closePlayer();
+}
 
 const getFileAndInitPlayer = () => {
   easyRequest(RequestMethods.POST, "/file/getPreviewAudioInfo", {path: props.sourceFilePath}, false, true).then(response => {
     file.value.name = response.data.fileName;
     file.value.mime = response.data.mime;
 
-    getBlobData('/previewAudio', {path: props.sourceFilePath}).then(response => {
+    getBlobData('/previewAudio', {path: props.sourceFilePath}, errorMsgCallback).then(response => {
       file.value.realFile = window.URL.createObjectURL(new Blob([response]));
       initPlayer();
     })
