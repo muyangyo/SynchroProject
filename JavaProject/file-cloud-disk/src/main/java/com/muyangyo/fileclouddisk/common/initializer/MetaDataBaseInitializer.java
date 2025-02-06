@@ -3,10 +3,9 @@ package com.muyangyo.fileclouddisk.common.initializer;
 import com.muyangyo.fileclouddisk.FileCloudDiskApplication;
 import com.muyangyo.fileclouddisk.common.mapper.CreateTablesMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.event.EventListener;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.io.File;
 
@@ -23,7 +22,7 @@ public class MetaDataBaseInitializer {
     @Resource
     private CreateTablesMapper createTablesMapper;
 
-    @EventListener(ApplicationReadyEvent.class)
+    @PostConstruct
     public void init() {
         File dbFile = new File("./data/meta.db");
         if (!dbFile.exists()) {
@@ -52,6 +51,7 @@ public class MetaDataBaseInitializer {
             createTablesMapper.createUserTable();
             createTablesMapper.createShareFileTable();
             createTablesMapper.createOperationLogTable();
+            createTablesMapper.createRecycleBinTable();
             return true;
         } catch (Exception e) {
             log.error("创建数据库表失败！", e);

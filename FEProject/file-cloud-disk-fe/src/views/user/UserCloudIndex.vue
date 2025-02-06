@@ -21,7 +21,8 @@
             </el-button>
             <el-button type="primary" :icon="Share" @click="showShareLinkList()" v-if="haveReadPermission">我的分享
             </el-button>
-            <el-button type="danger" @click="showRecycleBin()" :icon="Delete">回收站</el-button>
+            <el-button type="danger" :icon="Delete" @click="showRecycleBin()" v-if="haveReadPermission">回收站
+            </el-button>
             <el-button type="info" @click="logout()">退出</el-button>
           </div>
         </div>
@@ -141,6 +142,10 @@
         <UserShareManager></UserShareManager>
       </div>
 
+      <div v-if=" dialogState.visible && dialogState.contentType === 'RecycleBin' ">
+        <RecycleBin></RecycleBin>
+      </div>
+
       <!-- 分享链接 -->
       <div v-if="dialogState.contentType === 'share' && dialogState.visible">
         <div class="share-link-container">
@@ -227,6 +232,7 @@ import DocxPreview from "@/components/user/docxPreview.vue";
 import PdfPreview from "@/components/user/pdfPreview.vue";
 import IconFromDIY from "@/components/common/iconFromDIY.vue";
 import UserShareManager from "@/components/user/UserShareManager.vue";
+import RecycleBin from "@/components/user/RecycleBin.vue";
 
 // 权限相关变量
 const haveDeletePermission = ref(UserSession.getPermissions().includes("d"));
@@ -845,6 +851,14 @@ const showShareLinkList = () => {
   dialogState.value.title = "分享链接";
   dialogState.value.width = "60%";
   dialogState.value.contentType = 'ShareLinkList';
+}
+
+const showRecycleBin = () => {
+  // 显示分享链接列表
+  dialogState.value.visible = true;
+  dialogState.value.title = "回收站";
+  dialogState.value.width = "80%";
+  dialogState.value.contentType = 'RecycleBin';
 }
 </script>
 

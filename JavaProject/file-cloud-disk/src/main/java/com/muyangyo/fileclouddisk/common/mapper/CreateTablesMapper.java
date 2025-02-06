@@ -21,5 +21,7 @@ public interface CreateTablesMapper {
 
     Integer createOperationLogTable(); // 创建操作日志表
 
+    Integer createRecycleBinTable(); // 创建回收站表
+
 //    Integer BlackListIPTable(); // 创建黑名单IP表
 }

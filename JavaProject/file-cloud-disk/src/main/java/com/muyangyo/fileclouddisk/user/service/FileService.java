@@ -1,15 +1,21 @@
 package com.muyangyo.fileclouddisk.user.service;
 
+import cn.hutool.core.util.RandomUtil;
 import com.muyangyo.fileclouddisk.common.component.MountDirComponent;
 import com.muyangyo.fileclouddisk.common.config.Setting;
 import com.muyangyo.fileclouddisk.common.exception.IllegalPath;
 import com.muyangyo.fileclouddisk.common.model.enums.OperationLevel;
+import com.muyangyo.fileclouddisk.common.model.meta.RecycleBinFile;
 import com.muyangyo.fileclouddisk.common.model.other.FileType;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
 import com.muyangyo.fileclouddisk.common.model.vo.FileInfo;
+import com.muyangyo.fileclouddisk.common.model.vo.RecycleBinFileVO;
+import com.muyangyo.fileclouddisk.common.utils.EasyTimer;
 import com.muyangyo.fileclouddisk.common.utils.FileUtils;
 import com.muyangyo.fileclouddisk.common.utils.NetworkUtils;
 import com.muyangyo.fileclouddisk.manager.service.OperationLogService;
+import com.muyangyo.fileclouddisk.user.mapper.RecycleBinFileMapper;
+import converter.MetaToVoConverter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.ClientAbortException;
@@ -28,6 +34,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -48,6 +59,8 @@ public class FileService {
     private MountDirComponent mountDirComponent;
     @Resource
     private OperationLogService operationLogService;
+    @Resource
+    private RecycleBinFileMapper recycleBinFileMapper;
 
     /**
      * 获取指定目录下的文件信息
@@ -246,7 +259,7 @@ public class FileService {
         if (!ok) { // 路径不在根目录下
             throw new IllegalPath("非法路径!该路径不存在于挂载目录中!");
         }
-        String realPath = realMountRootPath + path.replace("/" + mountRootPathFromPath, "");// 实际路径
+        String realPath = realMountRootPath + path.replaceFirst("/" + mountRootPathFromPath, "");// 实际路径
         LinkedList<String> linkedList = new LinkedList<>();
         linkedList.add(realPath);
         linkedList.add(realMountRootPath);
@@ -419,6 +432,186 @@ public class FileService {
             } else {
                 log.error("下载文件过程中出现异常", e);
             }
+        }
+    }
+
+    /**
+     * 移动文件到回收站
+     *
+     * @param file 文件
+     * @return 是否成功
+     */
+    @SneakyThrows
+    public boolean moveToRecycleBin(File file) {
+        if (!FileUtils.exists(Setting.USER_RECYCLE_BIN_DIR_PATH)) {
+            FileUtils.createHiddenDirectory(Setting.USER_RECYCLE_BIN_DIR_PATH);
+        }
+
+        // 移动文件到回收站
+        try {
+            String fid = RandomUtil.randomString(4);
+            FileUtils.copy(file, new File(getRecycleBinFileRealPath(fid, FileUtils.getFileName(file))));
+
+            RecycleBinFile recycleBinFile = new RecycleBinFile(fid, FileUtils.getFileName(file), FileUtils.getAbsolutePath(file), new Date());
+            recycleBinFileMapper.insertByDynamicCondition(recycleBinFile);
+
+            FileUtils.delete(file);
+            return true;
+        } catch (IOException e) {
+            log.error("移动文件到回收站失败", e);
+            return false;
+        }
+    }
+
+    public static String getRecycleBinFileRealPath(String fid, String fileName) {
+        return Setting.USER_RECYCLE_BIN_DIR_PATH + "/" + fid + "-" + fileName;
+    }
+
+
+    /**
+     * 从回收站中彻底删除文件
+     *
+     * @param fid 文件ID
+     */
+    public boolean deleteFromRecycleBinByFid(String fid) {
+        // 根据 fid 查询文件信息
+        RecycleBinFile recycleBinFile = recycleBinFileMapper.selectByCode(fid);
+        if (recycleBinFile == null) {
+            return false;
+        }
+
+        try {
+            // 删除文件
+            FileUtils.delete(new File(getRecycleBinFileRealPath(recycleBinFile.getId(), recycleBinFile.getFileName())));
+            // 删除数据库记录
+            recycleBinFileMapper.deleteByCode(fid);
+            return true;
+        } catch (IOException e) {
+            log.error("删除文件失败", e);
+            return false;
+        }
+    }
+
+    /**
+     * 清空回收站
+     */
+    public boolean deleteAllFromRecycleBin() {
+        // 查询所有文件信息
+        List<RecycleBinFile> recycleBinFileList = recycleBinFileMapper.selectAll();
+        for (RecycleBinFile recycleBinFile : recycleBinFileList) {
+            String recycleBinFileRealPath = getRecycleBinFileRealPath(recycleBinFile.getId(), recycleBinFile.getFileName());
+            try {
+                // 删除文件
+                FileUtils.delete(recycleBinFileRealPath);
+            } catch (IOException e) {
+                log.error("删除文件 [{}] 失败", recycleBinFileRealPath, e);
+                return false;
+            }
+        }
+        // 删除数据库记录
+        recycleBinFileMapper.deleteAll();
+        return true;
+    }
+
+
+    /**
+     * 从回收站中还原文件
+     *
+     * @param fid 文件ID
+     * @return 是否成功
+     */
+    public boolean restoreFromRecycleBin(String fid) {
+        // 根据 fid 查询文件信息
+        RecycleBinFile recycleBinFile = recycleBinFileMapper.selectByCode(fid);
+        if (recycleBinFile == null) {
+            return false;
+        }
+
+        String recycleBinFileRealPath = getRecycleBinFileRealPath(recycleBinFile.getId(), recycleBinFile.getFileName());
+        String fileOriginalPath = recycleBinFile.getFileOriginalPath();
+        File originFile = new File(fileOriginalPath);
+        if (originFile.exists()) {
+            log.error("原文件已存在, 不能还原文件 [{}]", recycleBinFileRealPath);
+            return false;
+        }
+
+        if (originFile.isDirectory()) {
+            //如果是文件夹,则创建文件夹
+            originFile.mkdirs();
+        }
+        try {
+            // 复制文件到原路径
+            FileUtils.copy(recycleBinFileRealPath, fileOriginalPath);
+            // 删除数据库记录
+            recycleBinFileMapper.deleteByCode(fid);
+            // 删除回收站文件
+            FileUtils.delete(new File(recycleBinFileRealPath));
+            return true;
+        } catch (IOException e) {
+            log.error("还原文件 [{}] 失败", fileOriginalPath, e);
+            return false;
+        }
+
+    }
+
+    /**
+     * 获取回收站列表
+     *
+     * @return 回收站列表
+     */
+    @SneakyThrows
+    public List<RecycleBinFileVO> getRecycleBinList() {
+        final List<RecycleBinFile> recycleBinFileList = recycleBinFileMapper.selectAll();
+        ArrayList<RecycleBinFileVO> voList = new ArrayList<>(recycleBinFileList.size());
+
+        for (RecycleBinFile recycleBinFile : recycleBinFileList) {
+            LocalDateTime deleteTime = recycleBinFile.getDeleteTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            //计算文件剩余时间
+            String remainingTime = getRemainingTime(deleteTime);
+            // 懒删除,每次获取的时候判断是否超过 7 天,超过 7 天则执行删除操作(或者每次启动应用时执行删除操作)
+            if (remainingTime.equals("-1")) {
+                // 执行删除
+                FileUtils.delete(new File(getRecycleBinFileRealPath(recycleBinFile.getId(), recycleBinFile.getFileName())));
+                // 删除数据库记录
+                recycleBinFileMapper.deleteByCode(recycleBinFile.getId());
+            } else {
+                //返回信息
+                RecycleBinFileVO vo = MetaToVoConverter.convert(recycleBinFile, RecycleBinFileVO.class);
+                vo.setDeleteTime(EasyTimer.getFormatTime(deleteTime));
+                vo.setRemainingTime(remainingTime);
+                voList.add(vo);
+            }
+        }
+
+        return voList;
+    }
+
+    //    计算剩余时间
+    private static String getRemainingTime(LocalDateTime deleteTime) {
+        LocalDateTime now = LocalDateTime.now();
+
+        // 计算时间差
+        Duration duration = Duration.between(deleteTime, now);
+        long daysDifference = duration.toDays(); // 以天为单位相差多少
+        long hoursDifference = duration.toHours(); // 以小时为单位相差多少
+
+        // 判断是否超过 7 天
+        if (daysDifference >= 7) {
+            // 超过 7 天，执行删除操作
+            return "-1";
+        } else {
+
+
+            if (hoursDifference <= 144) {
+                // 剩余时间大于等于24小时, 显示剩余天数.
+                long remainingDays = 7 - daysDifference;
+                return remainingDays + "天";
+            } else {
+                // 剩余时间小于 24 小时, 显示剩余小时. Ps:  144 = 24 * 6
+                long remainingHours = 24 - (hoursDifference % 24);
+                return remainingHours + "小时";
+            }
+
         }
     }
 }

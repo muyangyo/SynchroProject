@@ -76,6 +76,11 @@ public class ConfigInitializer {
             //没有配置文件则默认是第一次启动,则需要打开管理页面
             isFirstStart = true;
         }
+        // 看看是不是开发模式
+        boolean isDev = getDevMode(configFile);
+        if (isDev){
+            log.warn("当前处于开发模式!");
+        }
 
         // 判断程序是否已经启动或者说端口是否被占用
         int port = getServerPort(configFile);
@@ -83,7 +88,7 @@ public class ConfigInitializer {
         String url = isFirstStart ? ("http://127.0.0.1" + ":" + port + Setting.MANAGER_RELATIVE_PATH) : ("http://" + NetworkUtils.getServerIP() + ":" + port + Setting.USER_RELATIVE_PATH);
         log.info("正在启动服务, 监听端口: " + port);
         if (isPortInUse(port)) {
-            if (isSupportBrowser) {
+            if (isSupportBrowser && !isDev) {
                 try {
                     Desktop.getDesktop().browse(java.net.URI.create(url)); // 打开浏览器
                 } catch (IOException e) {
@@ -96,7 +101,7 @@ public class ConfigInitializer {
         }
 
         //如果端口号没有被占用,则正常启动服务,根据是否是第一次启动打开不同的页面
-        if (isSupportBrowser) {
+        if (isSupportBrowser && !isDev) {
             try {
                 Desktop.getDesktop().browse(java.net.URI.create(url)); // 打开浏览器
                 log.trace("打开浏览器成功 [{}]", url);
@@ -111,6 +116,7 @@ public class ConfigInitializer {
             log.info("清理下载缓存文件夹: {}", downloadTempFolder.getPath());
             com.muyangyo.fileclouddisk.common.utils.FileUtils.delete(downloadTempFolder);
         }
+        // 清理上传缓存文件夹
         File uploadTempFolder = new File(Setting.USER_UPLOAD_TEMP_DIR_PATH);
         if (uploadTempFolder.exists()) {
             log.info("清理上传缓存文件夹: {}", uploadTempFolder.getPath());
@@ -129,6 +135,19 @@ public class ConfigInitializer {
         int indexOfPort = content.indexOf("port:") + 6;
         String substring = content.substring(indexOfPort, content.indexOf(" ", indexOfPort));
         return Integer.parseInt(substring.trim());
+    }
+
+    /**
+     * 从 YAML 文件中判断是否是开发模式
+     *
+     * @param yamlFile YAML 文件对象
+     * @return 是否是开发模式，默认返回 false
+     */
+    public static boolean getDevMode(File yamlFile) throws IOException {
+        String content = com.muyangyo.fileclouddisk.common.utils.FileUtils.readFileToStr(yamlFile.getPath());
+        int index = content.indexOf("dev:") + 5;
+        String substring = content.substring(index, content.indexOf(" ", index));
+        return Boolean.parseBoolean(substring.trim());
     }
 
     /**

@@ -2,7 +2,9 @@ package com.muyangyo.fileclouddisk.common.utils;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 /**
@@ -71,6 +73,17 @@ public class EasyTimer {
     public static String getFormatTime(Date date) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return simpleDateFormat.format(date);
+    }
+
+    /**
+     * 获取指定时间的格式化字符串，格式为 "yyyy-MM-dd HH:mm:ss"
+     *
+     * @param dateTime 指定的时间
+     * @return 指定时间的格式化字符串
+     */
+    public static String getFormatTime(LocalDateTime dateTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return dateTime.format(formatter);
     }
 
     /**

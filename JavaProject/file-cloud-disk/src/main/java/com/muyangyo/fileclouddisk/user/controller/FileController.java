@@ -348,13 +348,23 @@ public class FileController {
         }
 
         fileService.checkFollowRootPathAndGetFileInfo(file);// 检查文件是否合理
+        operationLogService.addLogFromRequest("删除文件", OperationLevel.IMPORTANT, request);
 
-
-        if (FileUtils.delete(file)) {
-            operationLogService.addLogFromRequest("删除文件", OperationLevel.IMPORTANT, request);
-            return Result.success("文件删除成功");
+        // 判断是否开启回收站功能
+        if (setting.isUseRecycleBin()) {
+            // 移动到回收站
+           if (fileService.moveToRecycleBin(file)){
+                return Result.success("文件已移至回收站");
+           }else {
+                return Result.error("文件移至回收站失败");
+           }
         } else {
-            return Result.error("文件删除失败");
+            // 直接删除文件
+            if (FileUtils.delete(file)) {
+                return Result.success("文件删除成功");
+            } else {
+                return Result.error("文件删除失败");
+            }
         }
     }
 
