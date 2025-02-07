@@ -3,7 +3,7 @@ package com.muyangyo.fileclouddisk.manager.service;
 import com.muyangyo.fileclouddisk.common.model.enums.OperationLevel;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
 import com.muyangyo.fileclouddisk.common.utils.FileUtils;
-import com.muyangyo.fileclouddisk.manager.mapper.ShareFolderMapper;
+import com.muyangyo.fileclouddisk.common.mapper.ShareFolderMapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

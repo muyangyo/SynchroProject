@@ -1,4 +1,4 @@
-package com.muyangyo.fileclouddisk.common.mapper;
+package com.muyangyo.fileclouddisk.common.mapper.wrapped;
 
 import com.muyangyo.fileclouddisk.common.model.meta.MountDir;
 import org.apache.ibatis.annotations.Mapper;

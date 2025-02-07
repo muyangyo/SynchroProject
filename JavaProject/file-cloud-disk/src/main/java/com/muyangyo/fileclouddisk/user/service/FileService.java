@@ -1,9 +1,9 @@
 package com.muyangyo.fileclouddisk.user.service;
 
 import cn.hutool.core.util.RandomUtil;
-import com.muyangyo.fileclouddisk.common.component.MountDirComponent;
 import com.muyangyo.fileclouddisk.common.config.Setting;
 import com.muyangyo.fileclouddisk.common.exception.IllegalPath;
+import com.muyangyo.fileclouddisk.common.mapper.ShareFolderMapper;
 import com.muyangyo.fileclouddisk.common.model.enums.OperationLevel;
 import com.muyangyo.fileclouddisk.common.model.meta.RecycleBinFile;
 import com.muyangyo.fileclouddisk.common.model.other.FileType;
@@ -56,11 +56,12 @@ public class FileService {
     private static final int REAL_PATH_INDEX = 0;
     private static final int REAL_MOUNT_ROOT_PATH_INDEX = 1;
     @Resource
-    private MountDirComponent mountDirComponent;
-    @Resource
     private OperationLogService operationLogService;
     @Resource
     private RecycleBinFileMapper recycleBinFileMapper;
+
+    @Resource
+    private ShareFolderMapper shareFolderMapper;
 
     /**
      * 获取指定目录下的文件信息
@@ -110,7 +111,8 @@ public class FileService {
      */
     public FileInfo checkFollowRootPathAndGetFileInfo(File file) throws IllegalPath {
         String path = FileUtils.getAbsolutePath(file);
-        List<String> dirList = mountDirComponent.getRootMountDir();
+        List<String> dirList = shareFolderMapper.getShareFolderList();
+        ;
         String curRootPath = "";
         boolean ok = false;
         for (String dir : dirList) {
@@ -131,7 +133,8 @@ public class FileService {
      * @return 是否为根目录
      */
     public boolean isRootPath(String path) {
-        List<String> dirList = mountDirComponent.getRootMountDir();
+        List<String> dirList = shareFolderMapper.getShareFolderList();
+        ;
         return dirList.contains(path);
     }
 
@@ -144,7 +147,8 @@ public class FileService {
      */
     public boolean checkFollowRootPath(File file) {
         String path = FileUtils.getAbsolutePath(file);
-        List<String> dirList = mountDirComponent.getRootMountDir();
+        List<String> dirList = shareFolderMapper.getShareFolderList();
+        ;
         boolean ok = false;
         for (String dir : dirList) {
             if (path.equals(dir) || path.startsWith(dir + "/")) {
@@ -200,7 +204,8 @@ public class FileService {
      * @return 文件信息列表
      */
     private LinkedList<FileInfo> getRootFileInfo() {
-        List<String> dirList = mountDirComponent.getRootMountDir();
+        List<String> dirList = shareFolderMapper.getShareFolderList();
+        ;
         // 遍历目录，获取目录信息
 
         LinkedList<FileInfo> retList = new LinkedList<>();
@@ -248,7 +253,8 @@ public class FileService {
 
         String realMountRootPath = "";// 实际根目录的结尾路径
         boolean ok = false;// 是否找到了挂载根目录
-        List<String> dirList = mountDirComponent.getRootMountDir();
+        List<String> dirList = shareFolderMapper.getShareFolderList();
+        ;
         for (String root : dirList) {
             if (root.endsWith(mountRootPathFromPath)) {
                 ok = true;
