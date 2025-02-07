@@ -1,8 +1,8 @@
 <template>
   <div class="recycleBin-manager">
     <el-table :data="recycleData.list">
-      <el-table-column prop="fileName" label="文件名"/>
-      <el-table-column prop="filePath" label="原始位置" :show-overflow-tooltip="true" width="280"/>
+      <el-table-column prop="fileName" label="文件名" :show-overflow-tooltip="true" width="230"/>
+      <el-table-column prop="fileOriginalPath" label="原始位置" :show-overflow-tooltip="true" width="280"/>
       <el-table-column prop="deleteTime" label="删除时间" sortable/>
       <el-table-column prop="remainingTime" label="保留时间(默认7天)">
         <template #default="scope">
@@ -55,43 +55,18 @@ const haveWritePermission = ref(UserSession.getPermissions().includes("w"));
 const haveReadPermission = ref(UserSession.getPermissions().includes("r"));
 
 const recycleData = ref({
-  list: [
-    {
-      id: 1123, // 后端生成的id
-      fileName: 'document.pdf', //文件名
-      filePath: '/documents/important111111111111111111111111111111', // 原始位置
-      deleteTime: '2023-10-01 14:30:00', // 时间格式为 yyyy-MM-dd HH:mm:ss
-      remainingTime: '23小时', // 后端计算出来的
-    },
-    {
-      id: 2,
-      fileName: 'presentation.pptx',
-      filePath: '/presentations/work',
-      deleteTime: '2023-10-01 09:15:00',
-      remainingTime: '6天',
-    },
-    {
-      id: 3,
-      fileName: 'spreadsheet.xlsx',
-      filePath: '/spreadsheets/finance',
-      deleteTime: '2023-10-03 16:45:00',
-      remainingTime: '5天',
-    },
-    {
-      id: 4,
-      fileName: 'image.png',
-      filePath: '/images/personal',
-      deleteTime: '2023-10-04 11:00:00',
-      remainingTime: '4天',
-    }
-  ], /* 列表 type: array */
+  list: [], /* 列表 type: array */
 });
 
 const getDate = () => {
-  /*  easyRequest(RequestMethods.GET, `/file/getRecycleBinList`, "", false).then(response => {
+  easyRequest(RequestMethods.GET, `/file/getRecycleBinList`, "", false).then(response => {
+    if (response.statusCode === "SUCCESS") {
       recycleData.value.list = []; // 清空原有数据
-      recycleData.value.list = response.data.list; // 赋值新数据
-    });*/
+      recycleData.value.list = response.data; // 赋值新数据
+    } else {
+      ElMessage.error(response.errMsg ? response.errMsg : '获取回收站列表失败');
+    }
+  });
 }
 
 onMounted(() => {
@@ -101,6 +76,11 @@ onMounted(() => {
     ElMessage.error("无权限访问回收站列表");
   }
 });
+
+const emit = defineEmits();
+const refresh = () => {
+  emit('refreshFileList');
+};
 
 onBeforeUnmount(() => {
   recycleData.value = null;
@@ -119,53 +99,51 @@ const handleDelete = (row, isDeleteAll = false) => {
         }
     ).then(() => {
 
-      console.warn('删除全部');
-      /*      easyRequest(RequestMethods.DELETE, `/file/deleteRecycleBinList?isDeleteAll=${isDeleteAll}`, "", false).then((response) => {
-              if (response.statusCode === "SUCCESS") {
-                ElMessage({
-                  type: 'success',
-                  message: '删除成功',
-                });
-                getDate();
-              } else {
-                ElMessage.error(response.errMsg ? response.errMsg : '删除失败');
-              }
-            });*/
+      easyRequest(RequestMethods.DELETE, `/file/deleteRecycleBinFile?isDeleteAll=${isDeleteAll}`, "", false).then((response) => {
+        if (response.statusCode === "SUCCESS") {
+          ElMessage({
+            type: 'success',
+            message: '删除成功',
+          });
+          getDate();
+        } else {
+          ElMessage.error(response.errMsg ? response.errMsg : '删除失败');
+        }
+      });
 
     });
 
   } else {
 
-    console.warn('删除单个' + row.id)
-    /*    easyRequest(RequestMethods.DELETE, `/file/deleteRecycleBinList?isDeleteAll=${isDeleteAll}&id=${row.id}`, "", false).then((response) => {
-          if (response.statusCode === "SUCCESS") {
-            ElMessage({
-              type: 'success',
-              message: '删除成功',
-            });
-            getDate();
-          } else {
-            ElMessage.error(response.errMsg ? response.errMsg : '删除失败');
-          }
-        });*/
+    easyRequest(RequestMethods.DELETE, `/file/deleteRecycleBinFile?isDeleteAll=${isDeleteAll}&id=${row.id}`, "", false).then((response) => {
+      if (response.statusCode === "SUCCESS") {
+        ElMessage({
+          type: 'success',
+          message: '删除成功',
+        });
+        getDate();
+      } else {
+        ElMessage.error(response.errMsg ? response.errMsg : '删除失败');
+      }
+    });
 
   }
 
 };
 
 const handleRecycleRestore = (row) => {
-  console.warn('恢复' + row.id)
-  /*  easyRequest(RequestMethods.PUT, `/file/restoreRecycleBin?id=${row.id}`, "", false).then((response) => {
-      if (response.statusCode === "SUCCESS") {
-        ElMessage({
-          type: 'success',
-          message: '恢复成功',
-        });
-        getDate();
-      } else {
-        ElMessage.error(response.errMsg ? response.errMsg : '恢复失败');
-      }
-    });*/
+  easyRequest(RequestMethods.PUT, `/file/restoreRecycleBinFile?id=${row.id}`, "", false).then((response) => {
+    if (response.statusCode === "SUCCESS") {
+      ElMessage({
+        type: 'success',
+        message: '恢复成功',
+      });
+      getDate();
+      refresh(); // 刷新父组件的文件列表
+    } else {
+      ElMessage.error(response.errMsg ? response.errMsg : '恢复失败');
+    }
+  });
 };
 </script>
 

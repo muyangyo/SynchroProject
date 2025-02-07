@@ -72,7 +72,7 @@ const errorMsgCallback = (errorMsg) => {
   let msg = null;
 
   if (errorMsg.includes('timeout')) {
-    msg = '请求超时,导致链接中断!建议提升下服务器带宽或稍后再试!';
+    msg = '请求超时导致链接中断!建议提升下服务器带宽或稍后再试!';
   }
 
   ElMessage.error({

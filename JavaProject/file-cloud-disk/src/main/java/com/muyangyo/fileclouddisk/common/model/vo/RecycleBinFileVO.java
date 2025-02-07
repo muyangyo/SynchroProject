@@ -22,6 +22,6 @@ public class RecycleBinFileVO {
     private String fileOriginalPath;
     @NoNeedMetaMapping
     private String deleteTime;
-
+    @NoNeedMetaMapping
     private String remainingTime;
 }

@@ -479,7 +479,7 @@ public class FileService {
      *
      * @param fid 文件ID
      */
-    public boolean deleteFromRecycleBinByFid(String fid) {
+    public boolean deleteFromRecycleBinByFid(String fid, HttpServletRequest request) {
         // 根据 fid 查询文件信息
         RecycleBinFile recycleBinFile = recycleBinFileMapper.selectByCode(fid);
         if (recycleBinFile == null) {
@@ -491,6 +491,8 @@ public class FileService {
             FileUtils.delete(new File(getRecycleBinFileRealPath(recycleBinFile.getId(), recycleBinFile.getFileName())));
             // 删除数据库记录
             recycleBinFileMapper.deleteByCode(fid);
+            // 打印日志
+            operationLogService.addLogFromRequest("删除回收站文件 [+" + recycleBinFile.getFileName() + "]", OperationLevel.IMPORTANT, request);
             return true;
         } catch (IOException e) {
             log.error("删除文件失败", e);
@@ -526,7 +528,7 @@ public class FileService {
      * @param fid 文件ID
      * @return 是否成功
      */
-    public boolean restoreFromRecycleBin(String fid) {
+    public boolean restoreFromRecycleBin(String fid, HttpServletRequest request) {
         // 根据 fid 查询文件信息
         RecycleBinFile recycleBinFile = recycleBinFileMapper.selectByCode(fid);
         if (recycleBinFile == null) {
@@ -541,10 +543,6 @@ public class FileService {
             return false;
         }
 
-        if (originFile.isDirectory()) {
-            //如果是文件夹,则创建文件夹
-            originFile.mkdirs();
-        }
         try {
             // 复制文件到原路径
             FileUtils.copy(recycleBinFileRealPath, fileOriginalPath);
@@ -552,6 +550,8 @@ public class FileService {
             recycleBinFileMapper.deleteByCode(fid);
             // 删除回收站文件
             FileUtils.delete(new File(recycleBinFileRealPath));
+            // 打印日志
+            operationLogService.addLogFromRequest("还原文件 [+" + recycleBinFile.getFileName() + "]", OperationLevel.INFO, request);
             return true;
         } catch (IOException e) {
             log.error("还原文件 [{}] 失败", fileOriginalPath, e);

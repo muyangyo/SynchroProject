@@ -23,7 +23,9 @@
             </el-button>
             <el-button type="danger" :icon="Delete" @click="showRecycleBin()" v-if="haveReadPermission">回收站
             </el-button>
-            <el-button type="info" @click="logout()">退出</el-button>
+            <el-button type="info" @click="logout()" @mouseenter="isHover = true" @mouseleave="isHover = false">
+              {{ isHover ? `退出` : UserSession.getUserName() }}
+            </el-button>
           </div>
         </div>
 
@@ -143,7 +145,7 @@
       </div>
 
       <div v-if=" dialogState.visible && dialogState.contentType === 'RecycleBin' ">
-        <RecycleBin></RecycleBin>
+        <RecycleBin @refreshFileList="refreshFileList()"></RecycleBin>
       </div>
 
       <!-- 分享链接 -->
@@ -831,6 +833,7 @@ const handleDelete = (index, row) => {
   });
 };
 
+const isHover = ref(false);
 const logout = () => {
   UserSession.logout();
   deleteCookie(tokenName);
@@ -859,6 +862,13 @@ const showRecycleBin = () => {
   dialogState.value.title = "回收站";
   dialogState.value.width = "80%";
   dialogState.value.contentType = 'RecycleBin';
+}
+
+const refreshFileList = () => {
+  // 重新获取文件列表
+  easyRequest(RequestMethods.POST, "/file/getFileList", {path: route.fullPath}, false, true).then((response) => {
+    handleResponse(response);
+  });
 }
 </script>
 
