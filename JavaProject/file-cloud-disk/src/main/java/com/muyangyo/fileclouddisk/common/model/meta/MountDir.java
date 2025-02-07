@@ -2,9 +2,11 @@ package com.muyangyo.fileclouddisk.common.model.meta;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.LinkedList;
 
+@Slf4j
 public class MountDir {
     private LinkedList<String> mountDir; // 共享目录路径
 
@@ -18,7 +20,7 @@ public class MountDir {
         try {
             return mapper.writeValueAsString(mountDir);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("转换目录路径为 json 字符串失败", e);
             return null;
         }
     }
@@ -34,7 +36,7 @@ public class MountDir {
             this.mountDir = mapper.readValue(mountDir, new TypeReference<LinkedList<String>>() {
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("转换 json 字符串为目录路径失败", e);
         }
     }
 

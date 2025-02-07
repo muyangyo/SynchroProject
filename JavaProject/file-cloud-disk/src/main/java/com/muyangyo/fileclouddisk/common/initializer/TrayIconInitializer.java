@@ -33,7 +33,7 @@ public class TrayIconInitializer {
             TrayIcon trayIcon = createTrayIcon(); // 创建托盘图标
             systemTray.add(trayIcon); // 将托盘图标添加到系统托盘
         } catch (AWTException e) {
-            e.printStackTrace(); // 捕获并打印异常
+            log.error("托盘图标初始化失败", e);
         }
     }
 

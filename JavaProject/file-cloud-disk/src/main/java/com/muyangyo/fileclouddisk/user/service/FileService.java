@@ -492,7 +492,7 @@ public class FileService {
             // 删除数据库记录
             recycleBinFileMapper.deleteByCode(fid);
             // 打印日志
-            operationLogService.addLogFromRequest("删除回收站文件 [+" + recycleBinFile.getFileName() + "]", OperationLevel.IMPORTANT, request);
+            operationLogService.addLogFromRequest("删除回收站文件 [" + recycleBinFile.getFileName() + "]", OperationLevel.IMPORTANT, request);
             return true;
         } catch (IOException e) {
             log.error("删除文件失败", e);
@@ -551,7 +551,7 @@ public class FileService {
             // 删除回收站文件
             FileUtils.delete(new File(recycleBinFileRealPath));
             // 打印日志
-            operationLogService.addLogFromRequest("还原文件 [+" + recycleBinFile.getFileName() + "]", OperationLevel.INFO, request);
+            operationLogService.addLogFromRequest("还原文件 [" + recycleBinFile.getFileName() + "]", OperationLevel.INFO, request);
             return true;
         } catch (IOException e) {
             log.error("还原文件 [{}] 失败", fileOriginalPath, e);

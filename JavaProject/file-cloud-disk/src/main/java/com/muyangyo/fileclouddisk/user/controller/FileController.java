@@ -353,7 +353,7 @@ public class FileController {
         if (setting.isUseRecycleBin()) {
             // 移动到回收站
             if (fileService.moveToRecycleBin(file)) {
-                operationLogService.addLogFromRequest("移动文件至回收站 [" + FileUtils.getFileName(file) + "]", OperationLevel.WARNING, request);
+                operationLogService.addLogFromRequest("移动文件 [" + FileUtils.getFileName(file) + "] 至回收站", OperationLevel.WARNING, request);
                 return Result.success("文件已移至回收站");
             } else {
                 return Result.error("文件移至回收站失败");

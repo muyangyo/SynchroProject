@@ -3,6 +3,7 @@ package com.muyangyo.fileclouddisk.common.utils;
 
 import com.muyangyo.fileclouddisk.common.exception.CanNotGetLocalIP;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
@@ -10,6 +11,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 
+@Slf4j
 public class NetworkUtils {
 
     @SneakyThrows // 在前端有端口映射时无效
@@ -47,7 +49,7 @@ public class NetworkUtils {
             }
         } catch (SocketException e) {
             // 处理Socket异常，打印堆栈跟踪
-            e.printStackTrace();
+            log.error("获取服务器的局域网IP地址失败", e);
         }
         // 如果没有找到合适的IP地址，返回null
         throw new CanNotGetLocalIP("获取服务器的局域网IP地址失败");
