@@ -4,10 +4,14 @@ import com.muyangyo.fileclouddisk.common.exception.IllegalLoginWithoutRSA;
 import com.muyangyo.fileclouddisk.common.exception.IllegalPath;
 import com.muyangyo.fileclouddisk.common.exception.OperationWithoutPermission;
 import com.muyangyo.fileclouddisk.common.model.other.Result;
+import com.muyangyo.fileclouddisk.common.utils.NetworkUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.UncategorizedSQLException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 创建于 IntelliJ IDEA.
@@ -21,9 +25,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class ExceptionHandler {
     @org.springframework.web.bind.annotation.ExceptionHandler
-    public Result exception(Exception e) {
-        log.error("发生未指定捕获异常!");
+    public Result exception(Exception e, HttpServletRequest request) {
+        log.error("来自IP [{}] 的请求导致发生未指定捕获异常!", NetworkUtils.getClientIp(request));
         log.error("异常信息:", e);
+        return Result.error("服务器发生未知异常!");
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler
+    public Result exception(HttpRequestMethodNotSupportedException e, HttpServletRequest request) {
+        log.error("来自IP [{}] 的请求方法不支持!错误日志: {} ,请使用客户端!", NetworkUtils.getClientIp(request), e.getMessage());
         return Result.error("服务器发生未知异常!");
     }
 

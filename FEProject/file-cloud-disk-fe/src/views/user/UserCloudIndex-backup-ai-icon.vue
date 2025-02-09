@@ -21,11 +21,7 @@
             </el-button>
             <el-button type="primary" :icon="Share" @click="showShareLinkList()" v-if="haveReadPermission">我的分享
             </el-button>
-            <el-button type="danger" :icon="Delete" @click="showRecycleBin()" v-if="haveReadPermission">回收站
-            </el-button>
-            <el-button type="info" @click="logout()" @mouseenter="isHover = true" @mouseleave="isHover = false">
-              {{ isHover ? `退出` : UserSession.getUserName() }}
-            </el-button>
+            <el-button type="info" @click="logout()">退出</el-button>
           </div>
         </div>
 
@@ -144,10 +140,6 @@
         <UserShareManager></UserShareManager>
       </div>
 
-      <div v-if=" dialogState.visible && dialogState.contentType === 'RecycleBin' ">
-        <RecycleBin @refreshFileList="refreshFileList()"></RecycleBin>
-      </div>
-
       <!-- 分享链接 -->
       <div v-if="dialogState.contentType === 'share' && dialogState.visible">
         <div class="share-link-container">
@@ -203,6 +195,78 @@
     </template>
   </el-dialog>
 
+
+  <!-- AI聊天悬浮按钮 -->
+  <el-button
+      type="primary"
+      class="ai-chat-button"
+      :icon="ChatLineRound"
+      circle
+      @click="showChatDialog"
+  />
+
+  <!-- AI聊天对话框 -->
+  <el-dialog
+      v-model="chatDialog.visible"
+      title="AI 助手"
+      :width="chatDialog.width"
+      class="ai-chat-dialog"
+      :show-close="false"
+      draggable
+  >
+    <template #header>
+      <div class="dialog-header">
+        <span>AI 助手</span>
+        <el-button text @click="chatDialog.visible = false" class="close-button">
+          <el-icon>
+            <Close/>
+          </el-icon>
+        </el-button>
+      </div>
+    </template>
+
+    <div class="chat-container">
+      <div class="message-list" ref="messageContainer">
+        <div
+            v-for="(msg, index) in chatMessages"
+            :key="index"
+            class="message-item"
+            :class="{'user-message': msg.role === 'user', 'ai-message': msg.role === 'assistant'}"
+        >
+          <div class="message-content">
+            <div class="message-avatar">
+              <el-icon v-if="msg.role === 'user'">
+                <User/>
+              </el-icon>
+              <el-icon v-if="msg.role === 'assistant'">
+                <MagicStick/>
+              </el-icon>
+            </div>
+            <div class="message-text">{{ msg.content }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <el-input
+            v-model="inputMessage"
+            placeholder="请输入您的问题..."
+            @keyup.enter="sendMessage"
+            class="message-input"
+        >
+          <template #append>
+            <el-button
+                type="primary"
+                :icon="Promotion"
+                @click="sendMessage"
+                :loading="isSending"
+            />
+          </template>
+        </el-input>
+      </div>
+    </div>
+  </el-dialog>
+
 </template>
 <script setup>
 import {markRaw, onMounted, reactive, ref, warn, watch} from 'vue';
@@ -213,9 +277,10 @@ import {
   DeleteFilled,
   Download,
   EditPen,
-  FolderAdd,
+  FolderAdd, Promotion,
   Share,
-  UploadFilled
+  UploadFilled,
+  ChatLineRound, User, MagicStick
 } from '@element-plus/icons-vue';
 import {easyRequest, optionalRequest, RequestMethods} from "@/utils/RequestTool.js";
 import {useRoute} from "vue-router";
@@ -234,7 +299,6 @@ import DocxPreview from "@/components/user/docxPreview.vue";
 import PdfPreview from "@/components/user/pdfPreview.vue";
 import IconFromDIY from "@/components/common/iconFromDIY.vue";
 import UserShareManager from "@/components/user/UserShareManager.vue";
-import RecycleBin from "@/components/user/RecycleBin.vue";
 
 // 权限相关变量
 const haveDeletePermission = ref(UserSession.getPermissions().includes("d"));
@@ -833,7 +897,6 @@ const handleDelete = (index, row) => {
   });
 };
 
-const isHover = ref(false);
 const logout = () => {
   UserSession.logout();
   deleteCookie(tokenName);
@@ -856,20 +919,55 @@ const showShareLinkList = () => {
   dialogState.value.contentType = 'ShareLinkList';
 }
 
-const showRecycleBin = () => {
-  // 显示分享链接列表
-  dialogState.value.visible = true;
-  dialogState.value.title = "回收站";
-  dialogState.value.width = "80%";
-  dialogState.value.contentType = 'RecycleBin';
-}
 
-const refreshFileList = () => {
-  // 重新获取文件列表
-  easyRequest(RequestMethods.POST, "/file/getFileList", {path: route.fullPath}, false, true).then((response) => {
-    handleResponse(response);
+// 新增聊天相关逻辑
+const chatDialog = reactive({
+  visible: false,
+  width: '400px'
+});
+
+const chatMessages = ref([]);
+const inputMessage = ref('');
+const isSending = ref(false);
+const messageContainer = ref(null);
+
+const showChatDialog = () => {
+  chatDialog.visible = true;
+};
+
+const sendMessage = async () => {
+  if (!inputMessage.value.trim() || isSending.value) return;
+
+  // 添加用户消息
+  chatMessages.value.push({
+    role: 'user',
+    content: inputMessage.value.trim()
   });
-}
+
+  // 模拟AI回复（实际应调用API）
+  const userMessage = inputMessage.value;
+  inputMessage.value = '';
+  isSending.value = true;
+
+  try {
+    // 这里替换为实际的API调用
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    chatMessages.value.push({
+      role: 'assistant',
+      content: `已收到您的查询："${userMessage}"。这是模拟回复，请接入实际AI API。`
+    });
+
+    // 滚动到底部
+    nextTick(() => {
+      if (messageContainer.value) {
+        messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
+      }
+    });
+  } finally {
+    isSending.value = false;
+  }
+};
 </script>
 
 <style scoped>
@@ -1098,4 +1196,94 @@ const refreshFileList = () => {
   color: #333;
 }
 
+/* 悬浮按钮样式 */
+.ai-chat-button {
+  position: fixed;
+  right: 40px;
+  bottom: 40px;
+  width: 56px;
+  height: 56px;
+  font-size: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+}
+
+/* 聊天对话框样式 */
+.ai-chat-dialog {
+  border-radius: 8px;
+  background: #333;
+}
+
+.chat-container {
+  height: 60vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.message-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  background: #2a2a2a;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.message-item {
+  margin: 10px 0;
+}
+
+.message-content {
+  display: flex;
+  align-items: flex-start;
+  max-width: 80%;
+}
+
+.user-message .message-content {
+  flex-direction: row-reverse;
+  margin-left: auto;
+}
+
+.message-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #409EFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 8px;
+}
+
+.user-message .message-avatar {
+  background: #67C23A;
+}
+
+.message-text {
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: #444;
+  color: #fff;
+  max-width: calc(100% - 48px);
+}
+
+.user-message .message-text {
+  background: #409EFF;
+  color: white;
+}
+
+.input-area {
+  margin-top: 10px;
+}
+
+.message-input {
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.message-input :deep(.el-input__inner) {
+  background: #444;
+  color: white;
+  border: none;
+}
 </style>

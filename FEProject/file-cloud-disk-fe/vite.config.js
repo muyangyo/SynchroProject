@@ -16,9 +16,9 @@ export default defineConfig({
     },
     // base: './' // todo: 打包时打开
 
-                server: { //todo: 打包时关闭 这个就是前端代理(分离的时候)
-                    proxy: {
-                        '/api': 'http://localhost:80'
-                    },
-                },
+    server: { //todo: 打包时关闭 这个就是前端代理(分离的时候)
+        proxy: {
+            '/api': 'http://localhost:80'
+        },
+    },
 })

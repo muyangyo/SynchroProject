@@ -1098,4 +1098,135 @@ const refreshFileList = () => {
   color: #333;
 }
 
+/* 以下为移动端样式 */
+.cloud-index-container {
+  margin-top: 10px;
+}
+
+.cloud-index-wrapper {
+  border-radius: 8px;
+  padding: 12px;
+}
+
+/* 响应式布局调整 */
+@media screen and (max-width: 768px) {
+  .el-col {
+    width: 100% !important;
+    padding: 0 8px !important;
+  }
+
+  .cloud-index-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .cloud-index-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .cloud-index-actions .el-button {
+    width: 100%;
+    margin: 0 !important;
+  }
+
+  .cloud-index-title {
+    font-size: 20px;
+  }
+}
+
+/* 表格移动端适配 */
+.custom-table {
+  overflow-x: auto;
+}
+
+.custom-table :deep(.el-table) {
+  min-width: 600px; /* 保持表格最小宽度 */
+}
+
+.custom-table :deep(.el-table__body) {
+  font-size: 14px;
+}
+
+/* 操作按钮调整 */
+.custom-table :deep(.el-button) {
+  margin: 2px;
+  padding: 6px 8px;
+}
+
+/* 面包屑导航优化 */
+.cloud-index-breadcrumb {
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 12px;
+}
+
+.cloud-index-breadcrumb .el-breadcrumb {
+  font-size: 14px;
+}
+
+/* 文件名显示优化 */
+.file-name {
+  max-width: 60vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 弹窗移动端适配 */
+.custom-dialog {
+  max-width: 90vw !important;
+}
+
+.dialog-header span {
+  font-size: 20px;
+}
+
+/* 上传进度条优化 */
+.upload-progress {
+  width: 100%;
+  margin: 10px 0;
+}
+
+/* 操作按钮点击区域扩大 */
+.cell-content {
+  padding: 8px 0;
+}
+
+/* 移动端隐藏非必要元素 */
+@media screen and (max-width: 480px) {
+  .el-table-column--selection .cell {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  /* 隐藏修改时间列 */
+  .el-table__header-wrapper th:nth-child(3),
+  .el-table__body-wrapper td:nth-child(3) {
+    display: none;
+  }
+}
+
+/* 优化按钮显示 */
+@media screen and (max-width: 400px) {
+  .el-button span {
+    display: none;
+  }
+
+  .el-button i {
+    margin-right: 0 !important;
+  }
+}
+
+/* 分享链接优化 */
+.share-link-content {
+  max-width: 80vw;
+}
+
+/* 增加点击反馈 */
+.el-button:active {
+  opacity: 0.7;
+}
+
 </style>
