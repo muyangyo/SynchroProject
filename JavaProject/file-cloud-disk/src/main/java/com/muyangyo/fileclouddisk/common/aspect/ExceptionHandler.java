@@ -26,14 +26,14 @@ import javax.servlet.http.HttpServletRequest;
 public class ExceptionHandler {
     @org.springframework.web.bind.annotation.ExceptionHandler
     public Result exception(Exception e, HttpServletRequest request) {
-        log.error("来自IP [{}] 的请求导致发生未指定捕获异常!", NetworkUtils.getClientIp(request));
+        log.error("来自IP [{}] 的请求触发了未捕获的异常！URL: [{}]", NetworkUtils.getClientIp(request), request.getRequestURL());
         log.error("异常信息:", e);
         return Result.error("服务器发生未知异常!");
     }
 
     @org.springframework.web.bind.annotation.ExceptionHandler
     public Result exception(HttpRequestMethodNotSupportedException e, HttpServletRequest request) {
-        log.error("来自IP [{}] 的请求方法不支持!错误日志: {} ,请使用客户端!", NetworkUtils.getClientIp(request), e.getMessage());
+        log.warn("请求方法不支持: 来自IP [{}] 的请求使用了不支持的HTTP方法！URL: [{}], 错误信息: {}", NetworkUtils.getClientIp(request), request.getRequestURL(), e.getMessage());
         return Result.error("服务器发生未知异常!");
     }
 
