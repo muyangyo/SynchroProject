@@ -155,34 +155,34 @@ public class Setting {
         // 初始化时扫描回收站文件夹,删除超过7天的文件
         File recycleBinFolder = new File(Setting.USER_RECYCLE_BIN_DIR_PATH);
         if (recycleBinFolder.exists()) {
-//            settingThreadPool.submit(() -> {
-            log.info("正在扫描回收站文件夹: {}", Setting.USER_RECYCLE_BIN_DIR_PATH);
-            final List<RecycleBinFile> recycleBinFileList = recycleBinFileMapper.selectAll();
-            LocalDateTime now = LocalDateTime.now();// 当前时间
-            int count = 0;
+            settingThreadPool.submit(() -> {
+                log.info("正在扫描回收站文件夹: {}", Setting.USER_RECYCLE_BIN_DIR_PATH);
+                final List<RecycleBinFile> recycleBinFileList = recycleBinFileMapper.selectAll();
+                LocalDateTime now = LocalDateTime.now();// 当前时间
+                int count = 0;
 
-            for (RecycleBinFile recycleBinFile : recycleBinFileList) {
+                for (RecycleBinFile recycleBinFile : recycleBinFileList) {
 
-                LocalDateTime deleteTime = recycleBinFile.getDeleteTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();// 获取删除时间
-                Duration duration = Duration.between(deleteTime, now);
-                long daysDifference = duration.toDays(); // 以天为单位相差多少
-                if (daysDifference >= 7) {
-                    // 超过 7 天，执行删除操作
-                    try {
-                        FileUtils.delete(FileService.getRecycleBinFileRealPath(recycleBinFile.getId(), recycleBinFile.getFileName()));
-                        // 删除数据库记录
-                        recycleBinFileMapper.deleteByCode(recycleBinFile.getId());
-                        log.info("已删除在回收站超过7天的文件 [{}]", recycleBinFile.getFileName());
-                        count++;
-                    } catch (IOException e) {
-                        log.error("删除超过7天的文件 [{}] 失败", recycleBinFile, e);
+                    LocalDateTime deleteTime = recycleBinFile.getDeleteTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();// 获取删除时间
+                    Duration duration = Duration.between(deleteTime, now);
+                    long daysDifference = duration.toDays(); // 以天为单位相差多少
+                    if (daysDifference >= 7) {
+                        // 超过 7 天，执行删除操作
+                        try {
+                            FileUtils.delete(FileService.getRecycleBinFileRealPath(recycleBinFile.getId(), recycleBinFile.getFileName()));
+                            // 删除数据库记录
+                            recycleBinFileMapper.deleteByCode(recycleBinFile.getId());
+                            log.info("已删除在回收站超过7天的文件 [{}]", recycleBinFile.getFileName());
+                            count++;
+                        } catch (IOException e) {
+                            log.error("删除超过7天的文件 [{}] 失败", recycleBinFile, e);
+                        }
+
                     }
 
                 }
-
-            }
-            log.info("扫描回收站文件夹完毕! 共删除 {} 个文件", count);
-//            });
+                log.info("扫描回收站文件夹完毕! 共删除 {} 个文件", count);
+            });
         }
 
     }

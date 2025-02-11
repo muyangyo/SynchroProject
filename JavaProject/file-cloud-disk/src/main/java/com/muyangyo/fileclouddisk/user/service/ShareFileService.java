@@ -155,6 +155,7 @@ public class ShareFileService {
                 shareFileMapper.update(shareFile);
                 try {
                     FileUtils.delete(Setting.USER_SHARE_TEMP_DIR_PATH + "/" + shareFile.getCode());
+                    log.info("分享文件:{} 已删除,原因:过期", shareFile.getFilePath());
                 } catch (IOException e) {
                     log.error("删除分享临时文件夹失败", e);
                     throw new RuntimeException(e);
@@ -168,8 +169,8 @@ public class ShareFileService {
         ShareFile shareFile = new ShareFile();
         shareFile.setCreator(username);
         List<ShareFile> userOwnerShareFileList = shareFileMapper.selectByDynamicCondition(shareFile);
-        for (ShareFile tempShareFile : userOwnerShareFileList){
-            if (isDeleteAll){
+        for (ShareFile tempShareFile : userOwnerShareFileList) {
+            if (isDeleteAll) {
                 // 删除所有分享文件
                 setting.getSettingThreadPool().submit(() -> {
                     try {
@@ -179,8 +180,8 @@ public class ShareFileService {
                         throw new RuntimeException(e);
                     }
                 });
-            }else{
-                if (tempShareFile.getStatus() == 0){
+            } else {
+                if (tempShareFile.getStatus() == 0) {
                     // 删除过期的分享文件
                     setting.getSettingThreadPool().submit(() -> {
                         try {
