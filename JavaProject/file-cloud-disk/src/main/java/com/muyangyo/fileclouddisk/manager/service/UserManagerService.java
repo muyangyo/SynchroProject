@@ -145,6 +145,7 @@ public class UserManagerService {
         //1. 空的话: 没有权限 2. r:读权限 3. w:写权限 4. d:删除权限
         StringBuilder permission = new StringBuilder();
         if (!permissionList.isEmpty()) {
+
             for (String p : permissionList) {
                 if (ALLOWED_PERMISSIONS.contains(p)) {
                     permission.append(p);
