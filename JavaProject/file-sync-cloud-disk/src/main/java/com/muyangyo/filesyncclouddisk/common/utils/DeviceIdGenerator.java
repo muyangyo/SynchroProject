@@ -12,7 +12,7 @@ public class DeviceIdGenerator {
     // 生成设备唯一码（示例：基于 MAC 地址）
 
     @SneakyThrows
-    private static String generateDeviceId() {
+    public static String generateDeviceId() {
         Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces(); // 获取所有网络接口
         while (interfaces.hasMoreElements()) { // 遍历网络接口
             NetworkInterface ni = interfaces.nextElement(); // 获取当前网络接口
@@ -25,8 +25,7 @@ public class DeviceIdGenerator {
         throw new RuntimeException("无法获取 MAC 地址");
     }
 
-    public static String generateConfusedDeviceId() {
-        String originalDeviceId = generateDeviceId();// 获取原始设备 ID
+    public static String generateConfusedDeviceId(String originalDeviceId) {
         int length = originalDeviceId.length();
         String prefix = originalDeviceId.substring(0, length / 2);// 截取前半部分
         String suffix = originalDeviceId.substring(length / 2, length); // 截取后半部分

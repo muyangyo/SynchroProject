@@ -1,9 +1,11 @@
-package com.muyangyo.filesyncclouddisk.syncCore.server.FileProcessingCore;
+package com.muyangyo.filesyncclouddisk.syncCore.server.FileProcessingCore.ftps;
 
 import com.muyangyo.filesyncclouddisk.syncCore.common.model.FtpUser;
+import com.muyangyo.filesyncclouddisk.syncCore.server.FileProcessingCore.ftps.customCommand.CRC32Command;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
+import org.apache.ftpserver.command.CommandFactoryFactory;
 import org.apache.ftpserver.ftplet.Authority;
 import org.apache.ftpserver.listener.ListenerFactory;
 import org.apache.ftpserver.ssl.SslConfigurationFactory;
@@ -27,8 +29,11 @@ public class FTPsServer {
 
         // 1. 创建 FTP 服务器工厂
         FtpServerFactory serverFactory = new FtpServerFactory();
-/*        CustomCommandFactory customCommandFactory = new CustomCommandFactory(); // 创建自定义命令工厂
-        serverFactory.setCommandFactory(customCommandFactory);// 设置自定义命令工厂*/
+        // 创建命令工厂
+        CommandFactoryFactory commandFactoryFactory = new CommandFactoryFactory();
+        commandFactoryFactory.addCommand(CRC32Command.COMMAND_NAME, new CRC32Command());
+        serverFactory.setCommandFactory(commandFactoryFactory.createCommandFactory());
+
 
         // 2. 配置 SSL/TLS
         SslConfigurationFactory ssl = new SslConfigurationFactory();
@@ -37,7 +42,7 @@ public class FTPsServer {
 
         // 3. 配置监听器（隐式 FTPS）
         ListenerFactory listenerFactory = new ListenerFactory();// 创建监听器工厂
-        listenerFactory.setPort(ftpPort); // 隐式 FTPS 默认端口
+        listenerFactory.setPort(ftpPort); // 隐式 FTPS 端口
         listenerFactory.setSslConfiguration(ssl.createSslConfiguration());
         listenerFactory.setImplicitSsl(true); // 启用隐式 FTPS
 

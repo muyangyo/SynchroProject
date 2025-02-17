@@ -44,7 +44,7 @@ public class DeviceExplorer {
             // 步骤1：尝试公网连接 如果有公网服务端IP，则尝试连接
             if (!PUBLIC_SERVER_IP.isEmpty()) {
                 log.info("尝试连接公网服务端 started");
-                String serverDeviceId = DeviceExplorer.connectPublicServer(PUBLIC_SERVER_IP, PUBLIC_SERVER_UDP_PORT);
+                String serverDeviceId = DeviceExplorer.pingToPublicServer(PUBLIC_SERVER_IP, PUBLIC_SERVER_UDP_PORT);
                 if (serverDeviceId != null) {
                     log.info("成功发现公网服务端设备,设备ID: [{}],确认中...", serverDeviceId);
                     connected = checkServerDeviceId(serverDeviceId);
@@ -59,7 +59,7 @@ public class DeviceExplorer {
             // 步骤2：公网不可达，尝试局域网发现
             if (!connected) {
                 log.info("公网服务端不可达，尝试局域网发现 started");
-                List<String> devices = DeviceExplorer.discoverDevicesFromLocalNetwork(PUBLIC_SERVER_UDP_PORT);
+                List<String> devices = DeviceExplorer.pingToLocalNetworkDevicesToDiscover(PUBLIC_SERVER_UDP_PORT);
                 for (String deviceInfo : devices) { //有设备在局域网返回了服务端信息
 
                     String[] parts = deviceInfo.split("@");
@@ -100,7 +100,7 @@ public class DeviceExplorer {
      * @param port UDP端口
      * @return 设备列表
      */
-    private static List<String> discoverDevicesFromLocalNetwork(int port) {
+    private static List<String> pingToLocalNetworkDevicesToDiscover(int port) {
         List<String> devices = new ArrayList<>();
         try (DatagramSocket socket = new DatagramSocket()) {
             socket.setBroadcast(true);// 开启广播模式
@@ -117,7 +117,7 @@ public class DeviceExplorer {
 
             // 2.等待响应（3秒）
             socket.setSoTimeout(3000);
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[512];
 
             //3. 接收响应
             //可能会有多个设备响应,所以循环接收,直到 3s 后没有响应
@@ -155,7 +155,7 @@ public class DeviceExplorer {
      * @param serverPort 服务器端口
      * @return 连接成功返回deviceId, 否则返回null
      */
-    private static String connectPublicServer(String serverIp, int serverPort) {
+    private static String pingToPublicServer(String serverIp, int serverPort) {
         if (serverIp == null || serverPort <= 0) {
             log.error("公网服务器IP或端口错误");
             return null;
@@ -173,7 +173,7 @@ public class DeviceExplorer {
 
             // 2. 等待响应
             socket.setSoTimeout(3000); // 3秒超时
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[512];
             DatagramPacket responsePacket = new DatagramPacket(buffer, buffer.length);
             socket.receive(responsePacket); // 阻塞等待接收数据
             String response = new String(responsePacket.getData(), 0, responsePacket.getLength());

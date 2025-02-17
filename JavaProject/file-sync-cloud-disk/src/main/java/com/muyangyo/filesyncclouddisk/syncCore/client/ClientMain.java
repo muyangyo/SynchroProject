@@ -16,7 +16,7 @@ public class ClientMain {
 
     public static void main(String[] args) {
         //todo:这个写进配置文件中
-        String clientDeviceId = DeviceIdGenerator.generateConfusedDeviceId();
+        String clientDeviceId = DeviceIdGenerator.generateDeviceId();
         log.info("客户端设备ID: " + clientDeviceId);
 
         // 每启动一次main就等于一次请求(后续会集成到springboot中)

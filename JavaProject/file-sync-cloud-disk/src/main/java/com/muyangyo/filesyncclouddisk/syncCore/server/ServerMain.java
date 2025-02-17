@@ -5,7 +5,7 @@ import com.muyangyo.filesyncclouddisk.common.model.enums.SystemType;
 import com.muyangyo.filesyncclouddisk.common.utils.DeviceIdGenerator;
 import com.muyangyo.filesyncclouddisk.common.utils.OSUtils;
 import com.muyangyo.filesyncclouddisk.syncCore.common.model.FtpUser;
-import com.muyangyo.filesyncclouddisk.syncCore.server.FileProcessingCore.FTPsServer;
+import com.muyangyo.filesyncclouddisk.syncCore.server.FileProcessingCore.ftps.FTPsServer;
 import com.muyangyo.filesyncclouddisk.syncCore.server.LinkCore.DiscoveryServer;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,7 +30,7 @@ public class ServerMain {
 
     public static void main(String[] args) throws Exception {
         // 生成服务端设备ID（固定存储，避免重启变化） todo: 这里应该读取配置文件
-        String serverDeviceId = DeviceIdGenerator.generateConfusedDeviceId();
+        String serverDeviceId = DeviceIdGenerator.generateDeviceId();
         log.info("服务端设备ID: " + serverDeviceId);
 
         // 启动UDP广播监听

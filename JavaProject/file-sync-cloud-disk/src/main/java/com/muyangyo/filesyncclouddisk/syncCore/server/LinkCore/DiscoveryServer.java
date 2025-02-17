@@ -1,11 +1,15 @@
 package com.muyangyo.filesyncclouddisk.syncCore.server.LinkCore;
 
+import com.muyangyo.filesyncclouddisk.common.utils.DeviceIdGenerator;
 import com.muyangyo.filesyncclouddisk.syncCore.client.LinkCore.DeviceExplorer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
+/**
+ * UDP 发现设备服务,类似 ping 命令的服务器
+ */
 @Slf4j
 public class DiscoveryServer implements Runnable {
     private final int UDP_PORT;
@@ -14,7 +18,7 @@ public class DiscoveryServer implements Runnable {
 
     public DiscoveryServer(int udpPort, String deviceId) {
         this.UDP_PORT = udpPort;
-        this.deviceId = deviceId;
+        this.deviceId = DeviceIdGenerator.generateConfusedDeviceId(deviceId);
     }
 
     @Override
@@ -22,7 +26,7 @@ public class DiscoveryServer implements Runnable {
         log.info("启动 UDP 发现设备服务,监听端口 [{}]", UDP_PORT);
         // 启动 UDP 发现设备服务
         try (DatagramSocket socket = new DatagramSocket(UDP_PORT)) {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[512];
             while (true) {
                 //1.等待请求
                 DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);

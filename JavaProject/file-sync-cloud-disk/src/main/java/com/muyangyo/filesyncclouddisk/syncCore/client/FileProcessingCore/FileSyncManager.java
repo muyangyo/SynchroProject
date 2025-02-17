@@ -1,6 +1,6 @@
 package com.muyangyo.filesyncclouddisk.syncCore.client.FileProcessingCore;
 
-import com.muyangyo.filesyncclouddisk.common.utils.ChecksumUtil;
+import com.muyangyo.filesyncclouddisk.common.utils.CRC32Util;
 import com.muyangyo.filesyncclouddisk.syncCore.common.model.FileMetadata;
 import com.muyangyo.filesyncclouddisk.syncCore.common.model.SyncDiff;
 import com.muyangyo.filesyncclouddisk.syncCore.server.ServerMain;
@@ -83,7 +83,7 @@ public class FileSyncManager {
                                 file.toString(),
                                 attrs.size(),
                                 attrs.lastModifiedTime().toMillis(),
-                                ChecksumUtil.calculateCRC32(file.toFile())
+                                CRC32Util.calculateCRC32(file.toFile())
                         );
                         metadataMap.put(file.toString(), meta);
                     } catch (IOException e) {

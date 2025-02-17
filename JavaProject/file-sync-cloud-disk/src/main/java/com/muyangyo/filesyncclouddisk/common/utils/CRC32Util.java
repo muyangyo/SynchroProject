@@ -5,10 +5,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.zip.CRC32;
 
-public class ChecksumUtil {
+public class CRC32Util {
 
     /**
-     * 计算文件的CRC32校验和,验证文件完整性
+     * 计算文件的CRC32校验和
      *
      * @param file 文件对象
      * @return CRC32校验和
