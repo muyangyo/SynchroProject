@@ -2,6 +2,7 @@ package com.muyangyo.filesyncclouddisk.syncCore.server.FileProcessingCore.ftps;
 
 import com.muyangyo.filesyncclouddisk.syncCore.common.model.FtpUser;
 import com.muyangyo.filesyncclouddisk.syncCore.server.FileProcessingCore.ftps.customCommand.CRC32Command;
+import com.muyangyo.filesyncclouddisk.syncCore.server.FileProcessingCore.ftps.customCommand.VersionRemoveCommand;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
@@ -31,7 +32,8 @@ public class FTPsServer {
         FtpServerFactory serverFactory = new FtpServerFactory();
         // 创建命令工厂
         CommandFactoryFactory commandFactoryFactory = new CommandFactoryFactory();
-        commandFactoryFactory.addCommand(CRC32Command.COMMAND_NAME, new CRC32Command());
+        commandFactoryFactory.addCommand(CRC32Command.COMMAND_NAME, new CRC32Command());// 添加自定义命令1
+        commandFactoryFactory.addCommand(VersionRemoveCommand.COMMAND_NAME, new VersionRemoveCommand());// 添加自定义命令2
         serverFactory.setCommandFactory(commandFactoryFactory.createCommandFactory());
 
 

@@ -23,7 +23,7 @@ public class ServerMain {
     public static final int FTPS_SERVER_PORT = 9999;         // TODO: 后续这里使用配置文件读取端口号
     public static final String FTPS_SERVER_OA_PASSWORD = "123456";  // TODO: 后续这里使用配置文件读取密码
 
-    public static final String FTPS_SERVER_PATH = "C:\\Users\\MuYang\\Desktop\\前端Vue精品课课件";  // TODO: 后续这里使用数据库读取路径
+    public static final String FTPS_SERVER_PATH = "C:/Users/MuYang/Desktop/remote/12";  // TODO: 后续这里使用数据库读取路径
 
     public static final String KEYSTORE_FILE_NAME = "keystore.jks";
     public static final String FTPS_USER_NAME = "123";

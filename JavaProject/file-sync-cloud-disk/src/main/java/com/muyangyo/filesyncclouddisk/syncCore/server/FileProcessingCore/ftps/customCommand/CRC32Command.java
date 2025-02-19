@@ -11,6 +11,7 @@ import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 @Slf4j
 public class CRC32Command extends AbstractCommand {
@@ -45,7 +46,7 @@ public class CRC32Command extends AbstractCommand {
         session.resetState(); // warning: 必须重置状态,以便可以重复执行命令,否则会报错
 
         log.info("执行CRC32命令,参数为 [{}]", request.getArgument());
-        String relativeFilePath = request.getArgument(); //从请求参数中获取文件路径
+        String relativeFilePath = Paths.get(request.getArgument()).normalize().toString(); //从请求参数中获取文件路径
 
         // 校验参数是否为空
         if (!StringUtils.hasLength(relativeFilePath)) {
@@ -57,7 +58,7 @@ public class CRC32Command extends AbstractCommand {
         // 获取用户的主目录
         String homeDir = session.getUser().getHomeDirectory();
         log.info("用户主目录为 [{}]", homeDir);
-        String fullPath = homeDir + "/" + relativeFilePath;
+        String fullPath = Paths.get(homeDir, relativeFilePath).toString();// 注意: 参数必须是 / 开头的相对路径,否则会报错(使用Paths修复了)
         log.info("CRC32命令计算文件路径为 [{}]", fullPath);
 
         try {

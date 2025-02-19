@@ -2,6 +2,7 @@ package com.muyangyo.filesyncclouddisk.syncCore.common;
 
 import cn.hutool.extra.ftp.Ftp;
 import com.muyangyo.filesyncclouddisk.syncCore.server.FileProcessingCore.ftps.customCommand.CRC32Command;
+import com.muyangyo.filesyncclouddisk.syncCore.server.FileProcessingCore.ftps.customCommand.VersionRemoveCommand;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 
@@ -35,5 +36,11 @@ public class EasyFTP extends Ftp {
         } else {
             throw new RuntimeException("执行获取CRC32命令失败，原因 [ " + message + " ]");
         }
+    }
+
+    public boolean versionRemoveFile(String remotePath) throws IOException {
+        FTPClient client = getClient(); // 获取FTPClient实例
+        int code = client.sendCommand(VersionRemoveCommand.COMMAND_NAME, remotePath); // 发送命令
+        return FTPReply.isPositiveCompletion(code);
     }
 }

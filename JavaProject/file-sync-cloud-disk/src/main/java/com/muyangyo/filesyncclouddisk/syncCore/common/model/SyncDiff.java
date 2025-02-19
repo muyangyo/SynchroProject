@@ -8,31 +8,31 @@ import java.util.Set;
  * 同步差异报告类
  */
 public class SyncDiff {
-    private final Set<String> newFiles = new HashSet<>(); // 新增文件
-    private final Set<String> modifiedFiles = new HashSet<>(); // 修改文件
-    private final Set<String> deletedFiles = new HashSet<>(); // 删除文件
+    private final Set<String> needUploadFiles = new HashSet<>(); // 需要上传的文件
+    private final Set<String> needDownloadFiles = new HashSet<>(); // 需要下载的文件
+    private final Set<String> needDeletedFiles = new HashSet<>(); // 删除文件
 
-    public void addNewFile(String path) {
-        newFiles.add(path);
+    public void addUploadFile(String path) {
+        needUploadFiles.add(path);
     }
 
-    public void addModifiedFile(String path) {
-        modifiedFiles.add(path);
+    public void addDownloadFile(String path) {
+        needDownloadFiles.add(path);
     }
 
     public void addDeletedFile(String path) {
-        deletedFiles.add(path);
+        needDeletedFiles.add(path);
     }
 
-    public Set<String> getNewFiles() {
-        return Collections.unmodifiableSet(newFiles);
+    public Set<String> getNeedUploadFiles() {
+        return Collections.unmodifiableSet(needUploadFiles);
     }
 
-    public Set<String> getModifiedFiles() {
-        return Collections.unmodifiableSet(modifiedFiles);
+    public Set<String> getNeedDownloadFiles() {
+        return Collections.unmodifiableSet(needDownloadFiles);
     }
 
-    public Set<String> getDeletedFiles() {
-        return Collections.unmodifiableSet(deletedFiles);
+    public Set<String> getNeedDeletedFiles() {
+        return Collections.unmodifiableSet(needDeletedFiles);
     }
 }

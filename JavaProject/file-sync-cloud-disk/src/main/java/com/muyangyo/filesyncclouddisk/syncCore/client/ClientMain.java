@@ -13,6 +13,11 @@ public class ClientMain {
     public static final String PUBLIC_SERVER_IP = "11.11.11.11"; // 公网服务端IP
     public static final int PUBLIC_SERVER_UDP_PORT = ServerMain.DISCOVERY_SERVER_PORT;//发现端口要一致
 
+    // todo: 版本保留配置（暂时硬编码）
+    private static final boolean ENABLE_VERSIONING = true; // 配置
+    private static final int MAX_BACKUP_VERSIONS = 5; // 配置
+    private static final String BACKUP_ROOT = ".file_versions"; // 配置
+
 
     public static void main(String[] args) {
         //todo:这个写进配置文件中
