@@ -3,7 +3,6 @@ package com.muyangyo.filesyncclouddisk.syncCore.client.LinkCore;
 
 import com.muyangyo.filesyncclouddisk.common.utils.DeviceIdGenerator;
 import com.muyangyo.filesyncclouddisk.syncCore.server.LinkCore.DiscoveryServer;
-import com.muyangyo.filesyncclouddisk.syncCore.server.ServerMain;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,7 +28,7 @@ public class DeviceExplorer {
      * 3.2. 未找到服务端，将在5分钟后重试 <br>
      */
     @SneakyThrows
-    public static void connectToServer() {
+    public static String connectToServer() {
         int retryCount = 0; // 重试次数
         long initialDelay = 5000; // 初始延迟时间（5秒）
         long maxDelay = 30 * 60 * 1000; // 最大延迟时间（30分钟）
@@ -80,8 +79,7 @@ public class DeviceExplorer {
 
             // 连接成功后的逻辑
             if (connected) {
-                startFileSync(serverIP, ServerMain.FTPS_SERVER_PORT);
-                break;
+                return serverIP;
             } else {
                 retryCount++;
                 log.warn("未找到服务端，将在 {} 秒后重试... (重试次数: {})", delay / 1000.0, retryCount);

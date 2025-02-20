@@ -18,6 +18,9 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import static com.muyangyo.filesyncclouddisk.syncCore.server.ServerMain.MAX_VERSIONS;
+import static com.muyangyo.filesyncclouddisk.syncCore.server.ServerMain.VERSION_DIR;
+
 
 @Slf4j
 public class VersionRemoveCommand extends AbstractCommand {
@@ -27,8 +30,7 @@ public class VersionRemoveCommand extends AbstractCommand {
     private static final int FILE_NOT_FOUND = 550;// 文件不存在
     private static final int SYNTAX_ERROR = 501;// 语法错误
 
-    private static final String VERSION_DIR = "./.versions_robust_delete"; // 保留文件夹名称
-    private static final int MAX_VERSIONS = 5; // 最大保留版本数
+
 
     private static LocalizedFtpReply getResponse(int code, String message) {
         return new LocalizedFtpReply(code, message != null ? message : "");

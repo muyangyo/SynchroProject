@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
 @Slf4j
 public class ServerMain {
@@ -21,12 +22,10 @@ public class ServerMain {
 
     public static final int DISCOVERY_SERVER_PORT = 8888;    // TODO: 后续这里使用配置文件读取端口号
     public static final int FTPS_SERVER_PORT = 9999;         // TODO: 后续这里使用配置文件读取端口号
-    public static final String FTPS_SERVER_OA_PASSWORD = "123456";  // TODO: 后续这里使用配置文件读取密码
-
-    public static final String FTPS_SERVER_PATH = "C:/Users/MuYang/Desktop/remote/12";  // TODO: 后续这里使用数据库读取路径
-
-    public static final String KEYSTORE_FILE_NAME = "keystore.jks";
-    public static final String FTPS_USER_NAME = "123";
+    public static final String KEYSTORE_FILE_NAME = "keystore.jks";// TODO: 后续这里使用配置文件读取文件名
+    public static final String KEYSTORE_PASSWORD = "123456";// TODO: 后续这里使用配置文件读取密码
+    public static final String VERSION_DIR = "./.versions_robust_delete"; // 保留文件夹名称 TODO: 后续这里使用配置文件读取文件夹名称
+    public static final int MAX_VERSIONS = 5; // 最大保留版本数 TODO: 后续这里使用配置文件读取最大版本数
 
     public static void main(String[] args) throws Exception {
         // 生成服务端设备ID（固定存储，避免重启变化） todo: 这里应该读取配置文件
@@ -41,19 +40,25 @@ public class ServerMain {
         if (!Files.exists(Paths.get("./" + KEYSTORE_FILE_NAME))) {
             // 自动生成 keystore.jks 文件
             log.info("{} 证书文件不存在正在自动生成...", KEYSTORE_FILE_NAME);
-            if (autoGenerateKeystore(FTPS_SERVER_OA_PASSWORD)) {
+            if (autoGenerateKeystore(KEYSTORE_PASSWORD)) {
                 log.info("{} 证书文件生成成功", KEYSTORE_FILE_NAME);
             } else {
-                // todo: 这里应该抛出异常或者结束
+                log.error("{} 证书文件生成失败", KEYSTORE_FILE_NAME);
                 return;
             }
         }
 
+        // TODO: 这里应该读取数据库
+        ArrayList<FtpUser> ftpUsers = new ArrayList<>();
+        ftpUsers.add(new FtpUser("123", "123456", "C:/Users/MuYang/Desktop/remote - 副本"));
+        ftpUsers.add(new FtpUser("abc", "123456", "C:/Users/MuYang/Desktop/remote"));
+
         // 启动FTPS Server
-        FTPsServer.run(FTPS_SERVER_OA_PASSWORD,
+        FTPsServer.run(KEYSTORE_PASSWORD,
                 null,
-                new FtpUser(FTPS_USER_NAME, FTPS_SERVER_OA_PASSWORD, FTPS_SERVER_PATH),
-                FTPS_SERVER_PORT);
+                FTPS_SERVER_PORT,
+                ftpUsers
+        );
 
 
         log.info("主线程结束");

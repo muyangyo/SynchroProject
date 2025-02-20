@@ -2,9 +2,16 @@ package com.muyangyo.filesyncclouddisk.syncCore.client;
 
 
 import com.muyangyo.filesyncclouddisk.common.utils.DeviceIdGenerator;
+import com.muyangyo.filesyncclouddisk.syncCore.client.FileProcessingCore.FileSyncManager;
 import com.muyangyo.filesyncclouddisk.syncCore.client.LinkCore.DeviceExplorer;
+import com.muyangyo.filesyncclouddisk.syncCore.common.model.Sync;
 import com.muyangyo.filesyncclouddisk.syncCore.server.ServerMain;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
+
+import java.util.ArrayList;
+
+import static com.muyangyo.filesyncclouddisk.syncCore.server.ServerMain.FTPS_SERVER_PORT;
 
 @Slf4j
 public class ClientMain {
@@ -13,11 +20,7 @@ public class ClientMain {
     public static final String PUBLIC_SERVER_IP = "11.11.11.11"; // 公网服务端IP
     public static final int PUBLIC_SERVER_UDP_PORT = ServerMain.DISCOVERY_SERVER_PORT;//发现端口要一致
 
-    // todo: 版本保留配置（暂时硬编码）
-    private static final boolean ENABLE_VERSIONING = true; // 配置
-    private static final int MAX_BACKUP_VERSIONS = 5; // 配置
-    private static final String BACKUP_ROOT = ".file_versions"; // 配置
-
+    public static final int FTP_PORT = FTPS_SERVER_PORT;
 
     public static void main(String[] args) {
         //todo:这个写进配置文件中
@@ -26,17 +29,18 @@ public class ClientMain {
 
         // 每启动一次main就等于一次请求(后续会集成到springboot中)
         new Thread(() -> {
-            DeviceExplorer.connectToServer();
+            String serverIp = DeviceExplorer.connectToServer();
+            if (StringUtils.hasLength(serverIp)) {
+                log.info("成功连接到服务器 [{}] ,执行文件同步操作", serverIp);
+                // todo: 查询数据库文件
+                ArrayList<Sync> syncs = new ArrayList<>();
+//                syncs.add(new Sync("C:/Users/MuYang/Desktop/local - 副本", true, "123", "123456"));
+                syncs.add(new Sync("C:/Users/MuYang/Desktop/local", false, "abc", "123456"));
+                // end todo
+                FileSyncManager fileSyncManager = new FileSyncManager(serverIp, FTP_PORT, syncs);
+            }
         }).start();
 
         log.info("主线程结束!"); // todo: 模拟的返回响应
-    }
-
-    //todo: 后续这个方法会移动到独立的类里面
-    public static void startFileSync(String serverIp, int ftpPort) {
-        // 执行文件同步逻辑(这里需要启动一个线程)
-        log.info("连接FTPS服务端 [{}:{}]", serverIp, ftpPort);
-        log.info("已连接服务端，文件同步线程启动...");
-        // FileSyncManager.syncFiles();
     }
 }

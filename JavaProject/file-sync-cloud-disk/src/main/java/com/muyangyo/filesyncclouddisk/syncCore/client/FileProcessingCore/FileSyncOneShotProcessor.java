@@ -6,7 +6,7 @@ import com.muyangyo.filesyncclouddisk.common.utils.FtpsClientBuilder;
 import com.muyangyo.filesyncclouddisk.syncCore.common.EasyFTP;
 import com.muyangyo.filesyncclouddisk.syncCore.common.model.FileMetadata;
 import com.muyangyo.filesyncclouddisk.syncCore.common.model.SyncDiff;
-import lombok.SneakyThrows;
+import com.muyangyo.filesyncclouddisk.syncCore.common.model.SyncStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.net.ftp.FTPFile;
 
@@ -23,7 +23,30 @@ import java.util.Map;
  * 这个一次只管一个文件夹的同步，如果需要多文件夹同步，可以创建多个FileSyncManager实例
  */
 @Slf4j
-public class FileSync {
+public class FileSyncOneShotProcessor {
+
+    private volatile SyncStatus SYNC_STATUS = SyncStatus.WAIT_CONNECT; // 同步状态(默认等待连接)
+
+    /**
+     * 设置同步状态
+     *
+     * @param status 状态枚举
+     * @return true
+     */
+    public synchronized boolean setSyncStatus(SyncStatus status) {
+        SYNC_STATUS = status;
+        return true;
+    }
+
+    /**
+     * 获取同步状态
+     *
+     * @return 同步状态枚举
+     */
+    public synchronized SyncStatus getSyncStatus() {
+        return SYNC_STATUS;
+    }
+
     private boolean isFirst; // 是否第一次启动（用于第一次全量同步)
     private final String localBasePath; // 需要监控的本地同步路径
 
@@ -33,7 +56,7 @@ public class FileSync {
     private final String ftpPassword; // FTPS密码
 
 
-    FileSync(String localBasePath, boolean isFirst, String ftpServerIp, int ftpPort, String ftpUsername, String ftpPassword) {
+    FileSyncOneShotProcessor(String localBasePath, boolean isFirst, String ftpServerIp, int ftpPort, String ftpUsername, String ftpPassword) {
         this.localBasePath = localBasePath;
         this.isFirst = isFirst;
         this.serverIp = ftpServerIp;
@@ -41,7 +64,7 @@ public class FileSync {
         this.ftpUsername = ftpUsername;
         this.ftpPassword = ftpPassword;
         try (EasyFTP ftp = new EasyFTP(FtpsClientBuilder.build(ftpServerIp, ftpPort, ftpUsername, ftpPassword))) {
-            ftp.reconnectIfTimeout();// 尝试连接
+            SYNC_STATUS = SyncStatus.CONNECTING;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -51,12 +74,13 @@ public class FileSync {
     /**
      * 执行全量/增量同步
      */
-    public void syncFiles() {
+    public void syncFiles() throws IOException {
+        SYNC_STATUS = SyncStatus.SYNCING;
         if (isFirst) {
             // 第一次启动，全量同步,下载整个目录
             downloadAllFiles();
-            isFirst = false;
-//            savaCurrentState(null, isFirst); // todo: 这里要存放到数据库
+            log.info("第一次启动，基于 [{}] 全量同步完成", localBasePath);
+            //            savaCurrentState(null, isFirst); // todo: 这里要存放到数据库
         } else {
             // 增量同步
             // 1. 获取本地当前文件状态
@@ -74,14 +98,14 @@ public class FileSync {
             processSync(diff);
 
             // 5. 更新同步状态
-            isFirst = false;
             // 6.存放到数据库
 //            saveCurrentState(diff, isFirst); // todo: 这里要存放到数据库
         }
+        isFirst = false;
+        SYNC_STATUS = SyncStatus.SYNC_COMPLETE;
     }
 
-    @SneakyThrows
-    private void downloadAllFiles() {
+    private void downloadAllFiles() throws IOException {
         try (EasyFTP ftp = new EasyFTP(FtpsClientBuilder.build(serverIp, ftpPort, ftpUsername, ftpPassword))) {
             downloadFileRecursive(ftp, "/", localBasePath);
         }
@@ -111,11 +135,9 @@ public class FileSync {
     /**
      * 扫描本地文件生成元数据
      */
-    @SneakyThrows
-    private Map<String, FileMetadata> scanLocalFiles() {
+    private Map<String, FileMetadata> scanLocalFiles() throws IOException {
         Map<String, FileMetadata> metadataMap = new HashMap<>();
         Files.walkFileTree(Paths.get(localBasePath), new SimpleFileVisitor<Path>() {
-            @SneakyThrows
             @Override
             // 访问文件获取元数据
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
@@ -141,8 +163,7 @@ public class FileSync {
      *
      * @return 远程文件状态
      */
-    @SneakyThrows
-    private Map<String, FileMetadata> scanRemoteFiles() {
+    private Map<String, FileMetadata> scanRemoteFiles() throws IOException {
         try (EasyFTP ftp = new EasyFTP(FtpsClientBuilder.build(serverIp, ftpPort, ftpUsername, ftpPassword))) {
             Map<String, FileMetadata> serverState = new HashMap<>();
             scanRemoteFilesRecursive(ftp, "/", serverState);
@@ -223,7 +244,7 @@ public class FileSync {
     /**
      * 处理同步操作
      */
-    private void processSync(SyncDiff diff) {
+    private void processSync(SyncDiff diff) throws IOException {
         for (String path : diff.getNeedUploadFiles()) {
             uploadFile(path, serverIp, ftpPort, ftpUsername, ftpPassword);
         }
@@ -235,16 +256,14 @@ public class FileSync {
         }
     }
 
-    @SneakyThrows
-    private void deleteRemoteFile(String remotePath, String serverIp, int ftpPort, String ftpUsername, String ftpPassword) {
+    private void deleteRemoteFile(String remotePath, String serverIp, int ftpPort, String ftpUsername, String ftpPassword) throws IOException {
         try (EasyFTP ftp = new EasyFTP(FtpsClientBuilder.build(serverIp, ftpPort, ftpUsername, ftpPassword))) {
             boolean b = ftp.versionRemoveFile(remotePath);
-            if (b) log.info("文件删除成功：远程 [{}]", remotePath);
+            if (b) log.info("文件删除成功：远程 [/{}]", remotePath);
         }
     }
 
-    @SneakyThrows
-    private void downloadFile(String remotePath, String serverIp, int ftpPort, String ftpUsername, String ftpPassword) {
+    private void downloadFile(String remotePath, String serverIp, int ftpPort, String ftpUsername, String ftpPassword) throws IOException {
         try (EasyFTP ftp = new EasyFTP(FtpsClientBuilder.build(serverIp, ftpPort, ftpUsername, ftpPassword))) {
             Path tmpPath = Paths.get(remotePath); // 临时文件路径
             String remoteDir = tmpPath.getParent() == null ? "/" : tmpPath.getParent().toString(); // 远程目录
@@ -259,8 +278,7 @@ public class FileSync {
     /**
      * 实现文件上传
      */
-    @SneakyThrows
-    private void uploadFile(String localPath, String serverIp, int ftpPort, String ftpUsername, String ftpPassword) {
+    private void uploadFile(String localPath, String serverIp, int ftpPort, String ftpUsername, String ftpPassword) throws IOException {
         try (EasyFTP ftp = new EasyFTP(FtpsClientBuilder.build(serverIp, ftpPort, ftpUsername, ftpPassword))) {
             String remotePath = getRemotePath(localPath);// 远程路径
             Path tmpPath = Paths.get(remotePath);// 临时文件路径
@@ -278,7 +296,7 @@ public class FileSync {
      * @param localPath 本地路径
      * @return 远程路径
      */
-    public String getRemotePath(String localPath) {
+    private String getRemotePath(String localPath) {
         try {
             Path localBase = Paths.get(localBasePath).toAbsolutePath().normalize();
             Path filePath = Paths.get(localPath).toAbsolutePath().normalize();
@@ -300,7 +318,7 @@ public class FileSync {
      * @param remotePath 远程路径
      * @return 本地路径
      */
-    public String getLocalPath(String remotePath) {
+    private String getLocalPath(String remotePath) {
         if (remotePath.startsWith("/")) {
             remotePath = remotePath.substring(1);
         }
