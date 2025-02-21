@@ -23,5 +23,7 @@ public interface CreateTablesMapper {
 
     Integer createRecycleBinTable(); // 创建回收站表
 
+    Integer createSyncInfoTable(); // 创建同步任务表
+
 //    Integer BlackListIPTable(); // 创建黑名单IP表
 }

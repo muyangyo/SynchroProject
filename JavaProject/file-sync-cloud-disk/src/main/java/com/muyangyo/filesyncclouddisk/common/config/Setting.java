@@ -11,6 +11,7 @@ import com.muyangyo.filesyncclouddisk.user.mapper.RecycleBinFileMapper;
 import com.muyangyo.filesyncclouddisk.user.mapper.ShareFileMapper;
 import com.muyangyo.filesyncclouddisk.user.service.FileService;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -81,15 +82,37 @@ public class Setting {
     private ConcurrentLRUCache<String, File> videoCache; // 视频缓存
     private ConcurrentLRUCache<String, File> fileCache; // 文件缓存
     private ConcurrentLRUCache<String, File> ShareFileCache; // 访客文件缓存
-    @Value("${Cache.videoCacheSize}")
+    @Value("${cache.videoCacheSize}")
     private int videoCacheSize; // 视频缓存大小
-    @Value("${Cache.downloadFileCacheSize}")
+    @Value("${cache.downloadFileCacheSize}")
     private int downloadFileCacheSize;// 文件缓存大小
-    @Value("${Cache.downloadFileCacheExpireTime}")
+    @Value("${cache.downloadFileCacheExpireTime}")
     private int downloadFileCacheExpireTime; // 文件缓存过期时间(分钟)
     private CustomTimer customTimer; // 用于定时清理压缩包的
-    @Value("${Cache.MaximumSurvivalTimeOfSharedFile}")
+    @Value("${cache.maximumSurvivalTimeOfSharedFile}")
     private int maximumSurvivalTimeOfSharedFile; // 共享文件最大存活时间(分钟)
+
+    //同步模块
+    @Setter
+    private boolean isSyncServer = true; // 是否为同步服务器,默认是,false为客户端
+    @Value("${sync.discoveryServicePort}")
+    private int discoveryServicePort; // 发现服务端口
+    @Value("${sync.ftpsPort}")
+    private int ftpsPort; // ftps端口
+    @Value("${sync.deviceID}")
+    private String deviceID; // 设备ID(MAC)
+    // 同步服务端配置
+    @Value("${sync.server.certificateName}")
+    private String serverCertificateName; // 服务器证书名称
+    @Value("${sync.server.certificatePassword}")
+    private String serverCertificatePassword; // 服务器证书密码
+    // 同步服务器端删除文件配置
+    @Value("${sync.server.versionDelete-Setting.versionDelete}")
+    private boolean versionDelete; // 是否开启版本删除功能
+    @Value("${sync.server.versionDelete-Setting.versionDeleteName}")
+    private String versionDeleteName; // 版本删除文件名
+    @Value("${sync.server.versionDelete-Setting.versionDeleteMaxCount}")
+    private int versionDeleteMaxCount; // 版本删除最大保留数量
 
     // 全局
     private ExecutorService settingThreadPool; // 线程池
@@ -192,7 +215,8 @@ public class Setting {
                 port, applicationName, systemType, serverIP, completePublicServerURL, invitationCode,
                 loginAndRegisterTimeCache, rasCache, maxNumberOfAttempts, signature, tokenLifeTime, videoCache, fileCache, ShareFileCache
                 , videoCacheSize, downloadFileCacheSize, downloadFileCacheExpireTime, settingThreadPool, maximumSurvivalTimeOfSharedFile,
-                localOperationOnly
+                localOperationOnly, discoveryServicePort, ftpsPort, deviceID, serverCertificateName, serverCertificatePassword,
+                versionDeleteName, versionDeleteMaxCount
         ).anyMatch(value -> {
             if (value == null) {
                 return true;

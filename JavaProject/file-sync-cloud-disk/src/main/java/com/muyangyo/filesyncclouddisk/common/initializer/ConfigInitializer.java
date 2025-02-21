@@ -1,10 +1,12 @@
 package com.muyangyo.filesyncclouddisk.common.initializer;
 
+import cn.hutool.core.util.RandomUtil;
 import com.muyangyo.filesyncclouddisk.FileSyncCloudDiskApplication;
 import com.muyangyo.filesyncclouddisk.common.config.Setting;
 import com.muyangyo.filesyncclouddisk.common.exception.CanNotCreateFolderException;
 import com.muyangyo.filesyncclouddisk.common.exception.InitFailedException;
 import com.muyangyo.filesyncclouddisk.common.model.enums.SystemType;
+import com.muyangyo.filesyncclouddisk.common.utils.DeviceIdGenerator;
 import com.muyangyo.filesyncclouddisk.common.utils.NetworkUtils;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Encoders;
@@ -72,13 +74,13 @@ public class ConfigInitializer {
             }
             // 复制资源文件到目标路径
             copyResourceToConfigFolder("/setting-default.yml", "./config/setting.yml");
-            writeSignatureToYml(configFile, generateRandomSignature());// 生成随机签名并写入配置文件
+            writeConfigsToYml(configFile, generateRandomSignature(), DeviceIdGenerator.generateDeviceId(), RandomUtil.randomString(8));// 生成随机签名并写入配置文件
             //没有配置文件则默认是第一次启动,则需要打开管理页面
             isFirstStart = true;
         }
         // 看看是不是开发模式
         boolean isDev = getDevMode(configFile);
-        if (isDev){
+        if (isDev) {
             log.warn("当前处于开发模式!");
         }
 
@@ -161,14 +163,18 @@ public class ConfigInitializer {
         }
     }
 
-    private static void writeSignatureToYml(File configFile, String signature) throws IOException {
+    private static void writeConfigsToYml(File configFile, String signature, String deviceID, String certificatePassword) throws IOException {
         // 读取文件内容
         String content = com.muyangyo.filesyncclouddisk.common.utils.FileUtils.readFileToStr(configFile.getPath());
         // 替换签名
         content = content.replace("${sign}", signature);
+        // 替换设备ID
+        content = content.replace("${deviceID}", deviceID);
+        //替换证书密码
+        content = content.replace("${certificatePassword}", certificatePassword);
         // 写入文件
         com.muyangyo.filesyncclouddisk.common.utils.FileUtils.writeFileFromStr(configFile.getPath(), content, false);
-        log.info("成功生成并写入token签名");
+        log.info("成功生成并写入 token 签名,设备ID,证书密码到配置文件!");
     }
 
     private static String generateRandomSignature() {

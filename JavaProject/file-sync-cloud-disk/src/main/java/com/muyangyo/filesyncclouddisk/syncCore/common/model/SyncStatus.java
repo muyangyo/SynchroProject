@@ -13,4 +13,5 @@ public enum SyncStatus {
     SYNCING,// 同步中
     SYNC_COMPLETE,// 同步完成
     SYNC_FAILED,// 同步失败
+    SYNC_STOP,// 同步停止
 }

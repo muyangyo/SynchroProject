@@ -1,0 +1,13 @@
+/* 定义全局默认颜色 */
+:root {
+  --el-color-primary: rgba(24, 144, 255, 0.93); /* 保留原颜色定义 */
+}
+
+/* 基础样式设置 */
+html {
+  margin: 0; /* 设置页面边距为0 */
+  font-family: "Microsoft YaHei", sans-serif; /* 设置字体 */
+  overflow: hidden; /* 隐藏滚动条 */
+}
+
+/* 自定义样式 */
