@@ -24,6 +24,6 @@ public class SyncInfo {
     private boolean isFirst; // 是否是第一次同步,默认是
     private String serverId; // 服务器ID(MAC)
     private String serverIp; // 服务器IP
-    private boolean isActive; // 是否开启同步,默认是
+    private boolean isActive = true; // 是否开启同步,默认是
     private Date lastSyncTime; // 上次同步的时间
 }

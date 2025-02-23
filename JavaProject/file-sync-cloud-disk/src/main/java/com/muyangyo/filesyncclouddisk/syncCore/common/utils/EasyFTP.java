@@ -1,8 +1,8 @@
 package com.muyangyo.filesyncclouddisk.syncCore.common.utils;
 
 import cn.hutool.extra.ftp.Ftp;
-import com.muyangyo.filesyncclouddisk.syncCore.server.fileSyncProcessingCore.customCommand.CRC32Command;
-import com.muyangyo.filesyncclouddisk.syncCore.server.fileSyncProcessingCore.customCommand.VersionRemoveCommand;
+import com.muyangyo.filesyncclouddisk.syncCore.server.fileSyncProcessingCore.customFtps.CRC32Command;
+import com.muyangyo.filesyncclouddisk.syncCore.server.fileSyncProcessingCore.customFtps.VersionRemoveCommand;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 

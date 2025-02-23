@@ -3,7 +3,7 @@ package com.muyangyo.filesyncclouddisk.common.initializer;
 import com.muyangyo.filesyncclouddisk.common.config.Setting;
 import com.muyangyo.filesyncclouddisk.common.model.meta.SyncInfo;
 import com.muyangyo.filesyncclouddisk.manager.mapper.SyncInfoMapper;
-import com.muyangyo.filesyncclouddisk.manager.mapper.SyncLogMapper;
+import com.muyangyo.filesyncclouddisk.manager.service.SyncLogService;
 import com.muyangyo.filesyncclouddisk.syncCore.client.fileSyncProcessingCore.FileSyncManager;
 import com.muyangyo.filesyncclouddisk.syncCore.client.fileSyncProcessingCore.FileSyncOneShotProcessor;
 import com.muyangyo.filesyncclouddisk.syncCore.client.linkCore.DeviceExplorer;
@@ -38,15 +38,15 @@ import static com.muyangyo.filesyncclouddisk.common.utils.SSLUtils.autoGenerateK
  * Time: 10:42
  */
 @Component
-@DependsOn({"metaDataBaseInitializer", "setting", "syncInfoMapper"})
+@DependsOn({"metaDataBaseInitializer", "setting"})
 @Slf4j
 public class SyncModuleInitializer {
     @Resource
     private Setting setting;
     @Resource
-    private SyncLogMapper syncLogMapper;// 同步日志数据库操作接口
+    private SyncLogService syncLogService; // 同步 日志 数据库操作接口
     @Resource
-    private SyncInfoMapper syncInfoMapper; // 同步配置数据库操作接口
+    private SyncInfoMapper syncInfoMapper; // 同步 配置 数据库操作接口
     // 用于保存服务实例
     private DiscoveryServer discoveryServer;
     private FtpServer ftpServer;
@@ -64,16 +64,15 @@ public class SyncModuleInitializer {
             if (StringUtils.hasLength(syncInfo.getServerIp()) && StringUtils.hasLength(syncInfo.getServerId())) {
                 log.info("判断当前为客户端,开始连接服务器");
                 startClient();
-                setting.setSyncServer(false);
             } else {
                 log.info("判断当前为服务端，启动同步服务");
                 startServer();
-                setting.setSyncServer(true);
             }
         }
     }
 
     public boolean startServer() {
+        setting.setSyncServer(true);
         // 启动UDP广播监听
         discoveryServer = new DiscoveryServer(setting.getDiscoveryServicePort(), setting.getDeviceID());
         setting.getSettingThreadPool().submit(discoveryServer);
@@ -101,7 +100,7 @@ public class SyncModuleInitializer {
         try {
             ftpServer = FTPsServer.run(setting.getServerCertificateName(), setting.getServerCertificatePassword(),
                     null, setting.getFtpsPort(), ftpLoginUsers, setting.isVersionDelete(),
-                    setting.getVersionDeleteMaxCount(), setting.getVersionDeleteName());
+                    setting.getVersionDeleteMaxCount(), setting.getVersionDeleteName(), syncLogService);
         } catch (Exception e) {
             log.error("FTPS服务器启动失败！", e);
             stopServer();
@@ -120,12 +119,24 @@ public class SyncModuleInitializer {
         }
         if (ftpServer != null && !ftpServer.isStopped()) {
             ftpServer.stop();
+            ftpServer = null;
             log.info("FTPS服务器已停止");
         }
         return true;
     }
 
+    public boolean restartServer() throws InterruptedException {
+        log.warn("正在重启同步服务端");
+        stopServer();
+        return startServer();
+    }
+
+    public boolean restartClient() {
+        return startClient();
+    }
+
     public boolean startClient() {
+        setting.setSyncServer(false);
         List<SyncInfo> syncs = syncInfoMapper.selectAll();
 
         // 根据 serverIp 进行分组
@@ -140,7 +151,7 @@ public class SyncModuleInitializer {
                 if (StringUtils.hasLength(realServerIp)) {
                     log.info("成功连接到服务器 [{}] ,执行文件同步操作", realServerIp);
                     FileSyncManager fileSyncManager = new FileSyncManager(realServerIp, setting.getFtpsPort(),
-                            syncInfoList, setting.getSettingThreadPool(), syncInfoMapper, syncLogMapper);
+                            syncInfoList, setting.getSettingThreadPool(), syncInfoMapper, syncLogService);
                     mapForFileSyncManagers.put(serverIp, fileSyncManager); // 保存实例
                 } else {
                     log.error("连接服务器 [{}] 失败！无法执行文件同步", serverIp);

@@ -37,7 +37,7 @@ public class AdminService {
     @Resource
     private Setting setting;
     @Resource
-    private OperationLogService operationLogService;
+    private CloudDiskOperationLogService cloudDiskOperationLogService;
 
     /**
      * 验证用户名和密码是否匹配
@@ -56,7 +56,7 @@ public class AdminService {
 
             generateAndSetCookies(admin, request, response, String.valueOf(Roles.ADMIN));
 
-            operationLogService.addLog("管理员操作: 管理员登入", username, NetworkUtils.getClientIp(request), OperationLevel.WARNING);
+            cloudDiskOperationLogService.addLog("管理员操作: 管理员登入", username, NetworkUtils.getClientIp(request), OperationLevel.WARNING);
             return Result.success(true);
         } else {
             return Result.fail("用户名或密码错误");
@@ -95,7 +95,7 @@ public class AdminService {
         admin = new Admin(RandomUtil.randomString(10), loginDTO.getUsername(), encipheredPassword, new Date(), new Date());
         adminMapper.insertByDynamicCondition(admin);
         generateAndSetCookies(admin, request, response, String.valueOf(Roles.ADMIN));
-        operationLogService.addLog("管理员操作: 新建管理员", loginDTO.getUsername(), NetworkUtils.getClientIp(request), OperationLevel.IMPORTANT);
+        cloudDiskOperationLogService.addLog("管理员操作: 新建管理员", loginDTO.getUsername(), NetworkUtils.getClientIp(request), OperationLevel.IMPORTANT);
         return Result.success(true);
     }
 
@@ -159,7 +159,7 @@ public class AdminService {
         cookie.setHttpOnly(false); // 保持非 HttpOnly 属性
         response.addCookie(cookie);
 
-        operationLogService.addLogFromRequest("管理员操作: 管理员登出", OperationLevel.WARNING, request);
+        cloudDiskOperationLogService.addLogFromRequest("管理员操作: 管理员登出", OperationLevel.WARNING, request);
         return Result.success("退出成功!");
     }
 }

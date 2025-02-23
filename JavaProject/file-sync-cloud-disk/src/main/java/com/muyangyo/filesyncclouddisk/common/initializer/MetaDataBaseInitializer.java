@@ -53,6 +53,7 @@ public class MetaDataBaseInitializer {
             createTablesMapper.createOperationLogTable();
             createTablesMapper.createRecycleBinTable();
             createTablesMapper.createSyncInfoTable();
+            createTablesMapper.createSyncOperationLogTable();
             return true;
         } catch (Exception e) {
             log.error("创建数据库表失败！", e);

@@ -266,4 +266,7 @@ public class Setting {
     public static final String USER_RECYCLE_BIN_DIR_PATH = "./recycleBin"; // 用户回收站目录
     public static final String MANAGER_RELATIVE_PATH = "/#/manager"; // 管理页面相对路径
     public static final String USER_RELATIVE_PATH = "/#/user"; // 用户页面相对路径
+
+    public static final String SERVER = "server"; // 服务器端
+    public static final String CLIENT = "client"; // 客户端端
 }

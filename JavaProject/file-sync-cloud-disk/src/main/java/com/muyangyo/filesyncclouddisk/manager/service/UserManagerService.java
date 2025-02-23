@@ -39,7 +39,7 @@ public class UserManagerService {
     private UserMapper userMapper;
 
     @Resource
-    private OperationLogService operationLogService;
+    private CloudDiskOperationLogService cloudDiskOperationLogService;
 
     @Resource
     private Setting setting;
@@ -65,7 +65,7 @@ public class UserManagerService {
 
             result.add(userListVO);
         }
-        operationLogService.addLogFromRequest("管理员操作: 获取用户列表", OperationLevel.INFO, request);
+        cloudDiskOperationLogService.addLogFromRequest("管理员操作: 获取用户列表", OperationLevel.INFO, request);
         return Result.success(result);
     }
 
@@ -99,7 +99,7 @@ public class UserManagerService {
         String encipher = MD5Utils.encipher(password);
         user = new User(RandomUtil.randomString(10), username, encipher, new Date(), new Date(), 1, permission.toString());
         userMapper.insertByDynamicCondition(user);
-        operationLogService.addLogFromRequest("管理员操作: 管理员创建用户[ " + username + " ]", OperationLevel.WARNING, request);
+        cloudDiskOperationLogService.addLogFromRequest("管理员操作: 管理员创建用户[ " + username + " ]", OperationLevel.WARNING, request);
         return Result.success(true);
     }
 
@@ -162,7 +162,7 @@ public class UserManagerService {
         }
 
         userMapper.updateByUserId(user);
-        operationLogService.addLogFromRequest("管理员操作: 管理员更新用户[ " + username + " ]", OperationLevel.WARNING, request);
+        cloudDiskOperationLogService.addLogFromRequest("管理员操作: 管理员更新用户[ " + username + " ]", OperationLevel.WARNING, request);
         return Result.success(true);
     }
 
@@ -173,7 +173,7 @@ public class UserManagerService {
         }
         user.setAccountStatus(0);
         userMapper.deleteByUserId(user.getUserId());
-        operationLogService.addLogFromRequest("管理员操作: 管理员删除用户[ " + username + " ]", OperationLevel.IMPORTANT, request);
+        cloudDiskOperationLogService.addLogFromRequest("管理员操作: 管理员删除用户[ " + username + " ]", OperationLevel.IMPORTANT, request);
         return Result.success(true);
     }
 }

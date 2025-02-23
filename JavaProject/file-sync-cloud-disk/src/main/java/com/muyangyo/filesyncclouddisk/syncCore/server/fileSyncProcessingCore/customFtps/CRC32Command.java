@@ -1,4 +1,4 @@
-package com.muyangyo.filesyncclouddisk.syncCore.server.fileSyncProcessingCore.customCommand;
+package com.muyangyo.filesyncclouddisk.syncCore.server.fileSyncProcessingCore.customFtps;
 
 import com.muyangyo.filesyncclouddisk.common.utils.CRC32Util;
 import lombok.extern.slf4j.Slf4j;

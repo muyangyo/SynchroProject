@@ -3,7 +3,7 @@ package com.muyangyo.filesyncclouddisk.manager.controller;
 import com.muyangyo.filesyncclouddisk.common.aspect.annotations.AdminRequired;
 import com.muyangyo.filesyncclouddisk.common.aspect.annotations.LocalOperation;
 import com.muyangyo.filesyncclouddisk.common.model.other.Result;
-import com.muyangyo.filesyncclouddisk.manager.service.OperationLogService;
+import com.muyangyo.filesyncclouddisk.manager.service.CloudDiskOperationLogService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -15,13 +15,13 @@ import javax.annotation.Resource;
  * Date: 2024/12/18
  * Time: 15:59
  */
-@RequestMapping("/api/operationLog")
+@RequestMapping("/api/cloudDiskOperationLog")
 @RestController
 @LocalOperation
 @AdminRequired
-public class OperationLogController {
+public class CloudDiskOperationLogController {
     @Resource
-    private OperationLogService operationLogService;
+    private CloudDiskOperationLogService cloudDiskOperationLogService;
 
     @GetMapping("/getLogList")
     public Result getLogList(@RequestParam(required = false) Integer page, @RequestParam(required = false) Integer pageSize) {
@@ -33,12 +33,12 @@ public class OperationLogController {
             pageSize = 6;
         }
 
-        return Result.success(operationLogService.getLogList(page - 1, pageSize));// page-1 因为前端传过来的是从1开始的
+        return Result.success(cloudDiskOperationLogService.getLogList(page - 1, pageSize));// page-1 因为前端传过来的是从1开始的
     }
 
     @DeleteMapping("/deleteLog")
     public Result deleteLog() {
-        operationLogService.deleteAllLog();
+        cloudDiskOperationLogService.deleteAllLog();
         return Result.success(true);
     }
 }

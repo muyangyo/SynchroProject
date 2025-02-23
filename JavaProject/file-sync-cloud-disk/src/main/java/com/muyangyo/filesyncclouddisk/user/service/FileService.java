@@ -13,7 +13,7 @@ import com.muyangyo.filesyncclouddisk.common.model.vo.RecycleBinFileVO;
 import com.muyangyo.filesyncclouddisk.common.utils.EasyTimer;
 import com.muyangyo.filesyncclouddisk.common.utils.FileUtils;
 import com.muyangyo.filesyncclouddisk.common.utils.NetworkUtils;
-import com.muyangyo.filesyncclouddisk.manager.service.OperationLogService;
+import com.muyangyo.filesyncclouddisk.manager.service.CloudDiskOperationLogService;
 import com.muyangyo.filesyncclouddisk.user.mapper.RecycleBinFileMapper;
 import converter.MetaToVoConverter;
 import lombok.SneakyThrows;
@@ -56,7 +56,7 @@ public class FileService {
     private static final int REAL_PATH_INDEX = 0;
     private static final int REAL_MOUNT_ROOT_PATH_INDEX = 1;
     @Resource
-    private OperationLogService operationLogService;
+    private CloudDiskOperationLogService cloudDiskOperationLogService;
     @Resource
     private RecycleBinFileMapper recycleBinFileMapper;
 
@@ -72,7 +72,7 @@ public class FileService {
      */
     @SneakyThrows
     public LinkedList<FileInfo> getFileInfoList(String path, HttpServletRequest request) {
-        operationLogService.addLogFromRequest("获取文件列表", OperationLevel.INFO, request);
+        cloudDiskOperationLogService.addLogFromRequest("获取文件列表", OperationLevel.INFO, request);
         if (path.equals(Setting.FE_USER_BASE_URL)) return getRootFileInfo();// 根目录直接返回根目录信息
         // 将path转为绝对路径
         LinkedList<String> linkedList = fakePathConverterToRealPath(path);
@@ -98,7 +98,7 @@ public class FileService {
         for (String s : list) {
             retList.add(initFileInfo(new File(s), path));
         }
-        operationLogService.addLog("外部用户获取文件列表", "unknown", NetworkUtils.getClientIp(request), OperationLevel.INFO);
+        cloudDiskOperationLogService.addLog("外部用户获取文件列表", "unknown", NetworkUtils.getClientIp(request), OperationLevel.INFO);
         return retList;
     }
 
@@ -180,7 +180,7 @@ public class FileService {
 
         FileInfo fileInfo = checkFollowRootPathAndGetFileInfo(file);
 
-        operationLogService.addLogFromRequest("预览文件", OperationLevel.INFO, request);
+        cloudDiskOperationLogService.addLogFromRequest("预览文件", OperationLevel.INFO, request);
 
         response.setContentType(fileInfo.getFileType().getMimeType());
         response.setHeader("Content-Disposition", "inline; filename=" + "temp." + FileUtils.getFileExtension(file));
@@ -232,7 +232,7 @@ public class FileService {
         }
 
         if (file.mkdir()) {
-            operationLogService.addLogFromRequest("创建文件夹", OperationLevel.WARNING, request);
+            cloudDiskOperationLogService.addLogFromRequest("创建文件夹", OperationLevel.WARNING, request);
             return Result.success("文件夹创建成功");
         } else {
             return Result.fail("文件夹创建失败,可能存在多级目录");
@@ -326,7 +326,7 @@ public class FileService {
             if (chunkIndex == totalChunks - 1) {
                 mergeChunks(fileName, totalChunks, parentPath); // 合并文件块
             }
-            operationLogService.addLogFromRequest("上传文件 [" + targetFile.getName() + "]", OperationLevel.WARNING, request);
+            cloudDiskOperationLogService.addLogFromRequest("上传文件 [" + targetFile.getName() + "]", OperationLevel.WARNING, request);
 
         } catch (Exception e) {
             try {
@@ -492,7 +492,7 @@ public class FileService {
             // 删除数据库记录
             recycleBinFileMapper.deleteByCode(fid);
             // 打印日志
-            operationLogService.addLogFromRequest("删除回收站文件 [" + recycleBinFile.getFileName() + "]", OperationLevel.IMPORTANT, request);
+            cloudDiskOperationLogService.addLogFromRequest("删除回收站文件 [" + recycleBinFile.getFileName() + "]", OperationLevel.IMPORTANT, request);
             return true;
         } catch (IOException e) {
             log.error("删除文件失败", e);
@@ -551,7 +551,7 @@ public class FileService {
             // 删除回收站文件
             FileUtils.delete(new File(recycleBinFileRealPath));
             // 打印日志
-            operationLogService.addLogFromRequest("还原文件 [" + recycleBinFile.getFileName() + "]", OperationLevel.INFO, request);
+            cloudDiskOperationLogService.addLogFromRequest("还原文件 [" + recycleBinFile.getFileName() + "]", OperationLevel.INFO, request);
             return true;
         } catch (IOException e) {
             log.error("还原文件 [{}] 失败", fileOriginalPath, e);

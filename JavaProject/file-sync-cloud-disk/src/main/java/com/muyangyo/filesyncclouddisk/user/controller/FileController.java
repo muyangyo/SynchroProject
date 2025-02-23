@@ -17,7 +17,7 @@ import com.muyangyo.filesyncclouddisk.common.model.vo.VideoFileInfo;
 import com.muyangyo.filesyncclouddisk.common.utils.FileUtils;
 import com.muyangyo.filesyncclouddisk.common.utils.NetworkUtils;
 import com.muyangyo.filesyncclouddisk.common.utils.TokenUtils;
-import com.muyangyo.filesyncclouddisk.manager.service.OperationLogService;
+import com.muyangyo.filesyncclouddisk.manager.service.CloudDiskOperationLogService;
 import com.muyangyo.filesyncclouddisk.user.service.FileService;
 import com.muyangyo.filesyncclouddisk.user.service.ShareFileService;
 import lombok.SneakyThrows;
@@ -56,7 +56,7 @@ public class FileController {
     FileBinHandler fileBinHandler;// 让文件支持range请求
 
     @Resource
-    private OperationLogService operationLogService;
+    private CloudDiskOperationLogService cloudDiskOperationLogService;
 
     /**
      * 使用伪路径
@@ -132,7 +132,7 @@ public class FileController {
         String path = FileUtils.normalizePath(filePath.getPath());
         File file = new File(path);
         FileInfo fileInfo = fileService.checkFollowRootPathAndGetFileInfo(file);
-        operationLogService.addLogFromRequest("预览文件", OperationLevel.INFO, request);
+        cloudDiskOperationLogService.addLogFromRequest("预览文件", OperationLevel.INFO, request);
         return Result.success(fileInfo);
     }
 
@@ -167,7 +167,7 @@ public class FileController {
             videoFileInfo.setMountRootPath(fileInfo.getMountRootPath());
             videoFileInfo.setFileType(fileInfo.getFileType());
 
-            operationLogService.addLogFromRequest("预览文件", OperationLevel.INFO, request);
+            cloudDiskOperationLogService.addLogFromRequest("预览文件", OperationLevel.INFO, request);
 
             return Result.success(videoFileInfo);
         }
@@ -183,7 +183,7 @@ public class FileController {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
-            operationLogService.addLogFromRequest("预览文件", OperationLevel.INFO, request);
+            cloudDiskOperationLogService.addLogFromRequest("预览文件", OperationLevel.INFO, request);
             request.setAttribute(FileBinHandler.ATTR_FILE, FileUtils.getAbsolutePath(file));
             fileBinHandler.handleRequest(request, response);
         } catch (IOException e) {
@@ -203,7 +203,7 @@ public class FileController {
         String path = FileUtils.normalizePath(filePath.getPath());
         File file = new File(path);
         FileInfo fileInfo = fileService.checkFollowRootPathAndGetFileInfo(file);
-        operationLogService.addLogFromRequest("准备下载文件", OperationLevel.INFO, request);
+        cloudDiskOperationLogService.addLogFromRequest("准备下载文件", OperationLevel.INFO, request);
         if (fileInfo.getFileType().getCategory() != FileCategory.FOLDER) {
             String fid = RandomUtil.randomString(5);
             setting.getFileCache().put(fid, file);
@@ -287,7 +287,7 @@ public class FileController {
         if (!isTempZip) {
             FileInfo fileInfo = fileService.checkFollowRootPathAndGetFileInfo(file);
         }
-        operationLogService.addLogFromRequest("下载文件", OperationLevel.INFO, request);
+        cloudDiskOperationLogService.addLogFromRequest("下载文件", OperationLevel.INFO, request);
 
         // 下载文件
         fileService.downloadFile(file, request, response);
@@ -320,7 +320,7 @@ public class FileController {
 
         String newName = renameFileDTO.getNewName();// 新名称
 
-        operationLogService.addLogFromRequest("重命名文件", OperationLevel.WARNING, request);
+        cloudDiskOperationLogService.addLogFromRequest("重命名文件", OperationLevel.WARNING, request);
 
         return Result.success(FileUtils.rename(oldPath, newName));
     }
@@ -353,7 +353,7 @@ public class FileController {
         if (setting.isUseRecycleBin()) {
             // 移动到回收站
             if (fileService.moveToRecycleBin(file)) {
-                operationLogService.addLogFromRequest("移动文件 [" + FileUtils.getFileName(file) + "] 至回收站", OperationLevel.WARNING, request);
+                cloudDiskOperationLogService.addLogFromRequest("移动文件 [" + FileUtils.getFileName(file) + "] 至回收站", OperationLevel.WARNING, request);
                 return Result.success("文件已移至回收站");
             } else {
                 return Result.error("文件移至回收站失败");
@@ -361,7 +361,7 @@ public class FileController {
         } else {
             // 直接删除文件
             if (FileUtils.delete(file)) {
-                operationLogService.addLogFromRequest("删除文件 [" + FileUtils.getFileName(file) + "]", OperationLevel.IMPORTANT, request);
+                cloudDiskOperationLogService.addLogFromRequest("删除文件 [" + FileUtils.getFileName(file) + "]", OperationLevel.IMPORTANT, request);
                 return Result.success("文件删除成功");
             } else {
                 return Result.error("文件删除失败");
@@ -374,7 +374,7 @@ public class FileController {
     public Result getRecycleBinList(HttpServletRequest request) {
         if (setting.isUseRecycleBin()) {
             // 开启回收站功能了才有返回
-            operationLogService.addLogFromRequest("获取回收站列表", OperationLevel.INFO, request);
+            cloudDiskOperationLogService.addLogFromRequest("获取回收站列表", OperationLevel.INFO, request);
             return Result.success(fileService.getRecycleBinList());
         } else {
             return Result.fail("未开启回收站功能");
@@ -387,7 +387,7 @@ public class FileController {
         if (setting.isUseRecycleBin()) {
             if (isDeleteAll) {
                 // 全部删除
-                operationLogService.addLogFromRequest("清空回收站", OperationLevel.IMPORTANT, request);
+                cloudDiskOperationLogService.addLogFromRequest("清空回收站", OperationLevel.IMPORTANT, request);
                 return fileService.deleteAllFromRecycleBin() ? Result.success("全部删除成功") : Result.error("全部删除失败");
             } else {
                 // 单个删除
@@ -424,7 +424,7 @@ public class FileController {
 
         if (file.exists()) {
             String shareCode = shareFileService.createShareFile(filePathDTO.getPath(), username);
-            operationLogService.addLogFromRequest("创建分享文件", OperationLevel.WARNING, request);
+            cloudDiskOperationLogService.addLogFromRequest("创建分享文件", OperationLevel.WARNING, request);
             return Result.success("shareCode=" + shareCode);
         }
         return Result.fail("文件不存在");
@@ -440,7 +440,7 @@ public class FileController {
         String username = TokenUtils.TokenLoad.fromMap(tokenLoad).getUsername();
 
         shareFileService.deleteShareFileByCode(shareCode, username);
-        operationLogService.addLogFromRequest("删除分享链接", OperationLevel.IMPORTANT, request);
+        cloudDiskOperationLogService.addLogFromRequest("删除分享链接", OperationLevel.IMPORTANT, request);
         return Result.success("删除成功");
     }
 
@@ -454,7 +454,7 @@ public class FileController {
         String username = TokenUtils.TokenLoad.fromMap(tokenLoad).getUsername();
 
         shareFileService.batchDeleteShareFileByUsername(isDeleteAll, username);
-        operationLogService.addLogFromRequest("批量删除分享链接", OperationLevel.IMPORTANT, request);
+        cloudDiskOperationLogService.addLogFromRequest("批量删除分享链接", OperationLevel.IMPORTANT, request);
         return Result.success("删除成功");
     }
 
@@ -474,7 +474,7 @@ public class FileController {
         Map<String, String> mapFromToken = TokenUtils.getTokenLoad(token);
         String username = TokenUtils.TokenLoad.fromMap(mapFromToken).getUsername();
 
-        operationLogService.addLogFromRequest("获取分享文件列表", OperationLevel.INFO, request);
+        cloudDiskOperationLogService.addLogFromRequest("获取分享文件列表", OperationLevel.INFO, request);
         return Result.success(shareFileService.getShareFileListByUsername(username, page - 1, pageSize));// page-1 因为前端传过来的是从1开始的
     }
 
@@ -522,7 +522,7 @@ public class FileController {
             return Result.error("文件不存在");
         }
 
-        operationLogService.addLog("外部用户准备下载文件[ " + file.getName() + " ]", "unknown", NetworkUtils.getClientIp(request), OperationLevel.INFO);
+        cloudDiskOperationLogService.addLog("外部用户准备下载文件[ " + file.getName() + " ]", "unknown", NetworkUtils.getClientIp(request), OperationLevel.INFO);
         if (!file.isDirectory()) {
             String fid = RandomUtil.randomString(5);
             setting.getShareFileCache().put(fid, file);
@@ -565,7 +565,7 @@ public class FileController {
             return;
         }
 
-        operationLogService.addLog("外部用户下载文件", "unknown", NetworkUtils.getClientIp(request), OperationLevel.INFO);
+        cloudDiskOperationLogService.addLog("外部用户下载文件", "unknown", NetworkUtils.getClientIp(request), OperationLevel.INFO);
 
         // 下载文件
         fileService.downloadFile(file, request, response);

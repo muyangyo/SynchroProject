@@ -14,7 +14,7 @@ import com.muyangyo.filesyncclouddisk.common.utils.EasyTimedCache;
 import com.muyangyo.filesyncclouddisk.common.utils.MD5Utils;
 import com.muyangyo.filesyncclouddisk.common.utils.NetworkUtils;
 import com.muyangyo.filesyncclouddisk.common.utils.TokenUtils;
-import com.muyangyo.filesyncclouddisk.manager.service.OperationLogService;
+import com.muyangyo.filesyncclouddisk.manager.service.CloudDiskOperationLogService;
 import com.muyangyo.filesyncclouddisk.user.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,7 +39,7 @@ public class UserService {
     private UserMapper userMapper;
 
     @Resource
-    private OperationLogService operationLogService;
+    private CloudDiskOperationLogService cloudDiskOperationLogService;
 
     @Resource
     private Setting setting;
@@ -80,7 +80,7 @@ public class UserService {
             cookie.setMaxAge(setting.getTokenLifeTime());
             response.addCookie(cookie);// 给前端验证token是否存在的
 
-            operationLogService.addLog("登入", username, NetworkUtils.getClientIp(request), OperationLevel.INFO);
+            cloudDiskOperationLogService.addLog("登入", username, NetworkUtils.getClientIp(request), OperationLevel.INFO);
             return Result.success(true);
         } else {
             return Result.fail("用户名或密码错误");
@@ -141,7 +141,7 @@ public class UserService {
         cookie.setHttpOnly(false); // 保持非 HttpOnly 属性
         response.addCookie(cookie);
 
-        operationLogService.addLogFromRequest("登出", OperationLevel.INFO, request);
+        cloudDiskOperationLogService.addLogFromRequest("登出", OperationLevel.INFO, request);
         return Result.success("退出成功!");
     }
 

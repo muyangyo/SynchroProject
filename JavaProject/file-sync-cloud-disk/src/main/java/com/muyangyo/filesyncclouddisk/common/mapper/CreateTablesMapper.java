@@ -25,5 +25,7 @@ public interface CreateTablesMapper {
 
     Integer createSyncInfoTable(); // 创建同步任务表
 
+    Integer createSyncOperationLogTable(); // 创建同步操作日志表
+
 //    Integer BlackListIPTable(); // 创建黑名单IP表
 }

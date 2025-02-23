@@ -5,7 +5,7 @@
         v-model="showModeDialog"
         :title="`切换到${switchToMode === 'server' ? '服务端' : '客户端'}模式`"
         width="30%">
-      <span style="color: white;font-weight: bold">⚠️警告: 切换模式将清空当前所有同步设置，是否继续？</span>
+      <span style="color: white;font-weight: bold">⚠️警告: 切换模式将清空当前所有同步设置和操作日志，是否继续？</span>
       <template #footer>
         <el-button @click="showModeDialog = false">取消</el-button>
         <el-button type="danger" @click="confirmSwitchMode">确认切换</el-button>
@@ -48,7 +48,7 @@
 
         <!-- 服务端专属列 -->
         <el-table-column v-if="currentMode === 'server'" label="本地大小" max-width="100" align="center">
-          <template #default="{ row }">{{ row.localSize }}</template>
+          <template #default="{ row }">{{ sizeTostr(row.localSize) }}</template>
         </el-table-column>
 
         <!-- 客户端专属列 -->
@@ -61,7 +61,7 @@
         </el-table-column>
 
         <el-table-column v-if="currentMode === 'client'" label="本地大小" max-width="200" align="center">
-          <template #default="{ row }">{{ row.localSize }}</template>
+          <template #default="{ row }">{{ sizeTostr(row.localSize) }}</template>
         </el-table-column>
 
         <!-- 操作列 -->
@@ -99,15 +99,15 @@
       <el-dialog v-model="showAddDialog" :title="currentMode === 'server' ? '新建同步' : '添加同步链接'">
         <el-form :model="newSyncForm" label-width="120px" :rules="formRules">
           <el-form-item v-if="currentMode === 'server'" label="同步名称" prop="syncName">
-            <el-input v-model="newSyncForm.syncName" placeholder="目前仅限英文名称" />
+            <el-input v-model="newSyncForm.syncName" placeholder="目前只支持英文、数字构成的同步名称"/>
           </el-form-item>
 
           <el-form-item v-if="currentMode === 'server'" label="本地路径" prop="localPath">
-            <el-input v-model="newSyncForm.localPath" placeholder="绝对路径，如：C:/sync_folder" />
+            <el-input v-model="newSyncForm.localPath" placeholder="绝对路径，如：C:/sync_folder"/>
           </el-form-item>
 
           <el-form-item v-if="currentMode === 'client'" label="同步链接" prop="syncUrl">
-            <el-input v-model="newSyncForm.syncUrl" placeholder="输入服务端提供的分享链接" />
+            <el-input v-model="newSyncForm.syncUrl" placeholder="输入服务端提供的分享链接"/>
           </el-form-item>
         </el-form>
 
@@ -125,16 +125,16 @@
 
         <el-form v-if="selectedRow" :model="settingForm">
           <el-form-item label="同步名称">
-            <el-input v-model="selectedRow.syncName" disabled />
+            <el-input v-model="selectedRow.syncName" disabled/>
           </el-form-item>
 
           <el-form-item label="本地路径">
-            <el-input v-model="settingForm.localPath" />
+            <el-input v-model="settingForm.localPath"/>
           </el-form-item>
 
           <!-- 客户端模式下显示服务器 IP -->
           <el-form-item v-if="currentMode === 'client'" label="服务器 IP">
-            <el-input v-model="settingForm.serverIp" placeholder="请输入服务器 IP 地址" />
+            <el-input v-model="settingForm.serverIp" placeholder="请输入服务器 IP 地址"/>
           </el-form-item>
 
           <el-form-item v-if="currentMode === 'server'" label="版本删除">
@@ -142,7 +142,7 @@
           </el-form-item>
 
           <el-form-item label="本地大小">
-            <el-input v-model="selectedRow.localSize" disabled/>
+            <el-input :value=" sizeTostr(selectedRow.localSize) " disabled/>
           </el-form-item>
         </el-form>
 
@@ -159,33 +159,15 @@
 import {ref, reactive, onMounted} from 'vue'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {Folder} from '@element-plus/icons-vue'
+import {sizeTostr} from "@/utils/FileSizeConverter.js";
 
 // 引入 GIF 图片
 import serverGif from '@/assets/server.gif'
 import clientGif from '@/assets/client.gif'
-
+import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
 // 定义 GIF 点击跳转逻辑
 const handleGifClick = () => {
   window.open("https://icons8.com/", '_blank')
-}
-
-// 初始化加载
-onMounted(async () => {
-  // 模拟API调用
-  setTimeout(() => {
-    currentMode.value = 'server' // 从后端获取实际模式
-    loadSyncList()
-  }, 500)
-})
-
-// 状态映射
-const statusMap = {
-  WAIT_CONNECT: '等待连接',
-  CONNECTING: '连接中',
-  SYNCING: '同步中',
-  SYNC_COMPLETE: '同步完成',
-  SYNC_FAILED: '同步失败',
-  SYNC_STOP: '已暂停'
 }
 
 // 响应式数据
@@ -197,12 +179,119 @@ const showAddDialog = ref(false)
 const drawerVisible = ref(false)
 const selectedRow = ref(null)
 
-// 表单数据
-const newSyncForm = reactive({
-  syncName: '',
-  localPath: '',
-  syncUrl: ''
+// 状态映射
+const statusMap = {
+  WAIT_CONNECT: '等待连接',
+  CONNECTING: '连接中',
+  SYNCING: '同步中',
+  SYNC_COMPLETE: '同步完成',
+  SYNC_FAILED: '同步失败',
+  SYNC_STOP: '已暂停'
+}
+
+
+// 初始化加载
+onMounted(async () => {
+  getMode();
+  await loadSyncList()
 })
+
+// 模式切换处理
+const handleSwitchMode = () => {
+  switchToMode.value = currentMode.value === 'server' ? 'client' : 'server'
+  showModeDialog.value = true
+}
+
+// 获取用户模式
+const getMode = () => {
+  easyRequest(RequestMethods.GET, '/syncManager/getStatus', null, false).then(response => {
+    if (response.statusCode === "SUCCESS") {
+      currentMode.value = response.data;
+    } else {
+      ElMessage.error('获取用户模式失败');
+    }
+  });
+}
+
+// 确认模式切换
+const confirmSwitchMode = async () => {
+  try {
+    easyRequest(RequestMethods.POST, `/syncManager/changeStatus?changeTo=${switchToMode.value}`, null, false, false).then(response => {
+      if (response.statusCode === "SUCCESS") {
+        currentMode.value = switchToMode.value; // 切换模式
+        loadSyncList();// 刷新同步列表
+        showModeDialog.value = false // 关闭模式切换确认对话框
+        ElMessage.success(response.data ? response.data : '模式切换成功') // 提示成功
+      } else {
+        ElMessage.error('模式切换失败')
+      }
+    });
+  } catch (error) {
+    ElMessage.error('模式切换失败')
+  }
+}
+
+// 加载同步列表
+const loadSyncList = async () => {
+  easyRequest(RequestMethods.GET, '/syncManager/getSyncInfoList', null, false).then(response => {
+    if (response.statusCode === "SUCCESS") {
+      syncList.value = [];// 先清空同步列表
+      syncList.value = response.data;
+    } else {
+      ElMessage.error('加载同步列表失败')
+    }
+  });
+}
+
+// 新增同步表单数据
+const newSyncForm = reactive({
+  syncName: '', // 只有服务端模式才有同步名称
+  localPath: '', // 只有服务端模式才有本地路径
+  syncUrl: '' // 只有客户端模式才有同步链接
+})
+
+// 表单验证规则
+const formRules = {
+  syncName: [
+    {required: true, message: '请输入同步名称'},
+    {
+      pattern: /^[a-zA-Z0-9]{3,10}$/,
+      message: '同步名称只能为英文或数字，长度限制为3-10个字符'
+    }
+  ],
+  localPath: [
+    {required: true, message: '请输入本地路径'},
+    {
+      pattern: /^[a-zA-Z]:[\\/].*$|^\/.*$/,
+      message: '请输入有效的绝对路径，支持中文路径'
+    }
+  ],
+  syncUrl: [
+    {required: true, message: '请输入同步链接'},
+  ]
+};
+
+// 新增同步
+const confirmAddSync = () => {
+  if (currentMode.value === 'server') {
+    let data = {syncName: newSyncForm.syncName, localPath: newSyncForm.localPath};
+    easyRequest(RequestMethods.POST, "/syncManager/addSyncInfo", data, true, true).then(
+        response => {
+          if (response.statusCode === "SUCCESS") {
+            ElMessage.success(response.data ? response.data : '新增同步成功');
+            loadSyncList(); // 刷新同步列表
+          } else {
+            ElMessage.error(response.errMsg ? response.errMsg : '新增同步失败');
+          }
+        }
+    )
+  } else {
+    //todo: 客户端模式新增同步
+  }
+  showAddDialog.value = false // 关闭新增对话框
+  Object.keys(newSyncForm).forEach(k => newSyncForm[k] = '') // 清空表单数据
+}
+
 
 const settingForm = reactive({
   localPath: '',
@@ -210,21 +299,6 @@ const settingForm = reactive({
   versionDelete: false
 })
 
-// 表单验证规则
-const formRules = {
-  syncName: [
-    { required: true, message: '请输入同步名称' },
-    { pattern: /^[a-zA-Z]+$/, message: '只能使用英文字符' }
-  ],
-  localPath: [
-    { required: true, message: '请输入本地路径' },
-    { pattern: /^[a-zA-Z]:\\?.+/, message: '请输入有效的绝对路径' }
-  ],
-  syncUrl: [
-    { required: true, message: '请输入同步链接' },
-    { pattern: /^https?:\/\/.+/i, message: '请输入有效的链接' }
-  ]
-}
 
 // 状态标签颜色
 const statusTagType = (status) => {
@@ -237,75 +311,6 @@ const statusTagType = (status) => {
   return map[status] || 'info'
 }
 
-// 加载同步列表
-const loadSyncList = async () => {
-  // 模拟API调用
-  syncList.value = currentMode.value === 'server'
-      ? [
-        {
-          id: 1,
-          syncName: 'documents',
-          localPath: 'C:/sync/docs',
-          localSize: '256 MB',
-          versionDelete: true
-        }
-      ]
-      : [
-          {
-            id: 2,
-            syncName: 'backup',
-            localPath: 'D:/backup',
-            localSize: '1.2 GB',
-            status: 'SYNCING',
-            serverIp: '192.168.1.100' // 模拟客户端模式下的服务器 IP
-          }
-        ]
-}
-
-// 模式切换处理
-const handleSwitchMode = () => {
-  switchToMode.value = currentMode.value === 'server' ? 'client' : 'server'
-  showModeDialog.value = true
-}
-
-const confirmSwitchMode = async () => {
-  try {
-    // 调用API切换模式
-    currentMode.value = switchToMode.value
-    syncList.value = []
-    await loadSyncList()
-    showModeDialog.value = false
-    ElMessage.success('模式切换成功')
-  } catch (error) {
-    ElMessage.error('模式切换失败')
-  }
-}
-
-// 新增同步
-const confirmAddSync = () => {
-  if (currentMode.value === 'server') {
-    syncList.value.push({
-      id: Date.now(),
-      syncName: newSyncForm.syncName,
-      localPath: newSyncForm.localPath,
-      localSize: '0 MB',
-      versionDelete: false
-    })
-  } else {
-    // 处理链接逻辑
-    syncList.value.push({
-      id: Date.now(),
-      syncName: newSyncForm.syncUrl.split('/').pop(),
-      syncUrl: newSyncForm.syncUrl,
-      status: 'WAIT_CONNECT',
-      localSize: '0 MB',
-      serverIp: '' // 新增时服务器 IP 为空
-    })
-  }
-
-  showAddDialog.value = false
-  Object.keys(newSyncForm).forEach(k => newSyncForm[k] = '')
-}
 
 // 操作处理
 const handleSetting = (row) => {

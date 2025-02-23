@@ -10,7 +10,7 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OperationLog {
+public class CloudDiskOperationLog {
     private Date operationTime;
     private String operation;
     private String userName;

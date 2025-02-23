@@ -75,7 +75,7 @@ const pageSize = ref(12); // 每页显示条数
 const currentPage = ref(1); // 当前页数
 
 const getOperationLogData = (pageIndex) => {
-  easyRequest(RequestMethods.GET, `/operationLog/getLogList?page=${pageIndex}&pageSize=${pageSize.value}`, "", false, false).then(
+  easyRequest(RequestMethods.GET, `/cloudDiskOperationLog/getLogList?page=${pageIndex}&pageSize=${pageSize.value}`, "", false, false).then(
       (response) => {
         if (response.data && response.statusCode === "SUCCESS") {
           operationLogData.value = response.data.list;
@@ -121,7 +121,7 @@ const handleDelete = () => {
         icon: markRaw(Delete),
       }
   ).then(() => {
-    easyRequest(RequestMethods.DELETE, `/operationLog/deleteLog`, "", false, false).then(
+    easyRequest(RequestMethods.DELETE, `/cloudDiskOperationLog/deleteLog`, "", false, false).then(
         (response) => {
           if (response.data === true && response.statusCode === "SUCCESS") {
             ElMessage.success('操作日志删除成功!');

@@ -28,7 +28,7 @@ public class ShareFolderService {
     @Resource
     private ShareFolderMapper shareFolderMapper;
     @Resource
-    private OperationLogService operationLogService;
+    private CloudDiskOperationLogService cloudDiskOperationLogService;
 
     @SneakyThrows
     public Result addNewShareFolder(HttpServletRequest request) {
@@ -45,7 +45,7 @@ public class ShareFolderService {
             File selectedFolder = fileChooser.getSelectedFile();
             String path = FileUtils.getAbsolutePath(selectedFolder); // 格式化绝对路径
             shareFolderMapper.insertNewShareFolder(path);
-            operationLogService.addLogFromRequest("管理员操作: 添加共享文件夹[ " + path + " ]", OperationLevel.IMPORTANT, request);
+            cloudDiskOperationLogService.addLogFromRequest("管理员操作: 添加共享文件夹[ " + path + " ]", OperationLevel.IMPORTANT, request);
             return Result.success(true);
         } else {
             return Result.fail("用户未选中文件夹");
@@ -53,7 +53,7 @@ public class ShareFolderService {
     }
 
     public Result getShareFolderList(HttpServletRequest request) {
-        operationLogService.addLogFromRequest("管理员操作: 查看挂载路径列表", OperationLevel.IMPORTANT, request);
+        cloudDiskOperationLogService.addLogFromRequest("管理员操作: 查看挂载路径列表", OperationLevel.IMPORTANT, request);
         return Result.success(shareFolderMapper.getShareFolderList());
     }
 
@@ -74,7 +74,7 @@ public class ShareFolderService {
                 Desktop desktop = Desktop.getDesktop();
                 // 打开文件夹
                 desktop.open(folder);
-                operationLogService.addLogFromRequest("管理员操作: 打开共享文件夹[ " + path + " ]", OperationLevel.WARNING, request);
+                cloudDiskOperationLogService.addLogFromRequest("管理员操作: 打开共享文件夹[ " + path + " ]", OperationLevel.WARNING, request);
                 return Result.success(true);
             } else {
                 log.error("当前平台不支持Desktop API");
@@ -88,7 +88,7 @@ public class ShareFolderService {
     public Result deleteShareFolder(String path, HttpServletRequest request) {
         if (shareFolderMapper.getShareFolderList().contains(path)) {
             shareFolderMapper.deleteShareFolder(path);
-            operationLogService.addLogFromRequest("管理员操作: 删除共享文件夹[ " + path + " ]", OperationLevel.IMPORTANT, request);
+            cloudDiskOperationLogService.addLogFromRequest("管理员操作: 删除共享文件夹[ " + path + " ]", OperationLevel.IMPORTANT, request);
             return Result.success(true);
         } else {
             return Result.fail("该文件夹不在共享文件夹列表中!");
@@ -99,7 +99,7 @@ public class ShareFolderService {
         File newFolder = new File(path);
         if (newFolder.exists() && newFolder.isDirectory()) {
             shareFolderMapper.insertNewShareFolder(path);
-            operationLogService.addLogFromRequest("管理员操作: 添加共享文件夹[ " + path + " ]", OperationLevel.WARNING, request);
+            cloudDiskOperationLogService.addLogFromRequest("管理员操作: 添加共享文件夹[ " + path + " ]", OperationLevel.WARNING, request);
             return Result.success(true);
         } else {
             return Result.fail("非法路径!");

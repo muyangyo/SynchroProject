@@ -24,7 +24,8 @@
       <el-table-column prop="userName" label="操作者" sortable width="120"/>
 
       <!-- 服务器IP -->
-      <el-table-column prop="serverIp" label="服务器IP" sortable width="150"/>
+      <el-table-column prop="ip" :label="currentMode === 'server' ? '客户端 IP' : '服务器 IP'" sortable
+                       width="150"/>
 
       <!-- 操作等级 -->
       <el-table-column prop="operationLevel" label="操作级别" sortable="custom" width="120">
@@ -68,6 +69,8 @@ import {ElMessage, ElMessageBox} from 'element-plus'
 import {Delete} from '@element-plus/icons-vue'
 import {easyRequest, RequestMethods} from '@/utils/RequestTool.js'
 
+const currentMode = ref('');
+
 // 操作日志数据
 const operationLogData = ref([])
 const total = ref(0)
@@ -101,7 +104,7 @@ const getOperationLogData = async (pageIndex) => {
       operation: '文件上传',
       operationFile: '/var/www/uploads/example_file_11112333333333331222222222222222222222222223333333311234567890.txt',
       userName: 'admin',
-      serverIp: '192.168.1.100',
+      ip: '192.168.1.100',
       operationLevel: 'INFO'
     },
     {
@@ -109,7 +112,7 @@ const getOperationLogData = async (pageIndex) => {
       operation: '文件删除',
       operationFile: '/var/www/uploads/old_file.txt',
       userName: 'user1',
-      serverIp: '192.168.1.101',
+      ip: '192.168.1.101',
       operationLevel: 'WARNING'
     }
   ]
@@ -120,6 +123,8 @@ const getOperationLogData = async (pageIndex) => {
 onMounted(() => {
   currentPage.value = 1
   getOperationLogData(currentPage.value)
+  // 获取当前模式
+  currentMode.value = "server";
 })
 
 // 清理数据

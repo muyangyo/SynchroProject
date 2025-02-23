@@ -1,13 +1,13 @@
 package com.muyangyo.filesyncclouddisk.manager.service;
 
 import com.muyangyo.filesyncclouddisk.common.model.enums.OperationLevel;
-import com.muyangyo.filesyncclouddisk.common.model.meta.OperationLog;
+import com.muyangyo.filesyncclouddisk.common.model.meta.CloudDiskOperationLog;
 import com.muyangyo.filesyncclouddisk.common.model.vo.OperationLogListVO;
 import com.muyangyo.filesyncclouddisk.common.model.vo.OperationLogVO;
 import com.muyangyo.filesyncclouddisk.common.utils.EasyTimer;
 import com.muyangyo.filesyncclouddisk.common.utils.NetworkUtils;
 import com.muyangyo.filesyncclouddisk.common.utils.TokenUtils;
-import com.muyangyo.filesyncclouddisk.manager.mapper.OperationLogMapper;
+import com.muyangyo.filesyncclouddisk.manager.mapper.CloudDiskOperationLogMapper;
 import converter.MetaToVoConverter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -28,9 +28,9 @@ import java.util.List;
  */
 @Service
 @Slf4j
-public class OperationLogService {
+public class CloudDiskOperationLogService {
     @Resource
-    private OperationLogMapper operationLogMapper;
+    private CloudDiskOperationLogMapper cloudDiskOperationLogMapper;
 
     /**
      * 添加操作日志
@@ -41,8 +41,8 @@ public class OperationLogService {
      * @param level     等级
      */
     public void addLog(String operation, String username, String ip, OperationLevel level) {
-        OperationLog operationLog = new OperationLog(new Date(), operation, username, ip, level);
-        operationLogMapper.insertOperationLog(operationLog);
+        CloudDiskOperationLog cloudDiskOperationLog = new CloudDiskOperationLog(new Date(), operation, username, ip, level);
+        cloudDiskOperationLogMapper.insertOperationLog(cloudDiskOperationLog);
         log.trace("用户操作日志[ 操作: {} , 用户名: {} , IP: {} , 等级: {} ]", operation, username, ip, level);
     }
 
@@ -57,28 +57,28 @@ public class OperationLogService {
         TokenUtils.TokenLoad tokenLoad = TokenUtils.TokenLoad.fromMap(TokenUtils.getTokenLoad(token));
         String username = tokenLoad.getUsername();
         String ip = NetworkUtils.getClientIp(request);
-        OperationLog operationLog = new OperationLog(new Date(), operation, username, ip, level);
-        operationLogMapper.insertOperationLog(operationLog);
+        CloudDiskOperationLog cloudDiskOperationLog = new CloudDiskOperationLog(new Date(), operation, username, ip, level);
+        cloudDiskOperationLogMapper.insertOperationLog(cloudDiskOperationLog);
         log.trace("用户操作日志[ 操作: {} , 用户名: {} , IP: {} , 等级: {} ]", operation, username, ip, level);
     }
 
     @SneakyThrows
     public OperationLogListVO getLogList(int currentPageIndex, int pageSize) {
-        List<OperationLog> operationLogList =
-                operationLogMapper.selectAllWithLimit(currentPageIndex * pageSize, pageSize);
+        List<CloudDiskOperationLog> cloudDiskOperationLogList =
+                cloudDiskOperationLogMapper.selectAllWithLimit(currentPageIndex * pageSize, pageSize);
 
-        ArrayList<OperationLogVO> ret = new ArrayList<>(operationLogList.size());
-        for (OperationLog o : operationLogList) {
+        ArrayList<OperationLogVO> ret = new ArrayList<>(cloudDiskOperationLogList.size());
+        for (CloudDiskOperationLog o : cloudDiskOperationLogList) {
             OperationLogVO convert = MetaToVoConverter.convert(o, OperationLogVO.class);
             convert.setOperationTime(EasyTimer.getFormatTime(o.getOperationTime()));
             ret.add(convert);
         }
-        int totalCount = operationLogMapper.getTotalCount();
+        int totalCount = cloudDiskOperationLogMapper.getTotalCount();
         return new OperationLogListVO(pageSize, totalCount, ret);
     }
 
     public boolean deleteAllLog() {
-        operationLogMapper.deleteAll();
+        cloudDiskOperationLogMapper.deleteAll();
         return true;
     }
 }

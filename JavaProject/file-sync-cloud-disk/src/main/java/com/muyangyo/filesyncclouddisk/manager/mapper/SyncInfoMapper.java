@@ -2,7 +2,9 @@ package com.muyangyo.filesyncclouddisk.manager.mapper;
 
 import com.muyangyo.filesyncclouddisk.common.model.meta.SyncInfo;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 @Mapper
@@ -45,6 +47,14 @@ public interface SyncInfoMapper {
      * @return 受影响的行数
      */
     int updateByName(SyncInfo syncInfo);
+
+    /**
+     * 根据用户名(同步名)动态更新最后同步时间
+     * @param syncName 同步名
+     * @param lastSyncTime 最后同步时间
+     * @return 受影响的行数
+     */
+    int updateLastSyncTimeByName(@Param("username") String syncName, Date lastSyncTime);
 
     /**
      * 根据主键删除同步信息

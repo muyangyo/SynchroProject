@@ -704,4 +704,27 @@ public class FileUtils {
             }
         }
     }
+
+    /**
+     * 获取文件夹大小(单位：字节),包含子目录和子文件
+     * 注意: 该方法使用了并行流, 可能会导致性能问题
+     * @param folder 文件夹路径
+     * @return 文件夹大小
+     */
+    public static long getFolderSize(Path folder) throws IOException {
+        try (Stream<Path> pathStream = Files.walk(folder)) {
+            return pathStream
+                    .parallel() // 启用并行流
+                    .filter(Files::isRegularFile) // 只处理普通文件
+                    .mapToLong(p -> {
+                        try {
+                            return Files.size(p); // 获取文件大小
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            return 0L;
+                        }
+                    })
+                    .sum();
+        }
+    }
 }

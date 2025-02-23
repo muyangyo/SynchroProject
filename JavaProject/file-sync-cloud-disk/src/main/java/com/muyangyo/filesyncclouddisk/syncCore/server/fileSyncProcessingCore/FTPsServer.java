@@ -1,14 +1,17 @@
 package com.muyangyo.filesyncclouddisk.syncCore.server.fileSyncProcessingCore;
 
+import com.muyangyo.filesyncclouddisk.manager.service.SyncLogService;
 import com.muyangyo.filesyncclouddisk.syncCore.common.model.FtpLoginUser;
-import com.muyangyo.filesyncclouddisk.syncCore.server.fileSyncProcessingCore.customCommand.CRC32Command;
-import com.muyangyo.filesyncclouddisk.syncCore.server.fileSyncProcessingCore.customCommand.VersionRemoveCommand;
+import com.muyangyo.filesyncclouddisk.syncCore.server.fileSyncProcessingCore.customFtps.CRC32Command;
+import com.muyangyo.filesyncclouddisk.syncCore.server.fileSyncProcessingCore.customFtps.OperationLoggingFtplet;
+import com.muyangyo.filesyncclouddisk.syncCore.server.fileSyncProcessingCore.customFtps.VersionRemoveCommand;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ftpserver.DataConnectionConfigurationFactory;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
 import org.apache.ftpserver.command.CommandFactoryFactory;
 import org.apache.ftpserver.ftplet.Authority;
+import org.apache.ftpserver.ftplet.Ftplet;
 import org.apache.ftpserver.listener.ListenerFactory;
 import org.apache.ftpserver.ssl.SslConfigurationFactory;
 import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
@@ -17,6 +20,7 @@ import org.apache.ftpserver.usermanager.impl.ConcurrentLoginPermission;
 import org.apache.ftpserver.usermanager.impl.WritePermission;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -24,7 +28,7 @@ import java.util.List;
 @Slf4j
 public class FTPsServer {
     public static FtpServer run(String certificateFileName, String keystorePassword, File keystoreFile, int ftpPort, List<FtpLoginUser> ftpLoginUsers,
-                           boolean enableVersionDelete, int maxVersions, String versionDelDir) throws Exception {
+                                boolean enableVersionDelete, int maxVersions, String versionDelDir, SyncLogService syncLogService) throws Exception {
         if (keystoreFile == null || !keystoreFile.exists()) {
             keystoreFile = new File("./" + certificateFileName);
         }
@@ -36,6 +40,10 @@ public class FTPsServer {
         commandFactoryFactory.addCommand(CRC32Command.COMMAND_NAME, new CRC32Command());// 添加自定义命令1
         commandFactoryFactory.addCommand(VersionRemoveCommand.COMMAND_NAME, new VersionRemoveCommand(enableVersionDelete, maxVersions, versionDelDir));// 添加自定义命令2
         serverFactory.setCommandFactory(commandFactoryFactory.createCommandFactory());
+        // 创建拦截器
+        HashMap<String, Ftplet> ftplets = new HashMap<>(1);
+        ftplets.put("operationLogger", new OperationLoggingFtplet(syncLogService));
+        serverFactory.setFtplets(ftplets);
 
 
         // 2. 配置 SSL/TLS

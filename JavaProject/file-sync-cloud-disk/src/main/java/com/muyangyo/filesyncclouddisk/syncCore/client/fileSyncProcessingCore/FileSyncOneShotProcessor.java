@@ -1,10 +1,11 @@
 package com.muyangyo.filesyncclouddisk.syncCore.client.fileSyncProcessingCore;
 
+import com.muyangyo.filesyncclouddisk.common.model.enums.OperationLevel;
 import com.muyangyo.filesyncclouddisk.common.utils.CRC32Util;
 import com.muyangyo.filesyncclouddisk.common.utils.FileUtils;
 import com.muyangyo.filesyncclouddisk.common.utils.FtpsClientBuilder;
 import com.muyangyo.filesyncclouddisk.manager.mapper.SyncInfoMapper;
-import com.muyangyo.filesyncclouddisk.manager.mapper.SyncLogMapper;
+import com.muyangyo.filesyncclouddisk.manager.service.SyncLogService;
 import com.muyangyo.filesyncclouddisk.syncCore.common.model.FileMetadata;
 import com.muyangyo.filesyncclouddisk.syncCore.common.model.SyncDiff;
 import com.muyangyo.filesyncclouddisk.syncCore.common.model.SyncStatus;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,12 +59,12 @@ public class FileSyncOneShotProcessor {
     private final String ftpUsername; // FTPS用户名
     private final String ftpPassword; // FTPS密码
     //外部变量
-    private final SyncInfoMapper syncInfoMapper; // 操作数据库的
-    private final SyncLogMapper syncLogMapper; // 操作日志数据库的
+    private final SyncInfoMapper syncInfoMapper; // 操作 配置 数据库的
+    private final SyncLogService syncLogService; // 操作 日志 数据库的
 
 
     FileSyncOneShotProcessor(String localBasePath, boolean isFirst, String ftpServerIp, int ftpPort, String ftpUsername, String ftpPassword,
-                             SyncInfoMapper syncInfoMapper, SyncLogMapper syncLogMapper) {
+                             SyncInfoMapper syncInfoMapper, SyncLogService syncLogService) {
         this.localBasePath = localBasePath;
         this.isFirst = isFirst;
         this.serverIp = ftpServerIp;
@@ -70,7 +72,7 @@ public class FileSyncOneShotProcessor {
         this.ftpUsername = ftpUsername;
         this.ftpPassword = ftpPassword;
         this.syncInfoMapper = syncInfoMapper;
-        this.syncLogMapper = syncLogMapper;
+        this.syncLogService = syncLogService;
         try (EasyFTP ftp = new EasyFTP(FtpsClientBuilder.build(ftpServerIp, ftpPort, ftpUsername, ftpPassword))) {
             SYNC_STATUS = SyncStatus.CONNECTING;
         } catch (IOException e) {
@@ -88,8 +90,8 @@ public class FileSyncOneShotProcessor {
             // 第一次启动，全量同步,下载整个目录
             downloadAllFiles();
             log.info("第一次启动，基于 [{}] 全量同步完成", localBasePath);
-            //            savaCurrentState(null, isFirst); // todo: 这里要存放到数据库
-//            syncInfoMapper.updateByName(new SyncInfo(ftpUsername))//更新最近同步时间
+            syncLogService.addLog(SyncLogService.DOWNLOAD, "全量同步", ftpUsername, serverIp, OperationLevel.INFO);
+            syncInfoMapper.updateLastSyncTimeByName(ftpUsername, new Date());
         } else {
             // 增量同步
             // 1. 获取本地当前文件状态
@@ -106,9 +108,7 @@ public class FileSyncOneShotProcessor {
             // 4. 执行同步操作
             processSync(diff);
 
-            // 5. 更新同步状态
-            // 6.存放到数据库
-//            saveCurrentState(diff, isFirst); // todo: 这里要存放到数据库
+            syncInfoMapper.updateLastSyncTimeByName(ftpUsername, new Date());
         }
         isFirst = false;
         SYNC_STATUS = SyncStatus.SYNC_COMPLETE;
@@ -268,7 +268,10 @@ public class FileSyncOneShotProcessor {
     private void deleteRemoteFile(String remotePath, String serverIp, int ftpPort, String ftpUsername, String ftpPassword) throws IOException {
         try (EasyFTP ftp = new EasyFTP(FtpsClientBuilder.build(serverIp, ftpPort, ftpUsername, ftpPassword))) {
             boolean b = ftp.versionRemoveFile(remotePath);
-            if (b) log.info("文件删除成功：远程 [/{}]", remotePath);
+            if (b) {
+                log.info("文件删除成功：远程 [/{}]", remotePath);
+                syncLogService.addLog(SyncLogService.DELETE, "远程文件: " + remotePath, ftpUsername, serverIp, OperationLevel.IMPORTANT);
+            }
         }
     }
 
@@ -280,6 +283,7 @@ public class FileSyncOneShotProcessor {
 
             String localPath = getLocalPath(remotePath);// 本地路径
             ftp.download(remoteDir, fileName, new File(localPath));
+            syncLogService.addLog(SyncLogService.DOWNLOAD, remotePath, ftpUsername, serverIp, OperationLevel.INFO);
             log.info("文件下载成功：远程 [{}] -> [{}]", remoteDir + remotePath, localPath);
         }
     }
@@ -294,6 +298,7 @@ public class FileSyncOneShotProcessor {
             String remoteDir = tmpPath.getParent() == null ? "/" : tmpPath.getParent().toString(); // 远程目录
             String fileName = tmpPath.getFileName().toString(); // 文件名
             ftp.upload(remoteDir, fileName, new File(localPath));
+            syncLogService.addLog(SyncLogService.ADD, localPath, ftpUsername, serverIp, OperationLevel.WARNING);
             log.info("文件上传成功：[{}] -> 远程 [{}]", localPath, remoteDir + remotePath);
         }
     }
