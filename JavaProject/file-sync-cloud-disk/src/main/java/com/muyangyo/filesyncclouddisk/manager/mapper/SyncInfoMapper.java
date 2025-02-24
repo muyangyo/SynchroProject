@@ -25,6 +25,12 @@ public interface SyncInfoMapper {
     SyncInfo selectByName(String name);
 
     /**
+     * 查询所有激活的同步信息
+     * @return 激活的同步信息列表
+     */
+    List<SyncInfo> selectActive();
+
+    /**
      * 多条件动态查询同步信息
      *
      * @param condition 查询条件对象
@@ -70,4 +76,10 @@ public interface SyncInfoMapper {
      * @return 受影响的行数
      */
     int deleteAll();
+
+    /**
+     * 获取同步信息总数
+     * @return 同步信息总数
+     */
+    int getCount();
 }

@@ -2,12 +2,19 @@ package com.muyangyo.filesyncclouddisk.manager.service;
 
 import com.muyangyo.filesyncclouddisk.common.model.enums.OperationLevel;
 import com.muyangyo.filesyncclouddisk.common.model.meta.SyncOperationLog;
+import com.muyangyo.filesyncclouddisk.common.model.vo.SyncLogListVO;
+import com.muyangyo.filesyncclouddisk.common.model.vo.SyncLogVO;
+import com.muyangyo.filesyncclouddisk.common.utils.EasyTimer;
 import com.muyangyo.filesyncclouddisk.manager.mapper.SyncLogMapper;
+import converter.MetaToVoConverter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 创建于 IntelliJ IDEA.
@@ -32,19 +39,20 @@ public class SyncLogService {
         log.trace("同步日志 [ 操作: {} 目标文件: {} 同步名称: {} IP: {} 级别: {} ]", operation, targetFileName, syncName, ip, level);
     }
 
-/*    public OperationLogListVO getLogList(int currentPageIndex, int pageSize) {
+    @SneakyThrows
+    public SyncLogListVO getLogList(int currentPageIndex, int pageSize) {
         List<SyncOperationLog> syncOperationLogs = syncLogMapper.selectAllWithLimit(currentPageIndex * pageSize, pageSize);
 
-        ArrayList<OperationLogVO> ret = new ArrayList<>(cloudDiskOperationLogList.size());
-        for (CloudDiskOperationLog o : cloudDiskOperationLogList) {
-            OperationLogVO convert = MetaToVoConverter.convert(o, OperationLogVO.class);
+        ArrayList<SyncLogVO> ret = new ArrayList<>(syncOperationLogs.size());
+        for (SyncOperationLog o : syncOperationLogs) {
+            SyncLogVO convert = MetaToVoConverter.convert(o, SyncLogVO.class);
             convert.setOperationTime(EasyTimer.getFormatTime(o.getOperationTime()));
             ret.add(convert);
         }
 
         int totalCount = syncLogMapper.getTotalCount();
-        return new OperationLogListVO(pageSize, totalCount, ret);
-    }*/
+        return new SyncLogListVO(pageSize, totalCount, ret);
+    }
 
     public boolean deleteAllLog() {
         syncLogMapper.deleteAll();

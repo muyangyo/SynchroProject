@@ -61,17 +61,20 @@ public class SyncModuleInitializer {
             return;
         } else {
             SyncInfo syncInfo = syncInfos.get(0);//随便取一个,来判断是否是服务端还是客户端
-            if (StringUtils.hasLength(syncInfo.getServerIp()) && StringUtils.hasLength(syncInfo.getServerId())) {
-                log.info("判断当前为客户端,开始连接服务器");
+            if (StringUtils.hasLength(syncInfo.getServerId()) || StringUtils.hasLength(syncInfo.getServerIp())) {
+                log.info("判断当前为 [客户端]");
+                log.info("启动同步客户端");
                 startClient();
             } else {
-                log.info("判断当前为服务端，启动同步服务");
+                log.info("判断当前为 [服务端]");
+                log.info("启动同步服务端");
                 startServer();
             }
         }
     }
 
     public boolean startServer() {
+        stopClient(); // 先停止客户端,避免端口冲突
         setting.setSyncServer(true);
         // 启动UDP广播监听
         discoveryServer = new DiscoveryServer(setting.getDiscoveryServicePort(), setting.getDeviceID());
@@ -112,9 +115,10 @@ public class SyncModuleInitializer {
 
     @PreDestroy
     public boolean stopServer() {
-        log.info("正在停止同步服务");
+        log.info("正在清空同步服务端资源");
         if (discoveryServer != null) {
             discoveryServer.stop();
+            discoveryServer = null;
             log.info("UDP广播服务已停止");
         }
         if (ftpServer != null && !ftpServer.isStopped()) {
@@ -131,13 +135,28 @@ public class SyncModuleInitializer {
         return startServer();
     }
 
+    @PreDestroy
+    public boolean stopClient() {
+        log.info("正在清空同步客户端资源");
+        mapForFileSyncManagers.forEach((serverIp, fileSyncManager) -> {
+            fileSyncManager.stopAllSyncs(); // 停止所有同步任务
+        });
+        mapForFileSyncManagers.clear(); // 清理资源
+        return true;
+    }
+
+
     public boolean restartClient() {
+        log.warn("正在重启同步客户端");
+        stopClient();
         return startClient();
     }
 
     public boolean startClient() {
+        stopServer(); // 先停止服务端,避免端口冲突
         setting.setSyncServer(false);
-        List<SyncInfo> syncs = syncInfoMapper.selectAll();
+        List<SyncInfo> syncs = syncInfoMapper.selectActive();// 只有激活的同步配置才会被执行
+
 
         // 根据 serverIp 进行分组
         Map<String, List<SyncInfo>> groupByServerIp = syncs.stream().collect(Collectors.groupingBy(SyncInfo::getServerIp));
@@ -163,7 +182,14 @@ public class SyncModuleInitializer {
     }
 
     // 新增方法获取同步状态
-    public SyncStatus getSyncStatuses(String serverIp, String localAddress) {
+    public SyncStatus getSyncStatuses(String syncName, String serverIp, String localAddress) {
+        // 先看看是不是激活的,没激活的不会在内存中
+        List<SyncInfo> syncInfos = syncInfoMapper.selectActive();
+        SyncInfo syncInfo = syncInfos.stream().filter(s -> s.getUsername().equals(syncName)).findFirst().orElse(null);
+        if (syncInfo == null) {
+            return SyncStatus.SYNC_STOP;
+        }
+
         FileSyncManager fileSyncManager = mapForFileSyncManagers.get(serverIp);
         if (fileSyncManager != null) {
             FileSyncOneShotProcessor fileSyncOneShotProcessor = fileSyncManager.CURRENT_SYNCS.get(localAddress);

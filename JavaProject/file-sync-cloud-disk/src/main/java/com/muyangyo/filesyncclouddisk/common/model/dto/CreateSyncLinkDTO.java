@@ -6,12 +6,12 @@ import lombok.Data;
  * 创建于 IntelliJ IDEA.
  * 描述：
  * User: 沐阳Yo
- * Date: 2025/2/23
- * Time: 22:46
+ * Date: 2025/2/24
+ * Time: 12:29
  */
+
 @Data
-public class CreateSyncDTO {
+public class CreateSyncLinkDTO {
     String syncName;
-    String localPath;
     String key;
 }

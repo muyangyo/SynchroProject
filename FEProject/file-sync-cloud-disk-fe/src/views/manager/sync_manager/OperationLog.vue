@@ -78,54 +78,36 @@ const pageSize = ref(12)
 const currentPage = ref(1)
 
 // 获取操作日志数据
-const getOperationLogData = async (pageIndex) => {
-  /* try {
-     const response = await easyRequest(
-         RequestMethods.GET,
-         `/operationLog/getLogList?page=${pageIndex}&pageSize=${pageSize.value}`,
-         '',
-         false,
-         false
-     )
-
-     if (response.data && response.statusCode === 'SUCCESS') {
-       operationLogData.value = response.data.list
-       total.value = response.data.total
-     } else {
-       ElMessage.error(response.errMsg || '获取操作日志失败！')
-     }
-   } catch (error) {
-     ElMessage.error('请求失败，请检查网络连接')
-   }*/
-
-  operationLogData.value = [
-    {
-      operationTime: '2023-10-01 12:00:00',
-      operation: '文件上传',
-      operationFile: '/var/www/uploads/example_file_11112333333333331222222222222222222222222223333333311234567890.txt',
-      userName: 'admin',
-      ip: '192.168.1.100',
-      operationLevel: 'INFO'
-    },
-    {
-      operationTime: '2023-10-01 12:05:00',
-      operation: '文件删除',
-      operationFile: '/var/www/uploads/old_file.txt',
-      userName: 'user1',
-      ip: '192.168.1.101',
-      operationLevel: 'WARNING'
-    }
-  ]
-  total.value = 2
-}
+const getOperationLogData = (pageIndex) => {
+  easyRequest(RequestMethods.GET, `/syncLog/getLogList?page=${pageIndex}&pageSize=${pageSize.value}`, "", false, false).then(
+      (response) => {
+        if (response.data && response.statusCode === "SUCCESS") {
+          operationLogData.value = response.data.list;
+          total.value = response.data.total;
+        } else {
+          ElMessage.error(response.errMsg ? response.errMsg : '获取操作日志失败!');
+        }
+      }
+  );
+};
 
 // 初始化加载数据
 onMounted(() => {
   currentPage.value = 1
+  getMode();
   getOperationLogData(currentPage.value)
-  // 获取当前模式
-  currentMode.value = "server";
 })
+
+// 获取用户模式
+const getMode = () => {
+  easyRequest(RequestMethods.GET, '/syncManager/getStatus', null, false).then(response => {
+    if (response.statusCode === "SUCCESS") {
+      currentMode.value = response.data;
+    } else {
+      ElMessage.error('获取用户模式失败');
+    }
+  });
+}
 
 // 清理数据
 onBeforeUnmount(() => {
@@ -163,35 +145,31 @@ const handleSortChange = ({prop, order}) => {
   }
 }
 
-// 处理删除操作
+// 批量删除操作日志
 const handleDelete = () => {
-  ElMessageBox.confirm('确定要删除所有操作日志吗？', '警告', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'error',
-    icon: Delete,
-  }).then(async () => {
-    try {
-      const response = await easyRequest(
-          RequestMethods.DELETE,
-          '/operationLog/deleteLog',
-          '',
-          false,
-          false
-      )
-
-      if (response.data === true && response.statusCode === 'SUCCESS') {
-        ElMessage.success('操作日志删除成功！')
-        operationLogData.value = []
-        total.value = 0
-      } else {
-        ElMessage.error(response.errMsg || '删除操作日志失败！')
+  ElMessageBox.confirm(
+      '确定要删除所有操作日志吗？',
+      '警告',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'error',
+        icon: markRaw(Delete),
       }
-    } catch (error) {
-      ElMessage.error('删除失败，请检查网络连接')
-    }
-  })
-}
+  ).then(() => {
+    easyRequest(RequestMethods.DELETE, `/syncLog/deleteLog`, "", false, false).then(
+        (response) => {
+          if (response.data === true && response.statusCode === "SUCCESS") {
+            ElMessage.success('操作日志删除成功!');
+            operationLogData.value = [];
+            total.value = 0; // 更新总条数为0
+          } else {
+            ElMessage.error(response.errMsg ? response.errMsg : '删除操作日志失败!');
+          }
+        }
+    );
+  });
+};
 
 // 获取标签类型
 const getTagType = (operationLevel) => {

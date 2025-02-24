@@ -5,6 +5,7 @@ import com.muyangyo.filesyncclouddisk.common.utils.DeviceIdGenerator;
 import com.muyangyo.filesyncclouddisk.syncCore.server.linkCore.DiscoveryServer;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -39,7 +40,7 @@ public class DeviceExplorer {
             String serverIP = null; // 最终的服务端IP
 
             // 步骤1：尝试公网连接 如果有公网服务端IP，则尝试连接
-            if (!publicServerIp.isEmpty()) {
+            if (StringUtils.hasLength(publicServerIp)) {
                 log.info("尝试连接公网服务端 started");
                 String serverDeviceId = DeviceExplorer.pingToPublicServer(publicServerIp, publicServerUdpPort);
                 if (serverDeviceId != null) {
@@ -184,7 +185,7 @@ public class DeviceExplorer {
             }
         } catch (java.net.SocketTimeoutException e) {
             // 正常异常
-            log.error("连接公网服务器超时,请检查网络连接或公网服务器是否正常运行");
+            log.warn("连接公网服务器超时,请检查网络连接或公网服务器是否正常运行");
             return null;
         } catch (Exception e) {
             // 其他异常

@@ -21,7 +21,7 @@ public class SyncInfo {
     private String password; // FTPS密码
     private String localAddress; // 本地地址 (唯一)
     // 上面是都有,下面是客户端才有的
-    private boolean isFirst; // 是否是第一次同步,默认是
+    private boolean isFirst = true; // 是否是第一次同步,默认是
     private String serverId; // 服务器ID(MAC)
     private String serverIp; // 服务器IP
     private boolean isActive = true; // 是否开启同步,默认是

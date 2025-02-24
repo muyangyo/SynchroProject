@@ -98,6 +98,7 @@
       <!-- 新增对话框 -->
       <el-dialog v-model="showAddDialog" :title="currentMode === 'server' ? '新建同步' : '添加同步链接'">
         <el-form :model="newSyncForm" label-width="120px" :rules="formRules">
+          <!-- 服务端模式表单项 -->
           <el-form-item v-if="currentMode === 'server'" label="同步名称" prop="syncName">
             <el-input v-model="newSyncForm.syncName" placeholder="目前只支持英文、数字构成的同步名称"/>
           </el-form-item>
@@ -106,8 +107,12 @@
             <el-input v-model="newSyncForm.localPath" placeholder="绝对路径，如：C:/sync_folder"/>
           </el-form-item>
 
-          <el-form-item v-if="currentMode === 'client'" label="同步链接" prop="syncUrl">
-            <el-input v-model="newSyncForm.syncUrl" placeholder="输入服务端提供的分享链接"/>
+          <el-form-item v-if="currentMode === 'client'" label="同步Key" prop="key">
+            <el-input v-model="newSyncForm.key" placeholder="输入服务端提供的分享链接"/>
+          </el-form-item>
+
+          <el-form-item v-if="currentMode === 'client'" label="本地路径" prop="localPath">
+            <el-input v-model="newSyncForm.localPath" placeholder="绝对路径，如：C:/sync_folder"/>
           </el-form-item>
         </el-form>
 
@@ -156,15 +161,16 @@
 </template>
 
 <script setup>
-import {ref, reactive, onMounted} from 'vue'
+import {ref, reactive, onMounted, onUnmounted} from 'vue'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {Folder} from '@element-plus/icons-vue'
 import {sizeTostr} from "@/utils/FileSizeConverter.js";
-
+import JSEncrypt from 'jsencrypt';
 // 引入 GIF 图片
 import serverGif from '@/assets/server.gif'
 import clientGif from '@/assets/client.gif'
 import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
+import {rsaEncryptUtil} from "@/utils/RSAEncryptUtils.js";
 // 定义 GIF 点击跳转逻辑
 const handleGifClick = () => {
   window.open("https://icons8.com/", '_blank')
@@ -192,10 +198,14 @@ const statusMap = {
 
 // 初始化加载
 onMounted(async () => {
-  getMode();
-  await loadSyncList()
+  await getMode();
+  await loadSyncList();
 })
 
+// 组件卸载时清除定时器
+onUnmounted(() => {
+  stopPolling();
+})
 // 模式切换处理
 const handleSwitchMode = () => {
   switchToMode.value = currentMode.value === 'server' ? 'client' : 'server'
@@ -218,7 +228,8 @@ const confirmSwitchMode = async () => {
   try {
     easyRequest(RequestMethods.POST, `/syncManager/changeStatus?changeTo=${switchToMode.value}`, null, false, false).then(response => {
       if (response.statusCode === "SUCCESS") {
-        currentMode.value = switchToMode.value; // 切换模式
+        // 更新模式
+        currentMode.value = switchToMode.value;
         loadSyncList();// 刷新同步列表
         showModeDialog.value = false // 关闭模式切换确认对话框
         ElMessage.success(response.data ? response.data : '模式切换成功') // 提示成功
@@ -235,8 +246,10 @@ const confirmSwitchMode = async () => {
 const loadSyncList = async () => {
   easyRequest(RequestMethods.GET, '/syncManager/getSyncInfoList', null, false).then(response => {
     if (response.statusCode === "SUCCESS") {
+      stopPolling(); // 停止轮询
       syncList.value = [];// 先清空同步列表
       syncList.value = response.data;
+      startPolling(); // 启动轮询
     } else {
       ElMessage.error('加载同步列表失败')
     }
@@ -246,8 +259,8 @@ const loadSyncList = async () => {
 // 新增同步表单数据
 const newSyncForm = reactive({
   syncName: '', // 只有服务端模式才有同步名称
-  localPath: '', // 只有服务端模式才有本地路径
-  syncUrl: '' // 只有客户端模式才有同步链接
+  localPath: '', // 通用
+  key: '' // 只有客户端模式才有同步链接
 })
 
 // 表单验证规则
@@ -260,19 +273,24 @@ const formRules = {
     }
   ],
   localPath: [
-    {required: true, message: '请输入本地路径'},
     {
-      pattern: /^[a-zA-Z]:[\\/].*$|^\/.*$/,
-      message: '请输入有效的绝对路径，支持中文路径'
+      required: true,
+      message: '请输入有效的绝对路径，支持中文路径',
+      validator: (rule, value, callback) => {
+        // 通用路径格式验证（支持Windows和Unix-like系统）
+        const isValid = /^(?:[a-zA-Z]:[\\/]|\\\\|[/])/.test(value)
+        isValid ? callback() : callback(new Error(rule.message))
+      }
     }
   ],
-  syncUrl: [
+  key: [
     {required: true, message: '请输入同步链接'},
   ]
 };
 
 // 新增同步
 const confirmAddSync = () => {
+
   if (currentMode.value === 'server') {
     let data = {syncName: newSyncForm.syncName, localPath: newSyncForm.localPath};
     easyRequest(RequestMethods.POST, "/syncManager/addSyncInfo", data, true, true).then(
@@ -283,21 +301,227 @@ const confirmAddSync = () => {
           } else {
             ElMessage.error(response.errMsg ? response.errMsg : '新增同步失败');
           }
+          Object.keys(newSyncForm).forEach(k => newSyncForm[k] = '') // 清空表单数据
         }
     )
   } else {
-    //todo: 客户端模式新增同步
+
+    easyRequest(RequestMethods.GET, "/syncManager/getPublicKey", null, false).then(
+        response => {
+          if (response.statusCode === "SUCCESS" && response.data) {
+            rsaEncryptUtil.setPublicKey(response.data); // 保存公钥
+            // Rsa 加密
+            let encryptedData = {
+              key: rsaEncryptUtil.encryptData(newSyncForm.key),
+              localPath: rsaEncryptUtil.encryptData(newSyncForm.localPath)
+            }
+
+            // 发送请求
+            easyRequest(RequestMethods.POST, "/syncManager/addSyncInfo", encryptedData, true, true).then(
+                response => {
+                  if (response.statusCode === "SUCCESS") {
+                    ElMessage.success(response.data ? response.data : '新增同步成功');
+                    loadSyncList(); // 刷新同步列表
+                  } else {
+                    ElMessage.error(response.errMsg ? response.errMsg : '新增同步失败');
+                  }
+                }
+            )
+
+          } else {
+            ElMessage.error('获取公钥失败');
+          }
+          Object.keys(newSyncForm).forEach(k => newSyncForm[k] = '') // 清空表单数据
+        }
+    )
   }
+
   showAddDialog.value = false // 关闭新增对话框
-  Object.keys(newSyncForm).forEach(k => newSyncForm[k] = '') // 清空表单数据
 }
 
 
 const settingForm = reactive({
   localPath: '',
-  serverIp: '', // 新增服务器 IP 字段
+  serverIp: '', // 新增服务器 IP 字段(客户端模式)
   versionDelete: false
 })
+
+// 点击设置按钮
+const handleSetting = (row) => {
+  selectedRow.value = row
+  settingForm.localPath = row.localPath
+
+  if (currentMode.value === 'client') {
+    settingForm.serverIp = row.serverIp || '' // 初始化服务器 IP
+  }
+  if (currentMode.value === 'server') {
+    settingForm.versionDelete = row.versionDelete || false // 初始化版本删除
+  }
+  drawerVisible.value = true
+}
+
+
+// 点击设置里的保存按钮
+const saveSettings = () => {
+  selectedRow.value.localPath = settingForm.localPath
+  if (currentMode.value === 'client') {
+    selectedRow.value.serverIp = settingForm.serverIp // 保存服务器 IP
+  }
+  if (currentMode.value === 'server') {
+    selectedRow.value.versionDelete = settingForm.versionDelete
+  }
+  drawerVisible.value = false
+  if (currentMode.value === 'server') {
+    let data = {
+      syncName: selectedRow.value.syncName,
+      localPath: selectedRow.value.localPath,
+      versionDelete: selectedRow.value.versionDelete
+    }
+    easyRequest(RequestMethods.POST, "/syncManager/updateSyncInfo", data, true, true).then(
+        response => {
+          if (response.statusCode === "SUCCESS") {
+            ElMessage.success(response.data ? response.data : '同步设置已保存');
+          } else {
+            ElMessage.error(response.errMsg ? response.errMsg : '同步设置保存失败');
+          }
+          loadSyncList(); // 刷新同步列表
+        }
+    )
+  } else {
+    let data = {
+      syncName: selectedRow.value.syncName,
+      localPath: selectedRow.value.localPath,
+      serverIp: selectedRow.value.serverIp
+    }
+    console.warn(data);
+
+    easyRequest(RequestMethods.POST, "/syncManager/updateSyncInfo", data, true, true).then(
+        response => {
+          if (response.statusCode === "SUCCESS") {
+            ElMessage.success(response.data ? response.data : '同步设置已保存');
+          } else {
+            ElMessage.error(response.errMsg ? response.errMsg : '同步设置保存失败');
+          }
+          loadSyncList(); // 刷新同步列表
+        }
+    )
+  }
+}
+
+const handleShare = async (row) => {
+  const encryptor = new JSEncrypt({default_key_size: '2048'}); // 生成 2048 位的密钥对
+
+  // 生成公钥和私钥
+  const publicKey = encryptor.getPublicKeyB64();
+
+  let data = {
+    syncName: row.syncName,
+    key: publicKey,
+  }
+
+  easyRequest(RequestMethods.POST, `/syncManager/getSyncShareLink`, data, true, true)
+      .then(async response => {
+        if (response.statusCode === "SUCCESS" && response.data) {
+          let link = encryptor.decrypt(response.data);
+          await navigator.clipboard.writeText(link);
+          ElMessage.success('链接已复制到剪贴板');
+        } else {
+          ElMessage.error('获取分享链接失败');
+        }
+      });
+}
+
+const handleDelete = async (row) => {
+  ElMessageBox.confirm('确定删除该同步项？', '警告', {
+    confirmButtonText: '删除',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    easyRequest(RequestMethods.DELETE, `/syncManager/deleteSyncInfo?syncName=${row.syncName}`, null, true, true).then(
+        response => {
+          if (response.statusCode === "SUCCESS") {
+            ElMessage.success(response.data ? response.data : '删除同步成功');
+            loadSyncList(); // 刷新同步列表
+          } else {
+            ElMessage.error(response.errMsg ? response.errMsg : '删除同步失败');
+          }
+        })
+  }).catch(() => {
+  });
+}
+
+// 暂停按钮
+const handleToggleSync = async (row) => {
+  if (currentMode.value !== 'client') return
+
+  const newStatus = row.status === 'SYNC_STOP' ? 'SYNCING' : 'SYNC_STOP'
+
+
+  const response = await easyRequest(
+      RequestMethods.POST,
+      `/syncManager/updateSyncInfo`,
+      {
+        newStatus: newStatus,
+        syncName: row.syncName
+      },
+      true,
+      true,
+  )
+
+  if (response.statusCode === "SUCCESS") {
+    row.status = newStatus
+    ElMessage.success(`已${newStatus === 'SYNC_STOP' ? '暂停' : '恢复'}同步`)
+  }
+}
+
+//todo: 下面等待验证
+
+// 轮询间隔（5秒）
+const POLL_INTERVAL = 5000;
+let pollTimer = null;
+
+// 启动轮询
+const startPolling = () => {
+  if (currentMode.value === 'client' && syncList.value.length > 0) {
+    pollTimer = setInterval(fetchSyncStatus, POLL_INTERVAL)
+  }
+}
+
+// 停止轮询
+const stopPolling = () => {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
+// 获取同步状态
+const fetchSyncStatus = async () => {
+  if (currentMode.value !== 'client' || syncList.value.length === 0) return
+
+  try {
+    const syncNames = syncList.value.map(item => item.syncName)
+    const response = await easyRequest(
+        RequestMethods.GET,
+        `/syncManager/getSyncStatusClientOnly?syncNames=${syncNames.join(',')}`,
+        null,
+        false
+    )
+
+    if (response.statusCode === "SUCCESS") {
+      updateSyncStatus(response.data)
+    }
+  } catch (error) {
+    console.error('状态更新失败', error)
+  }
+}
+// 更新同步状态
+const updateSyncStatus = (statusList) => {
+  statusList.forEach(({syncName, syncStatus}) => {
+    const target = syncList.value.find(item => item.syncName === syncName)
+    if (target) target.status = syncStatus
+  })
+}
 
 
 // 状态标签颜色
@@ -309,52 +533,6 @@ const statusTagType = (status) => {
     SYNC_STOP: 'warning'
   }
   return map[status] || 'info'
-}
-
-
-// 操作处理
-const handleSetting = (row) => {
-  selectedRow.value = row
-  settingForm.localPath = row.localPath
-  if (currentMode.value === 'client') {
-    settingForm.serverIp = row.serverIp || '' // 初始化服务器 IP
-  }
-  if (currentMode.value === 'server') {
-    settingForm.versionDelete = row.versionDelete || false
-  }
-  drawerVisible.value = true
-}
-
-const handleToggleSync = (row) => {
-  row.status = row.status === 'SYNC_STOP' ? 'SYNCING' : 'SYNC_STOP'
-  ElMessage.info(`已${row.status === 'SYNC_STOP' ? '暂停' : '恢复'}同步`)
-}
-
-const handleShare = async (row) => {
-  const link = `https://sync-server.com/share/${row.id}`
-  await navigator.clipboard.writeText(link)
-  ElMessage.success('链接已复制到剪贴板')
-}
-
-const handleDelete = async (row) => {
-  await ElMessageBox.confirm('确定删除该同步项？', '警告', {
-    confirmButtonText: '删除',
-    cancelButtonText: '取消',
-    type: 'warning'
-  })
-  syncList.value = syncList.value.filter(item => item.id !== row.id)
-}
-
-const saveSettings = () => {
-  selectedRow.value.localPath = settingForm.localPath
-  if (currentMode.value === 'client') {
-    selectedRow.value.serverIp = settingForm.serverIp // 保存服务器 IP
-  }
-  if (currentMode.value === 'server') {
-    selectedRow.value.versionDelete = settingForm.versionDelete
-  }
-  drawerVisible.value = false
-  ElMessage.success('设置已保存')
 }
 </script>
 

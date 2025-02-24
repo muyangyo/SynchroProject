@@ -53,4 +53,8 @@ public class FileSyncManager {
 
         }
     }
+
+    public void stopAllSyncs() {
+        CURRENT_SYNCS.clear(); // 清空当前同步列表
+    }
 }
