@@ -45,7 +45,7 @@ public class SyncManagerController {
     @PostMapping("/updateSyncInfo")
     public Result updateSyncInfo(@RequestBody SyncDTO syncDTO) {
         if (StringUtils.hasLength(syncDTO.getLocalPath()) && StringUtils.hasLength(syncDTO.getSyncName())) {
-
+            syncDTO.setLocalPath(FileUtils.normalizePath(syncDTO.getLocalPath()));
             if (setting.isSyncServer()) {
                 return syncInfoService.updateSyncInfoOfServer(syncDTO.getSyncName(), syncDTO.getLocalPath());
             } else {

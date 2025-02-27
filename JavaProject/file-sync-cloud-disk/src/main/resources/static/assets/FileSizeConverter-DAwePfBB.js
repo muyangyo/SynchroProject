@@ -1,0 +1,1 @@
+const l=t=>{if(t==="")return;const o=1024,r=o*1024,s=r*1024,d=s*1024;let e="";t<.1*o?e=t.toFixed(2)+"B":t<.1*r?e=(t/o).toFixed(2)+"KB":t<s*.8?e=(t/r).toFixed(2)+"MB":t<d*.8?e=(t/s).toFixed(2)+"GB":e=(t/d).toFixed(2)+"TB";let n=e.indexOf(".");return e.substring(n+1,n+3)==="00"?e.substring(0,n)+e.substring(n+3,n+5):e};export{l as s};

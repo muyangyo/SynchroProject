@@ -1,6 +1,7 @@
 package com.muyangyo.filesyncclouddisk.syncCore.client.fileSyncProcessingCore;
 
 import com.muyangyo.filesyncclouddisk.common.model.enums.OperationLevel;
+import com.muyangyo.filesyncclouddisk.common.model.meta.SyncInfo;
 import com.muyangyo.filesyncclouddisk.common.utils.CRC32Util;
 import com.muyangyo.filesyncclouddisk.common.utils.FileUtils;
 import com.muyangyo.filesyncclouddisk.common.utils.FtpsClientBuilder;
@@ -91,7 +92,11 @@ public class FileSyncOneShotProcessor {
             downloadAllFiles();
             log.info("第一次启动，基于 [{}] 全量同步完成", localBasePath);
             syncLogService.addLog(SyncLogService.DOWNLOAD, "全量同步", ftpUsername, serverIp, OperationLevel.INFO);
-            syncInfoMapper.updateLastSyncTimeByName(ftpUsername, new Date());
+
+            SyncInfo syncInfo = syncInfoMapper.selectByName(ftpUsername);
+            syncInfo.setFirst(false);
+            syncInfo.setLastSyncTime(new Date());
+            syncInfoMapper.updateByName(syncInfo);
         } else {
             // 增量同步
             // 1. 获取本地当前文件状态

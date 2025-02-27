@@ -71,7 +71,7 @@ const handleSortChange = ({prop, order}) => {
 // 操作日志数据
 const operationLogData = ref([]); // 操作日志数据
 const total = ref(0); // 总条数
-const pageSize = ref(12); // 每页显示条数
+const pageSize = ref(8); // 每页显示条数
 const currentPage = ref(1); // 当前页数
 
 const getOperationLogData = (pageIndex) => {

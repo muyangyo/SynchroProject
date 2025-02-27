@@ -14,24 +14,24 @@
       <el-table-column prop="operation" label="操作" :show-overflow-tooltip="true" min-width="150"/>
 
       <!-- 操作文件 -->
-      <el-table-column prop="operationFile" label="操作文件" :show-overflow-tooltip="true" min-width="200">
+      <el-table-column prop="targetFile" label="操作文件" :show-overflow-tooltip="true" min-width="200">
         <template #default="{ row }">
-          <span>{{ row.operationFile }}</span>
+          <span>{{ row.targetFile }}</span>
         </template>
       </el-table-column>
 
       <!-- 操作者 -->
-      <el-table-column prop="userName" label="操作者" sortable width="120"/>
+      <el-table-column prop="operator" label="同步名" sortable width="120"/>
 
       <!-- 服务器IP -->
       <el-table-column prop="ip" :label="currentMode === 'server' ? '客户端 IP' : '服务器 IP'" sortable
                        width="150"/>
 
       <!-- 操作等级 -->
-      <el-table-column prop="operationLevel" label="操作级别" sortable="custom" width="120">
+      <el-table-column prop="level" label="操作级别" sortable="custom" width="120">
         <template #default="{ row }">
-          <el-tag :type="getTagType(row.operationLevel)">
-            {{ row.operationLevel }}
+          <el-tag :type="getTagType(row.level)">
+            {{ row.level }}
           </el-tag>
         </template>
       </el-table-column>
@@ -64,7 +64,7 @@
 </template>
 
 <script setup>
-import {ref, onMounted, onBeforeUnmount} from 'vue'
+import {ref, onMounted, onBeforeUnmount, markRaw} from 'vue'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {Delete} from '@element-plus/icons-vue'
 import {easyRequest, RequestMethods} from '@/utils/RequestTool.js'
@@ -74,7 +74,7 @@ const currentMode = ref('');
 // 操作日志数据
 const operationLogData = ref([])
 const total = ref(0)
-const pageSize = ref(12)
+const pageSize = ref(8)
 const currentPage = ref(1)
 
 // 获取操作日志数据

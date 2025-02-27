@@ -55,6 +55,7 @@ public class SyncLogService {
     }
 
     public boolean deleteAllLog() {
+        log.info("删除所有同步日志");
         syncLogMapper.deleteAll();
         return true;
     }

@@ -37,12 +37,14 @@
         <!-- 公共列 -->
         <el-table-column label="同步名" min-width="100">
           <template #default="{ row }">
-            <div class="sync-name">
-              <el-icon>
-                <Folder/>
-              </el-icon>
-              <span>{{ row.syncName }}</span>
-            </div>
+            <el-tooltip :content="`最近同步时间: ${row.lastSyncTime}`" placement="right">
+              <div class="sync-name">
+                <el-icon>
+                  <Folder/>
+                </el-icon>
+                <span>{{ row.syncName }}</span>
+              </div>
+            </el-tooltip>
           </template>
         </el-table-column>
 
@@ -96,7 +98,8 @@
       </el-table>
 
       <!-- 新增对话框 -->
-      <el-dialog v-model="showAddDialog" :title="currentMode === 'server' ? '新建同步' : '添加同步链接'">
+      <el-dialog v-model="showAddDialog" :title="currentMode === 'server' ? '新建同步' : '添加同步链接'"
+                 :draggable="true">
         <el-form :model="newSyncForm" label-width="120px" :rules="formRules">
           <!-- 服务端模式表单项 -->
           <el-form-item v-if="currentMode === 'server'" label="同步名称" prop="syncName">
@@ -166,6 +169,9 @@ import {ElMessage, ElMessageBox} from 'element-plus'
 import {Folder} from '@element-plus/icons-vue'
 import {sizeTostr} from "@/utils/FileSizeConverter.js";
 import JSEncrypt from 'jsencrypt';
+import useClipboard from 'vue-clipboard3'
+
+const {toClipboard} = useClipboard();
 // 引入 GIF 图片
 import serverGif from '@/assets/server.gif'
 import clientGif from '@/assets/client.gif'
@@ -423,7 +429,7 @@ const handleShare = async (row) => {
       .then(async response => {
         if (response.statusCode === "SUCCESS" && response.data) {
           let link = encryptor.decrypt(response.data);
-          await navigator.clipboard.writeText(link);
+          await toClipboard(link);
           ElMessage.success('链接已复制到剪贴板');
         } else {
           ElMessage.error('获取分享链接失败');
@@ -471,13 +477,14 @@ const handleToggleSync = async (row) => {
   if (response.statusCode === "SUCCESS") {
     row.status = newStatus
     ElMessage.success(`已${newStatus === 'SYNC_STOP' ? '暂停' : '恢复'}同步`)
+    await fetchSyncStatus() // 立刻刷新同步状态
   }
 }
 
 //todo: 下面等待验证
 
 // 轮询间隔（5秒）
-const POLL_INTERVAL = 5000;
+const POLL_INTERVAL = 2000;
 let pollTimer = null;
 
 // 启动轮询

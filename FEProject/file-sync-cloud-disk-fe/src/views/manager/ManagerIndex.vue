@@ -109,7 +109,7 @@ import {easyRequest, RequestMethods} from "@/utils/RequestTool.js";
 const router = useRouter();
 
 // 点击图标折叠或者展开菜单
-const showMenu = ref(true);
+const showMenu = ref(false);
 
 const toggleMenu = () => {
   console.log("菜单" + (showMenu.value === false ? "折叠" : "展开"));

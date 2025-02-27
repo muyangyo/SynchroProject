@@ -18,6 +18,7 @@ import java.util.List;
 @Slf4j
 public class DeviceExplorer {
     public static final String FIRST_REQUEST_STRING = "DISCOVER_DEVICE_REQUEST";
+    private volatile boolean isRunning = true; // 标记线程是否应该继续运行
 
     /**
      * 寻找服务端(需要在线程中调用) <br>
@@ -27,14 +28,14 @@ public class DeviceExplorer {
      * 3.2. 未找到服务端，将在5分钟后重试 <br>
      */
     @SneakyThrows
-    public static String connectToServer(String publicServerIp, int publicServerUdpPort, String savedServerDeviceOriginId) {
+    public String connectToServer(String publicServerIp, int publicServerUdpPort, String savedServerDeviceOriginId) {
         int retryCount = 0; // 重试次数
         long initialDelay = 5000; // 初始延迟时间（5秒）
         long maxDelay = 30 * 60 * 1000; // 最大延迟时间（30分钟）
         long step = 10000; // 每次增加的步长（10秒）
         long delay = initialDelay; // 当前延迟时间
 
-        while (true) {
+        while (isRunning) { // 使用 isRunning 来控制循环
             // 尝试连接服务端
             boolean connected = false;
             String serverIP = null; // 最终的服务端IP
@@ -42,7 +43,7 @@ public class DeviceExplorer {
             // 步骤1：尝试公网连接 如果有公网服务端IP，则尝试连接
             if (StringUtils.hasLength(publicServerIp)) {
                 log.info("尝试连接公网服务端 started");
-                String serverDeviceId = DeviceExplorer.pingToPublicServer(publicServerIp, publicServerUdpPort);
+                String serverDeviceId = pingToPublicServer(publicServerIp, publicServerUdpPort);
                 if (serverDeviceId != null) {
                     log.info("成功发现公网服务端设备,设备ID: [{}],确认中...", serverDeviceId);
                     connected = checkServerDeviceId(serverDeviceId, savedServerDeviceOriginId);
@@ -57,7 +58,7 @@ public class DeviceExplorer {
             // 步骤2：公网不可达，尝试局域网发现
             if (!connected) {
                 log.info("公网服务端不可达，尝试局域网发现 started");
-                List<String> devices = DeviceExplorer.pingToLocalNetworkDevicesToDiscover(publicServerUdpPort);
+                List<String> devices = pingToLocalNetworkDevicesToDiscover(publicServerUdpPort);
                 for (String deviceInfo : devices) { //有设备在局域网返回了服务端信息
 
                     String[] parts = deviceInfo.split("@");
@@ -89,6 +90,14 @@ public class DeviceExplorer {
                 log.info("第 {} 次重试", retryCount);
             }
         }
+        return null; // 如果线程被停止，返回 null
+    }
+
+    /**
+     * 停止设备发现线程
+     */
+    public void stop() {
+        isRunning = false; // 设置 isRunning 为 false，停止线程
     }
 
     /**

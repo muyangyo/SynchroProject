@@ -108,6 +108,12 @@ public class SyncInfoService {
             return Result.fail("同步已存在!");
         }
 
+        SyncInfo sameLocalPathSync = new SyncInfo();
+        sameLocalPathSync.setLocalAddress(formLocalPath);
+        if (!syncInfoMapper.selectByCondition(sameLocalPathSync).isEmpty()) {
+            return Result.fail("已存在相同本地目录的同步!");
+        }
+
         syncInfoMapper.insert(syncInfoByShareLink);
         log.info("同步信息添加成功! 类型 [client] , 同步名称 [{}] , 本地目录 [{}] , 服务器IP [{}] , 设备ID [{}]", syncInfoByShareLink.getUsername(), syncInfoByShareLink.getLocalAddress(),
                 syncInfoByShareLink.getServerIp(), setting.getDeviceID()
@@ -197,6 +203,17 @@ public class SyncInfoService {
         SyncInfo syncInfo = syncInfoMapper.selectByName(syncName);
         if (syncInfo == null) {
             return Result.fail("同步信息不存在!");
+        }
+
+        SyncInfo sameLocalPathSync = new SyncInfo();
+        sameLocalPathSync.setLocalAddress(localPath);
+        List<SyncInfo> syncInfos = syncInfoMapper.selectByCondition(sameLocalPathSync);
+        if (!syncInfos.isEmpty()) {
+            for (SyncInfo info : syncInfos) {
+                if (!info.getUsername().equals(syncName)) {
+                    return Result.fail("已存在相同本地目录的同步!");
+                }
+            }
         }
 
         String oldLocalPath = syncInfo.getLocalAddress();
@@ -350,6 +367,16 @@ public class SyncInfoService {
         SyncInfo syncInfo = syncInfoMapper.selectByName(syncName);
         if (syncInfo == null) {
             return Result.fail("同步信息不存在!");
+        }
+        SyncInfo sameLocalPathSync = new SyncInfo();
+        sameLocalPathSync.setLocalAddress(localPath);
+        List<SyncInfo> syncInfos = syncInfoMapper.selectByCondition(sameLocalPathSync);
+        if (!syncInfos.isEmpty()) {
+            for (SyncInfo info : syncInfos) {
+                if (!info.getUsername().equals(syncName)) {
+                    return Result.fail("已存在相同本地目录的同步!");
+                }
+            }
         }
 
         // 3. 检查是否需要更新

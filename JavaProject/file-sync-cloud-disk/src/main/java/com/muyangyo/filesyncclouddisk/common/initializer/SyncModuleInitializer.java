@@ -20,12 +20,12 @@ import org.springframework.util.StringUtils;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.nio.file.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import static com.muyangyo.filesyncclouddisk.common.utils.SSLUtils.autoGenerateKeystore;
@@ -50,17 +50,21 @@ public class SyncModuleInitializer {
     // 用于保存服务实例
     private DiscoveryServer discoveryServer;
     private FtpServer ftpServer;
-    private final Map<String, FileSyncManager> mapForFileSyncManagers = new HashMap<>(); // key: serverIp, value: FileSyncManager
+    private final Map<String, FileSyncManager> mapForFileSyncManagers = new ConcurrentHashMap<>(); // key: serverIp, value: FileSyncManager
+    private final Map<String, DeviceExplorer> mapForDeviceExplorers = new ConcurrentHashMap<>(); // 保存 DeviceExplorer 实例
+    private ScheduledExecutorService scheduler; // 定时任务调度器
+    private WatchService watchService; // 文件系统监控服务
+    private ExecutorService fileWatcherExecutor; // 文件监控线程池
 
     @PostConstruct
     public void init() {
-        //通过数据库来判断是否需要启动服务
+        // 通过数据库来判断是否需要启动服务
         List<SyncInfo> syncInfos = syncInfoMapper.selectAll();
         if (syncInfos.isEmpty()) {
             log.info("未发现任何同步配置，不启动同步服务");
             return;
         } else {
-            SyncInfo syncInfo = syncInfos.get(0);//随便取一个,来判断是否是服务端还是客户端
+            SyncInfo syncInfo = syncInfos.get(0); // 随便取一个,来判断是否是服务端还是客户端
             if (StringUtils.hasLength(syncInfo.getServerId()) || StringUtils.hasLength(syncInfo.getServerIp())) {
                 log.info("判断当前为 [客户端]");
                 log.info("启动同步客户端");
@@ -71,6 +75,12 @@ public class SyncModuleInitializer {
                 startServer();
             }
         }
+    }
+
+    @PreDestroy
+    public void destroy() {
+        stopClient();
+        stopServer();
     }
 
     public boolean startServer() {
@@ -110,10 +120,10 @@ public class SyncModuleInitializer {
             return false;
         }
 
+        log.info("同步服务端启动成功!");
         return true;
     }
 
-    @PreDestroy
     public boolean stopServer() {
         log.info("正在清空同步服务端资源");
         if (discoveryServer != null) {
@@ -135,16 +145,64 @@ public class SyncModuleInitializer {
         return startServer();
     }
 
-    @PreDestroy
     public boolean stopClient() {
         log.info("正在清空同步客户端资源");
         mapForFileSyncManagers.forEach((serverIp, fileSyncManager) -> {
             fileSyncManager.stopAllSyncs(); // 停止所有同步任务
+            log.trace("已停止文件同步管理器: {}", serverIp);
         });
         mapForFileSyncManagers.clear(); // 清理资源
+
+        mapForDeviceExplorers.forEach((serverIp, deviceExplorer) -> {
+            deviceExplorer.stop(); // 停止设备发现线程
+            log.trace("已停止设备发现器: {}", serverIp);
+        });
+        mapForDeviceExplorers.clear(); // 清理资源
+
+        // 停止定时任务和文件监控
+        stopClientTasks();
         return true;
     }
 
+    /**
+     * 停止客户端的定时任务和文件监控
+     */
+    private void stopClientTasks() {
+        // 关闭定时任务调度器
+        if (scheduler != null) {
+            scheduler.shutdown();
+            try {
+                if (!scheduler.awaitTermination(10, TimeUnit.SECONDS)) {
+                    scheduler.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                log.error("定时任务调度器关闭失败", e);
+                scheduler.shutdownNow();
+            }
+        }
+
+        // 关闭文件监控服务
+        if (watchService != null) {
+            try {
+                watchService.close();
+            } catch (IOException e) {
+                log.error("关闭文件监控服务失败", e);
+            }
+        }
+
+        // 关闭文件监控线程池
+        if (fileWatcherExecutor != null) {
+            fileWatcherExecutor.shutdown();
+            try {
+                if (!fileWatcherExecutor.awaitTermination(10, TimeUnit.SECONDS)) {
+                    fileWatcherExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                log.error("文件监控线程池关闭失败", e);
+                fileWatcherExecutor.shutdownNow();
+            }
+        }
+    }
 
     public boolean restartClient() {
         log.warn("正在重启同步客户端");
@@ -155,7 +213,9 @@ public class SyncModuleInitializer {
     public boolean startClient() {
         stopServer(); // 先停止服务端,避免端口冲突
         setting.setSyncServer(false);
-        List<SyncInfo> syncs = syncInfoMapper.selectActive();// 只有激活的同步配置才会被执行
+
+        // 执行同步任务
+        List<SyncInfo> syncs = syncInfoMapper.selectActive(); // 只有激活的同步配置才会被执行
 
 
         // 根据 serverIp 进行分组
@@ -164,9 +224,12 @@ public class SyncModuleInitializer {
             // 以 serverIp 作为 key ,取出 serverIp 对应的 syncInfoList
 
             setting.getSettingThreadPool().submit(() -> {
-                //获取本次实际的IP
-                String realServerIp = DeviceExplorer.connectToServer(serverIp, setting.getDiscoveryServicePort(),
-                        syncInfoList.get(0).getServerId()); // 这里随便取一个syncInfo,因为同一个ServerIP 的 serverId 是一样的
+                DeviceExplorer deviceExplorer = new DeviceExplorer(); // 创建 DeviceExplorer 实例
+                mapForDeviceExplorers.put(serverIp, deviceExplorer); // 保存实例
+
+                // 获取实际IP
+                String realServerIp = deviceExplorer.connectToServer(serverIp, setting.getDiscoveryServicePort(),
+                        syncInfoList.get(0).getServerId());
                 if (StringUtils.hasLength(realServerIp)) {
                     log.info("成功连接到服务器 [{}] ,执行文件同步操作", realServerIp);
                     FileSyncManager fileSyncManager = new FileSyncManager(realServerIp, setting.getFtpsPort(),
@@ -178,7 +241,91 @@ public class SyncModuleInitializer {
             });
 
         });
+
+        // 初始化定时任务调度器和文件监控服务
+        scheduler = Executors.newScheduledThreadPool(1);
+        try {
+            watchService = FileSystems.getDefault().newWatchService();
+            fileWatcherExecutor = Executors.newCachedThreadPool();
+        } catch (IOException e) {
+            log.error("无法初始化文件监控服务", e);
+            return false;
+        }
+
+        // 启动定时任务，每隔 5 分钟执行一次同步
+        scheduler.scheduleAtFixedRate(this::triggerSync, 5, 5, TimeUnit.MINUTES);
+
+        // 启动文件监控任务
+        startFileWatcher();
+
+        log.info("同步客户端启动成功!");
         return true;
+    }
+
+    /**
+     * 启动文件监控任务
+     */
+    private void startFileWatcher() {
+        List<SyncInfo> syncInfos = syncInfoMapper.selectActive();
+        for (SyncInfo syncInfo : syncInfos) {
+            Path path = Paths.get(syncInfo.getLocalAddress());
+            if (Files.exists(path) && Files.isDirectory(path)) {
+                try {
+                    // 注册监控事件
+                    path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);
+                    log.info("开始监控文件夹: {}", path);
+                } catch (IOException e) {
+                    log.error("无法监控文件夹: {}", path, e);
+                }
+            } else {
+                log.warn("文件夹不存在或不是目录: {}", path);
+            }
+        }
+
+        // 启动文件监控线程
+        fileWatcherExecutor.submit(() -> {
+            while (true) {
+                WatchKey key;
+                try {
+                    key = watchService.take(); // 阻塞等待文件系统事件
+                } catch (InterruptedException e) {
+                    log.info("文件监控线程被中断");
+                    break;
+                }
+
+                for (WatchEvent<?> event : key.pollEvents()) {
+                    WatchEvent.Kind<?> kind = event.kind();
+
+                    // 忽略 OVERFLOW 事件
+                    if (kind == StandardWatchEventKinds.OVERFLOW) {
+                        continue;
+                    }
+
+                    // 获取事件上下文（文件路径）
+                    Path changedPath = (Path) event.context();
+                    log.info("检测到文件变化: {}, 事件类型: {}", changedPath, kind);
+
+                    // 触发同步任务
+                    triggerSync();
+                }
+
+                // 重置 WatchKey
+                boolean valid = key.reset();
+                if (!valid) {
+                    log.warn("WatchKey 无效，跳过此次事件");
+                    break;
+                }
+            }
+        });
+    }
+
+    /**
+     * 触发同步任务
+     */
+    private void triggerSync() {
+        log.info("触发同步任务，开始执行同步");
+        stopClient(); // 先停止客户端,避免同步冲突
+        startClient(); // 调用 startClient 方法执行同步
     }
 
     // 新增方法获取同步状态
