@@ -7,7 +7,6 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
     plugins: [
         vue(),
-        // vueDevTools(), //todo: 打包时关闭
     ],
     resolve: {
         alias: {

@@ -422,14 +422,14 @@ const startUpload = async (file) => {
 
   // 分片上传逻辑
   // 1.根据文件大小选择分片大小
-  let chunkSize = 1024 * 1024 * 8; // 默认分片大小 8MB
-  if (file.size < 10 * 1024 * 1024) {
-    // 文件小于10MB，整个文件作为一个分片
-    chunkSize = file.size;
-  } else if (file.size > 200 * 1024 * 1024) {
-    // 文件大于200MB，分片大小16MB
-    chunkSize = 1024 * 1024 * 16;
-  }
+  let chunkSize = 1024 * 1024 * 4; // 默认分片大小 4MB
+  /*  if (file.size < 10 * 1024 * 1024) {
+      // 文件小于10MB，整个文件作为一个分片
+      chunkSize = file.size;
+    } else if (file.size > 200 * 1024 * 1024) {
+      // 文件大于200MB，分片大小16MB
+      chunkSize = 1024 * 1024 * 16;
+    }*/
   // 2.计算分片数量
   const totalChunks = Math.ceil(file.size / chunkSize);
 
