@@ -16,11 +16,11 @@
       <!-- 头部 -->
       <div class="header">
         <h2>同步管理 - {{ currentMode === 'server' ? '服务端' : '客户端' }}
-          <img
-              :src="currentMode === 'server' ? serverGif : clientGif"
-              class="mode-gif"
-              @click="handleGifClick"
-          />
+          <!--          <img
+                        :src="currentMode === 'server' ? serverGif : clientGif"
+                        class="mode-gif"
+                        @click="handleGifClick"
+                    />-->
         </h2>
         <div class="header-actions">
           <el-button type="info" @click="handleSwitchMode">
