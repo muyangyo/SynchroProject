@@ -1,4 +1,4 @@
-import{T as B,P as J}from"./index-iYnnpkLh.js";var M={exports:{}};/*!
+import{T as B,P as J}from"./index-C1f5OLKf.js";var M={exports:{}};/*!
  * clipboard.js v2.0.11
  * https://clipboardjs.com/
  *

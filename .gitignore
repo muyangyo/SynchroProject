@@ -54,3 +54,4 @@ yarn-error.log*
 /JavaProject/file-cloud-disk/DownloadTemp
 /JavaProject/file-cloud-disk/recycleBin
 *.jks
+/JavaProject/file-sync-cloud-disk/.shareTemp

@@ -45,8 +45,8 @@ public class ExceptionHandler {
 
     @org.springframework.web.bind.annotation.ExceptionHandler
     public Result exception(IllegalLoginWithoutRSA e) {
-        log.error("非正常登入!", e);
-        return Result.error("请使用客户端登入!如果您使用的是页面,请刷新后再试!");
+        log.error("非正常操作!", e);
+        return Result.error("请使用客户端操作!如果您使用的是页面,请刷新后再试!");
     }
 
     @org.springframework.web.bind.annotation.ExceptionHandler
