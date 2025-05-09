@@ -203,6 +203,25 @@
     </template>
   </el-dialog>
 
+  <!-- ai聊天 -->
+  <!-- 新增右下角悬浮按钮 -->
+  <div class="chat-float-button" @click="showChatDialog">
+    <el-icon :size="30" color="#fff">
+      <ChatDotRound/>
+    </el-icon>
+  </div>
+
+  <!-- 新增聊天对话框 -->
+  <el-dialog
+      v-model="chatDialogVisible"
+      title="云盘智能助手"
+      width="600px"
+      class="chat-dialog"
+      draggable
+  >
+    <ChatAssistant/>
+  </el-dialog>
+
 </template>
 <script setup>
 import {markRaw, onMounted, reactive, ref, warn, watch} from 'vue';
@@ -235,6 +254,7 @@ import PdfPreview from "@/components/user/pdfPreview.vue";
 import IconFromDIY from "@/components/common/iconFromDIY.vue";
 import UserShareManager from "@/components/user/UserShareManager.vue";
 import RecycleBin from "@/components/user/RecycleBin.vue";
+import ChatAssistant from '@/components/user/ChatAssistant.vue'
 
 // 权限相关变量
 const haveDeletePermission = ref(UserSession.getPermissions().includes("d"));
@@ -870,6 +890,14 @@ const refreshFileList = () => {
     handleResponse(response);
   });
 }
+
+// 新增聊天对话框状态
+const chatDialogVisible = ref(false)
+
+// 新增显示对话框方法
+const showChatDialog = () => {
+  chatDialogVisible.value = true
+}
 </script>
 
 <style scoped>
@@ -1229,4 +1257,51 @@ const refreshFileList = () => {
   opacity: 0.7;
 }
 
+/*ai聊天窗口*/
+/* 新增悬浮按钮样式 */
+.chat-float-button {
+  position: fixed;
+  right: 40px;
+  bottom: 40px;
+  width: 60px;
+  height: 60px;
+  background-color: #4a9cff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  z-index: 9999;
+}
+
+.chat-float-button:hover {
+  background-color: #367abd;
+  transform: scale(1.1);
+}
+
+/* 调整对话框样式 */
+:deep(.chat-dialog) {
+  border-radius: 12px;
+  background-color: #1a1a1a;
+}
+
+:deep(.chat-dialog .el-dialog__header) {
+  background-color: #2d2d2d;
+  margin: 0;
+  padding: 16px;
+  border-radius: 12px 12px 0 0;
+}
+
+:deep(.chat-dialog .el-dialog__title) {
+  color: #fff;
+  font-size: 18px;
+}
+
+:deep(.chat-dialog .el-dialog__body) {
+  padding: 0;
+  height: 70vh;
+  background-color: #1a1a1a;
+}
 </style>
